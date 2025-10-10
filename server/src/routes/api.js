@@ -7,6 +7,21 @@ const axios = require('axios');
 // Example health
 router.get('/health', (req, res) => res.json({ ok: true }));
 
+// Version info endpoint
+router.get('/version', (req, res) => {
+  try {
+    const packageInfo = require('../../../package.json');
+    res.json({
+      version: packageInfo.version,
+      publishDate: packageInfo.publishDate,
+      name: packageInfo.name,
+      description: packageInfo.description
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load version info' });
+  }
+});
+
 // AI generation endpoint using game configs
 const { getGameConfig, renderTemplate } = require('../services/gameConfigService');
 const { listGames } = require('../services/gameConfigService');
