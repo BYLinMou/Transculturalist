@@ -2,7 +2,10 @@
 (function() {
   const translations = {
     zh: null,
-    en: null
+    'zh-Hans': null,
+    en: null,
+    ja: null,
+    ko: null
   };
 
   // Load translation files
@@ -11,8 +14,17 @@
       const zhResponse = await fetch('/assets/locales/zh.json');
       translations.zh = await zhResponse.json();
       
+      const zhHansResponse = await fetch('/assets/locales/zh-Hans.json');
+      translations['zh-Hans'] = await zhHansResponse.json();
+      
       const enResponse = await fetch('/assets/locales/en.json');
       translations.en = await enResponse.json();
+      
+      const jaResponse = await fetch('/assets/locales/ja.json');
+      translations.ja = await jaResponse.json();
+      
+      const koResponse = await fetch('/assets/locales/ko.json');
+      translations.ko = await koResponse.json();
       
       console.log('Translations loaded successfully');
       // Translations loaded, update page text again if needed
