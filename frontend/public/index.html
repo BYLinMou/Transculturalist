@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>文化探索遊戲平台 - 開發版</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body class="gradient-bg min-h-screen text-white">
+    <div id="app">載入中...</div>
+
+    <script>
+      // Landing page for demo: redirect to static demo culture selection
+      if (location.pathname === '/' || location.pathname.endsWith('/index.html')) {
+        // static files are served from the server root, so request /culture-selection.html
+        window.location.href = '/culture-selection.html';
+      }
+    </script>
+  </body>
+</html>

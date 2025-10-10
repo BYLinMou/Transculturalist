@@ -1,0 +1,9 @@
+{
+  "name": "transculturalist-frontend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Frontend is static; use server to serve files in dev'",
+    "build": "node build.js"
+  }
+}

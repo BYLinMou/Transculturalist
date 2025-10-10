@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文化探索 — 配對遊戲</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    .draggable {
+      cursor: move;
+      user-select: none;
+    }
+    .draggable:hover {
+      opacity: 0.8;
+    }
+    .drag-over {
+      background-color: rgba(218, 165, 32, 0.3);
+    }
+    .question-slot.correct {
+      background-color: rgba(34, 197, 94, 0.3);
+    }
+    .question-slot.incorrect {
+      background-color: rgba(239, 68, 68, 0.3);
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <!-- Header placeholder -->
+  <header></header>
+
+
+  <div class="container mx-auto p-6">
+    <div class="flex items-center justify-between mb-8">
+      <button id="backToGames" class="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <div class="text-center">
+        <h2 class="text-2xl font-bold text-gold-300">文化配對遊戲</h2>
+        <p class="text-gray-400" id="currentTheme"></p>
+      </div>
+      <div class="text-right">
+        <div class="text-gold-300 font-bold">計時: <span id="timer">00:00</span></div>
+      </div>
+    </div>
+
+    <div id="loadingContainer" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
+      <p class="text-gray-300">正在生成配對項目...</p>
+    </div>
+
+    <div id="gameContainer" class="hidden">
+      <p class="text-center text-gray-400 mb-6">拖動下方的選項到對應的文化題目位置</p>
+      
+      <!-- Questions Area -->
+      <div class="grid md:grid-cols-2 gap-4 mb-8">
+        <div id="questionSlot1" class="question-slot bg-gray-800 border-2 border-dashed border-gray-600 p-4 rounded-lg min-h-[120px] transition-all" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+          <div class="question-text text-gold-300 font-semibold mb-3">問題 1</div>
+          <div class="answer-area bg-gray-700 rounded p-3 min-h-[60px] flex items-center justify-center text-gray-400">
+            將答案拖動到這裡
+          </div>
+        </div>
+        
+        <div id="questionSlot2" class="question-slot bg-gray-800 border-2 border-dashed border-gray-600 p-4 rounded-lg min-h-[120px] transition-all" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+          <div class="question-text text-gold-300 font-semibold mb-3">問題 2</div>
+          <div class="answer-area bg-gray-700 rounded p-3 min-h-[60px] flex items-center justify-center text-gray-400">
+            將答案拖動到這裡
+          </div>
+        </div>
+        
+        <div id="questionSlot3" class="question-slot bg-gray-800 border-2 border-dashed border-gray-600 p-4 rounded-lg min-h-[120px] transition-all" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+          <div class="question-text text-gold-300 font-semibold mb-3">問題 3</div>
+          <div class="answer-area bg-gray-700 rounded p-3 min-h-[60px] flex items-center justify-center text-gray-400">
+            將答案拖動到這裡
+          </div>
+        </div>
+        
+        <div id="questionSlot4" class="question-slot bg-gray-800 border-2 border-dashed border-gray-600 p-4 rounded-lg min-h-[120px] transition-all" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+          <div class="question-text text-gold-300 font-semibold mb-3">問題 4</div>
+          <div class="answer-area bg-gray-700 rounded p-3 min-h-[60px] flex items-center justify-center text-gray-400">
+            將答案拖動到這裡
+          </div>
+        </div>
+      </div>
+      
+      <!-- Options Area -->
+      <div class="border-t border-gray-600 pt-6">
+        <h4 class="text-lg font-semibold text-gold-300 mb-4 text-center">選項區域</h4>
+        <div id="answerPool" class="flex flex-wrap justify-center gap-3">
+          <!-- Draggable options will be populated here -->
+        </div>
+      </div>
+
+      <div class="text-center mt-6">
+        <button id="checkAnswers" class="px-8 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity">
+          檢查答案
+        </button>
+      </div>
+    </div>
+
+    <div id="resultContainer" class="hidden text-center">
+      <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700">
+        <h3 class="text-2xl font-bold mb-4 text-gold-300">遊戲結束！</h3>
+        <p class="text-xl mb-2">正確配對: <span id="correctCount" class="text-green-400 font-bold">0</span></p>
+        <p class="text-xl mb-4">完成時間: <span id="finalTime" class="text-gold-400 font-bold">00:00</span></p>
+        <button id="restartMatching" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity">
+          重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/load-header.js"></script>
+  <script>
+    // Get theme from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentTheme = urlParams.get('theme') || '中華文化';
+    
+    let pairs = [];
+    let matchedPairs = [];
+    let startTime = 0;
+    let timerInterval = null;
+    let draggedElement = null;
+    let aiGeneratedMatching = [];
+    let isLoadingAI = false;
+
+    // Game data for fallback
+    const gameData = {
+      '中華文化': {
+        matching: [
+          { left: '孔子', right: '儒家思想' },
+          { left: '太極', right: '陰陽平衡' },
+          { left: '龍鳳', right: '吉祥象徵' },
+          { left: '茶道', right: '修身養性' }
+        ]
+      },
+      '日本文化': {
+        matching: [
+          { left: '櫻花', right: '春天象徵' },
+          { left: '和服', right: '傳統服裝' },
+          { left: '壽司', right: '日式料理' },
+          { left: '禪宗', right: '精神修養' }
+        ]
+      },
+      '西方文化': {
+        matching: [
+          { left: '民主', right: '古希臘起源' },
+          { left: '法治', right: '羅馬法系' },
+          { left: '人文主義', right: '文藝復興' },
+          { left: '科學方法', right: '啟蒙時代' }
+        ]
+      }
+    };
+
+    document.getElementById('currentTheme').textContent = currentTheme;
+
+    // Load matching pairs from server API
+    async function loadMatchingPairs() {
+      document.getElementById('loadingContainer').classList.remove('hidden');
+      document.getElementById('gameContainer').classList.add('hidden');
+      
+      try {
+        const response = await fetch('/api/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameId: 'matching',
+            theme: currentTheme,
+            params: { count: 5 }
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.pairs) {
+          aiGeneratedMatching = result.data.pairs;
+          document.getElementById('loadingContainer').classList.add('hidden');
+          setupGame();
+        } else {
+          throw new Error('Failed to generate matching pairs');
+        }
+      } catch (error) {
+        console.error('Error loading pairs:', error);
+        // Fallback to preset data
+        aiGeneratedMatching = gameData[currentTheme]?.matching || [];
+        document.getElementById('loadingContainer').classList.add('hidden');
+        setupGame();
+      }
+    }
+
+    function setupGame() {
+      document.getElementById('gameContainer').classList.remove('hidden');
+      matchedPairs = [];
+      
+      // Use AI generated matching pairs if available, otherwise fallback to preset
+      const pairs = aiGeneratedMatching.length >= 4 ? aiGeneratedMatching.slice(0, 4) : 
+                   (gameData[currentTheme] ? [...gameData[currentTheme].matching] : []);
+      
+      if (pairs.length === 0) {
+        showAIError("載入對應題目", "無法載入題目，請稍後再試");
+        return;
+      }
+      
+      // Setup questions
+      const questionSlots = ['questionSlot1', 'questionSlot2', 'questionSlot3', 'questionSlot4'];
+      questionSlots.forEach((slotId, index) => {
+        const slot = document.getElementById(slotId);
+        const questionText = slot.querySelector('.question-text');
+        if (pairs[index]) {
+          questionText.textContent = pairs[index].left;
+          slot.dataset.correctAnswer = pairs[index].right;
+        }
+        
+        // Reset answer area
+        const answerArea = slot.querySelector('.answer-area');
+        answerArea.innerHTML = '<span class="text-gray-400">將答案拖動到這裡</span>';
+        slot.classList.remove('correct', 'incorrect');
+        slot.dataset.answer = '';
+        slot.dataset.correct = '';
+      });
+      
+      // Setup draggable options
+      const answerPool = document.getElementById('answerPool');
+      answerPool.innerHTML = '';
+      
+      const allAnswers = pairs.map(p => p.right);
+      // Shuffle answers
+      for (let i = allAnswers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allAnswers[i], allAnswers[j]] = [allAnswers[j], allAnswers[i]];
+      }
+      
+      allAnswers.forEach((answer, index) => {
+        const option = document.createElement('div');
+        option.id = `option_${index}`;
+        option.className = 'draggable bg-gold-600 text-black px-4 py-2 rounded-lg font-semibold';
+        option.draggable = true;
+        option.textContent = answer;
+        option.dataset.value = answer;
+        
+        option.addEventListener('dragstart', handleDragStart);
+        option.addEventListener('dragend', handleDragEnd);
+        
+        answerPool.appendChild(option);
+      });
+
+      // Setup drop zones
+      questionSlots.forEach((slotId) => {
+        const slot = document.getElementById(slotId);
+        slot.addEventListener('dragover', handleDragOver);
+        slot.addEventListener('drop', handleDrop);
+        slot.addEventListener('dragleave', handleDragLeave);
+        
+        // Allow clicking to remove
+        slot.addEventListener('click', function() {
+          const answer = this.querySelector('.dragged-answer');
+          if (answer) {
+            returnToPool(answer);
+          }
+        });
+      });
+      
+      startTimer();
+    }
+
+    function handleDragStart(e) {
+      draggedElement = e.target;
+      e.target.style.opacity = '0.5';
+    }
+
+    function handleDragEnd(e) {
+      e.target.style.opacity = '1';
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      
+      const slot = e.currentTarget;
+      
+      // Check if slot already has an answer
+      const existingAnswer = slot.querySelector('.dragged-answer');
+      if (existingAnswer) {
+        returnToPool(existingAnswer);
+      }
+      
+      // Clone the dragged element for the answer area
+      if (draggedElement) {
+        const answerClone = draggedElement.cloneNode(true);
+        answerClone.classList.remove('draggable');
+        answerClone.classList.add('dragged-answer');
+        answerClone.id = draggedElement.id + '_answer';
+        answerClone.draggable = false;
+        
+        // Clear answer area and add new answer
+        const answerArea = slot.querySelector('.answer-area');
+        answerArea.innerHTML = '';
+        answerArea.appendChild(answerClone);
+        
+        // Hide original draggable element
+        draggedElement.style.display = 'none';
+        
+        // Store answer data
+        slot.dataset.answer = draggedElement.dataset.value;
+        slot.dataset.correct = draggedElement.dataset.value;
+        
+        draggedElement = null;
+      }
+    }
+
+    function showAIError(title, message) {
+      isLoadingAI = false;
+      showCustomModal(title, message + "\n\n將使用預設題目進行遊戲。");
+      // Fallback to preset questions
+      setTimeout(() => {
+        setupGame();
+      }, 2000);
+    }
+
+    function showCustomModal(title, message) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-gray-900 border border-gold-600 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+          <h3 class="text-xl font-bold text-gold-300 mb-4">${title}</h3>
+          <p class="text-gray-300 mb-6">${message}</p>
+          <div class="flex justify-end">
+            <button class="px-4 py-2 gold-gradient text-black font-bold rounded hover:opacity-90 transition-opacity" onclick="this.closest('.fixed').remove()">確定</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function startTimer() {
+      startTime = Date.now();
+      timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const seconds = (elapsed % 60).toString().padStart(2, '0');
+        document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+
+    function checkAnswers() {
+      clearInterval(timerInterval);
+      let correctCount = 0;
+      
+      const questionSlots = ['questionSlot1', 'questionSlot2', 'questionSlot3', 'questionSlot4'];
+      questionSlots.forEach(slotId => {
+        const slot = document.getElementById(slotId);
+        const userAnswer = slot.dataset.answer;
+        const correctAnswer = slot.dataset.correctAnswer;
+        
+        if (userAnswer === correctAnswer) {
+          slot.classList.add('correct');
+          slot.classList.remove('incorrect');
+          correctCount++;
+        } else {
+          slot.classList.add('incorrect');
+          slot.classList.remove('correct');
+        }
+      });
+      
+      // Show result
+      setTimeout(() => {
+        document.getElementById('gameContainer').classList.add('hidden');
+        document.getElementById('resultContainer').classList.remove('hidden');
+        document.getElementById('correctCount').textContent = `${correctCount}/${questionSlots.length}`;
+        document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+      }, 1500);
+    }
+
+    function restartGame() {
+      clearInterval(timerInterval);
+      document.getElementById('resultContainer').classList.add('hidden');
+      document.getElementById('timer').textContent = '00:00';
+      
+      // Remove all correct/incorrect classes and reset slots
+      const questionSlots = ['questionSlot1', 'questionSlot2', 'questionSlot3', 'questionSlot4'];
+      questionSlots.forEach(slotId => {
+        const slot = document.getElementById(slotId);
+        slot.classList.remove('correct', 'incorrect');
+        const answerArea = slot.querySelector('.answer-area');
+        answerArea.innerHTML = '<span class="text-gray-400">將答案拖動到這裡</span>';
+        slot.dataset.answer = '';
+        slot.dataset.correct = '';
+      });
+      
+      loadMatchingPairs();
+    }
+
+    // Event listeners
+    document.getElementById('backToGames').addEventListener('click', () => {
+      clearInterval(timerInterval);
+      window.location.href = '/game/game-selection.html';
+    });
+
+    document.getElementById('checkAnswers').addEventListener('click', checkAnswers);
+    document.getElementById('restartMatching').addEventListener('click', restartGame);
+
+    // Start game
+    loadMatchingPairs();
+  </script>
+</body>
+</html>

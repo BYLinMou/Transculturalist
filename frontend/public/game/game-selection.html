@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>文化探索 — 遊戲選擇</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <!-- Header -->
+  <header class="bg-black bg-opacity-50 p-4 border-b border-gold-600">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-6">
+        <h1 class="text-2xl font-bold text-gold-400 cursor-pointer" onclick="window.location.href='/culture-selection.html'">
+          文化探索平台
+        </h1>
+        <button onclick="window.location.href='/forum/forum.html'" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+          <span class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z"></path>
+            </svg>
+            論壇
+          </span>
+        </button>
+      </div>
+      <button onclick="window.location.href='/settings.html'" class="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container mx-auto p-6">
+  <button onclick="window.location.href='/culture-selection.html'" class="mb-4 px-3 py-2 bg-gray-700 rounded">返回</button>
+    <h1 class="text-3xl font-bold text-gold-300 mb-6">遊戲選擇 (Demo)</h1>
+    <div id="selectedTheme" class="text-gray-300 mb-6"></div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="game-option card-hover bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700" data-game="mcq">
+        <div class="text-center"><div class="text-6xl mb-4">❓</div><h3 class="text-xl font-bold text-gold-300 mb-2">問答遊戲</h3></div>
+      </div>
+      <div class="game-option card-hover bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700" data-game="matching">
+        <div class="text-center"><div class="text-6xl mb-4">🔗</div><h3 class="text-xl font-bold text-gold-300 mb-2">配對遊戲</h3></div>
+      </div>
+      <div class="game-option card-hover bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700" data-game="roleplay">
+        <div class="text-center"><div class="text-6xl mb-4">🎭</div><h3 class="text-xl font-bold text-gold-300 mb-2">角色扮演</h3></div>
+      </div>
+      <div class="game-option card-hover bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700" data-game="story">
+        <div class="text-center"><div class="text-6xl mb-4">📖</div><h3 class="text-xl font-bold text-gold-300 mb-2">故事探索</h3></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const theme = localStorage.getItem('selectedTheme') || '未選擇';
+    document.getElementById('selectedTheme').textContent = '已選擇主題：' + theme;
+
+    document.querySelectorAll('.game-option').forEach(el => {
+      el.addEventListener('click', () => {
+        const game = el.dataset.game;
+        localStorage.setItem('selectedGame', game);
+        
+        // 根據遊戲類型導向不同頁面（新路徑），並傳遞主題參數
+        const themeParam = theme !== '未選擇' ? `?theme=${encodeURIComponent(theme)}` : '';
+        if (game === 'mcq') {
+          window.location.href = `/game/mcq-game.html${themeParam}`;
+        } else if (game === 'matching') {
+          window.location.href = `/game/matching-game.html${themeParam}`;
+        } else if (game === 'roleplay') {
+          window.location.href = `/game/roleplay-game.html${themeParam}`;
+        } else if (game === 'story') {
+          window.location.href = `/game/story-game.html${themeParam}`;
+        } else {
+          window.location.href = `/game/game-detail.html${themeParam}`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

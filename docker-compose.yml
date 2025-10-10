@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "3030:3030"
+    # Do NOT mount the server directory into the container in production build
+    # as it would overwrite the installed node_modules. Mounting is useful
+    # for development only. If you want dev mounts, switch to a separate
+    # compose override file.
+    # volumes:
+    #  - ./server:/app/server:ro
+    #  - ./frontend/public:/app/frontend/public:ro
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

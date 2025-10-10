@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文化探索 — 問答遊戲</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <!-- Header placeholder -->
+  <header></header>
+
+
+  <div class="container mx-auto p-6">
+    <div class="flex items-center justify-between mb-8">
+      <button id="backToGames" class="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <div class="text-center">
+        <h2 class="text-2xl font-bold text-gold-300">文化問答</h2>
+        <p class="text-gray-400" id="currentTheme"></p>
+      </div>
+      <div class="text-right">
+        <div class="text-gold-300 font-bold">分數: <span id="score">0</span></div>
+        <div class="text-gray-400">題目: <span id="questionNum">1</span>/5</div>
+      </div>
+    </div>
+    
+    <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700">
+      <div id="loadingContainer" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
+        <p class="text-gray-300">正在生成題目...</p>
+      </div>
+
+      <div id="questionContainer" class="hidden">
+        <h3 class="text-xl font-semibold mb-6 text-white" id="questionText"></h3>
+        <div id="optionsContainer" class="space-y-3"></div>
+      </div>
+      
+      <div id="resultContainer" class="hidden text-center">
+        <h3 class="text-2xl font-bold mb-4 text-gold-300">遊戲結束！</h3>
+        <p class="text-xl mb-4">你的最終分數: <span id="finalScore" class="text-gold-400 font-bold">0</span>/5</p>
+        <button id="restartMCQ" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity">重新開始</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/load-header.js"></script>
+  <script>
+    // Get theme from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentTheme = urlParams.get('theme') || '中華文化';
+    
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    document.getElementById('currentTheme').textContent = currentTheme;
+
+    // Load questions from server API
+    async function loadQuestions() {
+      document.getElementById('loadingContainer').classList.remove('hidden');
+      document.getElementById('questionContainer').classList.add('hidden');
+      
+      try {
+        const response = await fetch('/api/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameId: 'mcq',
+            theme: currentTheme,
+            params: { numQuestions: 5 }
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.questions) {
+          questions = result.data.questions;
+          document.getElementById('loadingContainer').classList.add('hidden');
+          loadQuestion();
+        } else {
+          throw new Error('Failed to generate questions');
+        }
+      } catch (error) {
+        console.error('Error loading questions:', error);
+        document.getElementById('loadingContainer').innerHTML = `
+          <p class="text-red-400 mb-4">載入題目失敗</p>
+          <button onclick="location.reload()" class="px-4 py-2 bg-gold-600 rounded-lg hover:bg-gold-700">重試</button>
+        `;
+      }
+    }
+
+    function loadQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        showResult();
+        return;
+      }
+
+      answered = false;
+      document.getElementById('questionContainer').classList.remove('hidden');
+      
+      const question = questions[currentQuestionIndex];
+      document.getElementById('questionText').textContent = question.question;
+      document.getElementById('questionNum').textContent = currentQuestionIndex + 1;
+
+      const optionsContainer = document.getElementById('optionsContainer');
+      optionsContainer.innerHTML = '';
+
+      question.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.className = 'w-full text-left p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors border border-gray-600';
+        button.textContent = option;
+        button.onclick = () => selectAnswer(index, button);
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function selectAnswer(selectedIndex, button) {
+      if (answered) return;
+      answered = true;
+
+      const question = questions[currentQuestionIndex];
+      const isCorrect = selectedIndex === question.correct;
+
+      if (isCorrect) {
+        score++;
+        button.classList.add('bg-green-600', 'border-green-400');
+        document.getElementById('score').textContent = score;
+      } else {
+        button.classList.add('bg-red-600', 'border-red-400');
+        // Highlight correct answer
+        const buttons = document.getElementById('optionsContainer').querySelectorAll('button');
+        buttons[question.correct].classList.add('bg-green-600', 'border-green-400');
+      }
+
+      // Disable all buttons
+      const allButtons = document.getElementById('optionsContainer').querySelectorAll('button');
+      allButtons.forEach(btn => btn.disabled = true);
+
+      // Move to next question after delay
+      setTimeout(() => {
+        currentQuestionIndex++;
+        loadQuestion();
+      }, 2000);
+    }
+
+    function showResult() {
+      document.getElementById('questionContainer').classList.add('hidden');
+      document.getElementById('resultContainer').classList.remove('hidden');
+      document.getElementById('finalScore').textContent = score;
+    }
+
+    function restartGame() {
+      currentQuestionIndex = 0;
+      score = 0;
+      document.getElementById('score').textContent = score;
+      document.getElementById('resultContainer').classList.add('hidden');
+      loadQuestions();
+    }
+
+    // Event listeners
+    document.getElementById('backToGames').addEventListener('click', () => {
+      window.location.href = '/game/game-selection.html';
+    });
+
+    document.getElementById('restartMCQ').addEventListener('click', restartGame);
+
+    // Start game
+    loadQuestions();
+  </script>
+</body>
+</html>

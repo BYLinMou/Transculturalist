@@ -1,0 +1,14 @@
+{
+  "id": "matching",
+  "name": "文化對應 (Matching)",
+  "description": "生成配對項目 (JSON)",
+  "model": "gpt-4o-mini",
+  "template": "請為{{theme}}主題生成{{count}}組配對項目。請以JSON格式回應，不要包含任何其他文字或格式：\n\n{\n  \"pairs\": [\n    {\n      \"left\": \"文化元素或概念\",\n      \"right\": \"相關描述或內容\"\n    }\n  ]\n}\n\n要求：\n1. 配對要有明確的關聯性\n2. 左側為具體的文化元素、人物、概念等\n3. 右側為相應的描述、作用、意義等\n4. 涵蓋{{theme}}的重要特色\n5. 使用繁體中文\n6. 確保配對關係準確",
+  "responseFormat": {
+    "root": "pairs",
+    "item": { "left": "string", "right": "string" }
+  },
+  "params": { "count": { "type": "integer", "default": 4, "min": 2, "max": 10 } },
+  "timeout": 20000,
+  "temperature": 0.4
+}
