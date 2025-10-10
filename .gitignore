@@ -2,5 +2,6 @@ node_modules/
 server/uploads/
 server/config.js
 frontend/node_modules/
+ImplementDocuments/
 .env
 .DS_Store

@@ -22,6 +22,9 @@
     }
   </script>
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/api-helper.js"></script>
+  <script src="/assets/load-header.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -36,19 +39,19 @@
         </svg>
       </button>
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-gold-300">文化問答</h2>
+        <h2 class="text-2xl font-bold text-gold-300" data-i18n="culturalQuiz">文化問答</h2>
         <p class="text-gray-400" id="currentTheme"></p>
       </div>
       <div class="text-right">
-        <div class="text-gold-300 font-bold">分數: <span id="score">0</span></div>
-        <div class="text-gray-400">題目: <span id="questionNum">1</span>/5</div>
+        <div class="text-gold-300 font-bold"><span data-i18n="score">分數</span>: <span id="score">0</span></div>
+        <div class="text-gray-400"><span data-i18n="question">題目</span>: <span id="questionNum">1</span>/5</div>
       </div>
     </div>
     
     <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700">
       <div id="loadingContainer" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
-        <p class="text-gray-300">正在生成題目...</p>
+        <p class="text-gray-300" data-i18n="generatingQuestions">正在生成題目...</p>
       </div>
 
       <div id="questionContainer" class="hidden">
@@ -57,14 +60,13 @@
       </div>
       
       <div id="resultContainer" class="hidden text-center">
-        <h3 class="text-2xl font-bold mb-4 text-gold-300">遊戲結束！</h3>
-        <p class="text-xl mb-4">你的最終分數: <span id="finalScore" class="text-gold-400 font-bold">0</span>/5</p>
-        <button id="restartMCQ" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity">重新開始</button>
+        <h3 class="text-2xl font-bold mb-4 text-gold-300" data-i18n="gameOver">遊戲結束！</h3>
+        <p class="text-xl mb-4"><span data-i18n="yourFinalScore">你的最終分數</span>: <span id="finalScore" class="text-gold-400 font-bold">0</span>/5</p>
+        <button id="restartMCQ" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity" data-i18n="restart">重新開始</button>
       </div>
     </div>
   </div>
 
-  <script src="/assets/load-header.js"></script>
   <script>
     // Get theme from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -77,15 +79,14 @@
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
-    // Load questions from server API
+    // Load questions from server API with language support
     async function loadQuestions() {
       document.getElementById('loadingContainer').classList.remove('hidden');
       document.getElementById('questionContainer').classList.add('hidden');
       
       try {
-        const response = await fetch('/api/ai/generate', {
+        const response = await window.apiHelper.request('/api/ai/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             gameId: 'mcq',
             theme: currentTheme,
@@ -104,9 +105,11 @@
         }
       } catch (error) {
         console.error('Error loading questions:', error);
+        const loadFailedText = window.i18next ? window.i18next.t('loadFailed') : '載入題目失敗';
+        const retryText = window.i18next ? window.i18next.t('retry') : '重試';
         document.getElementById('loadingContainer').innerHTML = `
-          <p class="text-red-400 mb-4">載入題目失敗</p>
-          <button onclick="location.reload()" class="px-4 py-2 bg-gold-600 rounded-lg hover:bg-gold-700">重試</button>
+          <p class="text-red-400 mb-4">${loadFailedText}</p>
+          <button onclick="location.reload()" class="px-4 py-2 bg-gold-600 rounded-lg hover:bg-gold-700">${retryText}</button>
         `;
       }
     }

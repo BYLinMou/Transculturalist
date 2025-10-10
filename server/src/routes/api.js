@@ -15,7 +15,7 @@ const { listGames } = require('../services/gameConfigService');
 // Accepts model override from request body, query string, or header.
 // Priority: body.model > query.model > header 'x-model' or 'x-openai-model'
 router.post('/ai/generate', async (req, res) => {
-  const { gameId, theme, params = {} } = req.body || {};
+  const { gameId, theme, params = {}, language = 'zh' } = req.body || {};
   const requestedModelFromBody = (req.body && req.body.model) || null;
   const requestedModelFromQuery = (req.query && req.query.model) || null;
   const requestedModelFromHeader = req.get('x-model') || req.get('x-openai-model') || null;
@@ -53,12 +53,19 @@ router.post('/ai/generate', async (req, res) => {
     return res.status(500).json({ success: false, error: 'AI service not configured' });
   }
 
+  // Determine language instruction for AI
+  const languageInstruction = language === 'en' 
+    ? 'Please respond in English.' 
+    : language === 'zh' 
+    ? '請用繁體中文回答。' 
+    : '請用繁體中文回答。';
+
   if (OPENAI_API_KEY && BASE_URL) {
     try {
       const payload = {
         model: modelToUse,
         messages: [
-          { role: 'system', content: 'You are a helpful assistant that returns only JSON as requested.' },
+          { role: 'system', content: `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}` },
           { role: 'user', content: prompt }
         ],
         max_tokens: cfg.max_tokens || 800,
@@ -116,7 +123,7 @@ router.get('/games', (req, res) => {
 
 // POST /api/roleplay/character - Generate roleplay character
 router.post('/roleplay/character', async (req, res) => {
-  const { theme } = req.body || {};
+  const { theme, language = 'zh' } = req.body || {};
   if (!theme) return res.status(400).json({ success: false, error: 'theme required' });
 
   const cfg = getGameConfig('roleplay');
@@ -138,13 +145,20 @@ router.post('/roleplay/character', async (req, res) => {
     return res.status(500).json({ success: false, error: 'AI service not configured' });
   }
 
+  // Determine language instruction for AI
+  const languageInstruction = language === 'en' 
+    ? 'Please respond in English.' 
+    : language === 'zh' 
+    ? '請用繁體中文回答。' 
+    : '請用繁體中文回答。';
+
   if (OPENAI_API_KEY && BASE_URL) {
     try {
       const modelToUse = req.body.model || cfg.model || process.env.DEFAULT_MODEL || 'gpt-4o-mini';
       const payload = {
         model: modelToUse,
         messages: [
-          { role: 'system', content: 'You are a helpful assistant that returns only JSON as requested.' },
+          { role: 'system', content: `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}` },
           { role: 'user', content: prompt }
         ],
         max_tokens: cfg.max_tokens || 800,
@@ -188,7 +202,7 @@ router.post('/roleplay/character', async (req, res) => {
 
 // POST /api/roleplay/chat - Continue roleplay conversation
 router.post('/roleplay/chat', async (req, res) => {
-  const { theme, character, userMessage } = req.body || {};
+  const { theme, character, userMessage, language = 'zh' } = req.body || {};
   if (!theme || !character || !userMessage) {
     return res.status(400).json({ success: false, error: 'theme, character, and userMessage required' });
   }
@@ -219,13 +233,20 @@ router.post('/roleplay/chat', async (req, res) => {
     return res.status(500).json({ success: false, error: 'AI service not configured' });
   }
 
+  // Determine language instruction for AI
+  const languageInstruction = language === 'en' 
+    ? 'Please respond in English and stay in character.' 
+    : language === 'zh' 
+    ? '請用繁體中文回答並保持角色設定。' 
+    : '請用繁體中文回答並保持角色設定。';
+
   if (OPENAI_API_KEY && BASE_URL) {
     try {
       const modelToUse = req.body.model || cfg.model || process.env.DEFAULT_MODEL || 'gpt-4o-mini';
       const payload = {
         model: modelToUse,
         messages: [
-          { role: 'system', content: '你是一个文化角色扮演助手，请保持角色设定并提供有价值的文化知识。' },
+          { role: 'system', content: languageInstruction },
           { role: 'user', content: prompt }
         ],
         max_tokens: cfg.max_tokens || 500,
@@ -255,7 +276,7 @@ router.post('/roleplay/chat', async (req, res) => {
 
 // POST /api/story/chapter - Generate story chapter
 router.post('/story/chapter', async (req, res) => {
-  const { theme, previousChoice, chapterNumber } = req.body || {};
+  const { theme, previousChoice, chapterNumber, language = 'zh' } = req.body || {};
   if (!theme) return res.status(400).json({ success: false, error: 'theme required' });
 
   const cfg = getGameConfig('story');
@@ -286,13 +307,20 @@ router.post('/story/chapter', async (req, res) => {
     return res.status(500).json({ success: false, error: 'AI service not configured' });
   }
 
+  // Determine language instruction for AI
+  const languageInstruction = language === 'en' 
+    ? 'Please respond in English.' 
+    : language === 'zh' 
+    ? '請用繁體中文回答。' 
+    : '請用繁體中文回答。';
+
   if (OPENAI_API_KEY && BASE_URL) {
     try {
       const modelToUse = req.body.model || cfg.model || process.env.DEFAULT_MODEL || 'gpt-4o-mini';
       const payload = {
         model: modelToUse,
         messages: [
-          { role: 'system', content: 'You are a helpful assistant that returns only JSON as requested.' },
+          { role: 'system', content: `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}` },
           { role: 'user', content: prompt }
         ],
         max_tokens: cfg.max_tokens || 1000,

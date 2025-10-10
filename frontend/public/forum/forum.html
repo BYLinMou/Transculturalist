@@ -22,6 +22,9 @@
     }
   </script>
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/api-helper.js"></script>
+  <script src="/assets/load-header.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -34,15 +37,15 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
-      <h2 class="text-3xl font-bold text-gold-300">文化交流論壇</h2>
+      <h2 class="text-3xl font-bold text-gold-300" data-i18n="forumTitle">文化交流論壇</h2>
     </div>
 
     <!-- Tabs -->
     <div class="flex gap-4 mb-6 border-b border-gray-700">
-      <button id="discussionTab" class="tab-button active px-6 py-3 font-semibold transition-colors border-b-2 border-gold-600 text-gold-400">
+      <button id="discussionTab" class="tab-button active px-6 py-3 font-semibold transition-colors border-b-2 border-gold-600 text-gold-400" data-i18n="discussionTab">
         討論區
       </button>
-      <button id="contributionTab" class="tab-button px-6 py-3 font-semibold text-gray-400 hover:text-gray-200 transition-colors border-b-2 border-transparent">
+      <button id="contributionTab" class="tab-button px-6 py-3 font-semibold text-gray-400 hover:text-gray-200 transition-colors border-b-2 border-transparent" data-i18n="contributionTab">
         文化分享
       </button>
     </div>
@@ -50,7 +53,7 @@
     <!-- Discussion Tab Content -->
     <div id="discussionContent" class="space-y-4">
       <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
-        <h3 class="text-xl font-bold text-gold-300 mb-4">最新討論</h3>
+        <h3 class="text-xl font-bold text-gold-300 mb-4" data-i18n="latestDiscussions">最新討論</h3>
         
         <!-- Sample discussion threads -->
         <div class="space-y-4">
@@ -95,7 +98,7 @@
         </div>
 
         <div class="mt-6 text-center">
-          <button class="px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors">
+          <button class="px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors" data-i18n="startNewDiscussion">
             發起新討論
           </button>
         </div>
@@ -106,18 +109,18 @@
     <div id="contributionContent" class="hidden space-y-4">
       <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-bold text-gold-300">文化資源分享</h3>
-          <button id="uploadCultureBtn" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors">
+          <h3 class="text-xl font-bold text-gold-300" data-i18n="culturalResources">文化資源分享</h3>
+          <button id="uploadCultureBtn" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors" data-i18n="uploadResource">
             上傳文化資源
           </button>
         </div>
 
         <!-- Upload Form (initially hidden) -->
         <div id="uploadForm" class="hidden mb-6 p-6 bg-gray-800 rounded-lg border border-gray-600">
-          <h4 class="text-lg font-semibold text-gold-300 mb-4">上傳新的文化資源</h4>
+          <h4 class="text-lg font-semibold text-gold-300 mb-4" data-i18n="uploadResource">上傳新的文化資源</h4>
           <form id="cultureUploadForm" class="space-y-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-300 mb-2">資源標題</label>
+              <label class="block text-sm font-semibold text-gray-300 mb-2" data-i18n="resourceTitle">資源標題</label>
               <input 
                 type="text" 
                 id="resourceTitle" 
@@ -128,7 +131,7 @@
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-gray-300 mb-2">資源描述</label>
+              <label class="block text-sm font-semibold text-gray-300 mb-2" data-i18n="resourceDescription">資源描述</label>
               <textarea 
                 id="resourceDescription" 
                 required
@@ -139,13 +142,13 @@
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-gray-300 mb-2">文化類別</label>
+              <label class="block text-sm font-semibold text-gray-300 mb-2" data-i18n="cultureCategory">文化類別</label>
               <select 
                 id="cultureCategory" 
                 required
                 class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none"
               >
-                <option value="">請選擇...</option>
+                <option value="" data-i18n="pleaseSelect">請選擇...</option>
                 <option value="chinese">中華文化</option>
                 <option value="japanese">日本文化</option>
                 <option value="korean">韓國文化</option>
@@ -155,7 +158,7 @@
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-gray-300 mb-2">上傳檔案</label>
+              <label class="block text-sm font-semibold text-gray-300 mb-2" data-i18n="uploadFiles">上傳檔案</label>
               <input 
                 type="file" 
                 id="cultureFiles" 
@@ -163,7 +166,7 @@
                 accept="image/*,video/*,.pdf,.doc,.docx"
                 class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none"
               />
-              <p class="text-sm text-gray-400 mt-2">支援圖片、影片、PDF等格式，最多上傳10個檔案</p>
+              <p class="text-sm text-gray-400 mt-2" data-i18n="supportedFormats">支援圖片、影片、PDF等格式，最多上傳10個檔案</p>
             </div>
 
             <div id="uploadProgress" class="hidden">
@@ -177,6 +180,7 @@
               <button 
                 type="submit" 
                 class="flex-1 px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors"
+                data-i18n="submitResource"
               >
                 提交資源
               </button>
@@ -184,6 +188,7 @@
                 type="button" 
                 id="cancelUpload"
                 class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
+                data-i18n="cancel"
               >
                 取消
               </button>
@@ -233,7 +238,6 @@
     </div>
   </main>
 
-  <script src="/assets/load-header.js"></script>
   <script>
     // Tab switching
     function switchTab(tabName) {

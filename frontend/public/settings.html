@@ -31,32 +31,12 @@
       background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
     }
   </style>
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/load-header.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header -->
-  <header class="bg-black bg-opacity-50 p-4 border-b border-gold-600">
-    <div class="container mx-auto flex justify-between items-center">
-      <div class="flex items-center space-x-6">
-        <h1 class="text-2xl font-bold text-gold-400 cursor-pointer" onclick="window.location.href='/culture-selection.html'">
-          文化探索平台
-        </h1>
-        <button onclick="window.location.href='/forum/forum.html'" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
-          <span class="flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z"></path>
-            </svg>
-            論壇
-          </span>
-        </button>
-      </div>
-      <button onclick="window.location.href='settings.html'" class="p-2 rounded-lg bg-gold-600 text-black transition-colors font-semibold">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-        </svg>
-      </button>
-    </div>
-  </header>
+  <header></header>
 
   <main class="container mx-auto p-6">
     <div class="flex items-center mb-8">
@@ -65,7 +45,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
-      <h2 class="text-3xl font-bold text-gold-300">用戶設定</h2>
+      <h2 class="text-3xl font-bold text-gold-300" data-i18n="userSettings">用戶設定</h2>
     </div>
 
     <div class="grid md:grid-cols-2 gap-6">
@@ -75,18 +55,18 @@
           <svg class="w-6 h-6 text-gold-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
           </svg>
-          <h3 class="text-xl font-bold text-gold-300">個人資料</h3>
+          <h3 class="text-xl font-bold text-gold-300" data-i18n="personalInfo">個人資料</h3>
         </div>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">用戶名稱</label>
-            <input type="text" id="username" value="文化愛好者" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500">
+            <label class="block text-sm font-medium text-gray-300 mb-2" data-i18n="username">用戶名稱</label>
+            <input type="text" id="username" value="文化愛好者" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500" data-i18n-placeholder="username">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">電子郵件</label>
-            <input type="email" id="email" placeholder="your@email.com" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500">
+            <label class="block text-sm font-medium text-gray-300 mb-2" data-i18n="email">電子郵件</label>
+            <input type="email" id="email" placeholder="your@email.com" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500" data-i18n-placeholder="email">
           </div>
-          <button class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors">
+          <button class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors" data-i18n="saveChanges">
             儲存變更
           </button>
         </div>
@@ -98,36 +78,36 @@
           <svg class="w-6 h-6 text-gold-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
           </svg>
-          <h3 class="text-xl font-bold text-gold-300">偏好設定</h3>
+          <h3 class="text-xl font-bold text-gold-300" data-i18n="preferences">偏好設定</h3>
         </div>
         <div class="space-y-4">
           <div class="flex items-center justify-between">
-            <span class="text-gray-300">遊戲音效</span>
+            <span class="text-gray-300" data-i18n="gameSound">遊戲音效</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-gray-300">背景音樂</span>
+            <span class="text-gray-300" data-i18n="backgroundMusic">背景音樂</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-gray-300">通知提醒</span>
+            <span class="text-gray-300" data-i18n="notifications">通知提醒</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" checked class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">遊戲難度</label>
+            <label class="block text-sm font-medium text-gray-300 mb-2" data-i18n="difficulty">遊戲難度</label>
             <select class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500">
-              <option>簡單</option>
-              <option selected>中等</option>
-              <option>困難</option>
+              <option data-i18n="easy">簡單</option>
+              <option selected data-i18n="medium">中等</option>
+              <option data-i18n="hard">困難</option>
             </select>
           </div>
         </div>
@@ -139,24 +119,24 @@
           <svg class="w-6 h-6 text-gold-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
           </svg>
-          <h3 class="text-xl font-bold text-gold-300">遊戲統計</h3>
+          <h3 class="text-xl font-bold text-gold-300" data-i18n="statistics">遊戲統計</h3>
         </div>
         <div class="space-y-4">
           <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300">完成遊戲數</span>
+            <span class="text-gray-300" data-i18n="completedGames">完成遊戲數</span>
             <span class="text-gold-400 font-bold text-lg">0</span>
           </div>
           <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300">總遊玩時間</span>
-            <span class="text-gold-400 font-bold text-lg">0 分鐘</span>
+            <span class="text-gray-300" data-i18n="totalPlayTime">總遊玩時間</span>
+            <span class="text-gold-400 font-bold text-lg">0 <span data-i18n="minutes">分鐘</span></span>
           </div>
           <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300">平均分數</span>
+            <span class="text-gray-300" data-i18n="averageScore">平均分數</span>
             <span class="text-gold-400 font-bold text-lg">0</span>
           </div>
           <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300">論壇貢獻</span>
-            <span class="text-gold-400 font-bold text-lg">0 則</span>
+            <span class="text-gray-300" data-i18n="forumContributions">論壇貢獻</span>
+            <span class="text-gold-400 font-bold text-lg">0 <span data-i18n="posts">則</span></span>
           </div>
         </div>
       </div>
@@ -167,26 +147,26 @@
           <svg class="w-6 h-6 text-gold-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          <h3 class="text-xl font-bold text-gold-300">關於平台</h3>
+          <h3 class="text-xl font-bold text-gold-300" data-i18n="aboutPlatform">關於平台</h3>
         </div>
         <div class="space-y-3 text-gray-300">
           <p>
-            <strong class="text-gold-300">版本：</strong> 0.0.1 (Demo)
+            <strong class="text-gold-300" data-i18n="version">版本：</strong> 0.0.1 (Demo)
           </p>
           <p>
-            <strong class="text-gold-300">更新日期：</strong> 2025年10月10日
+            <strong class="text-gold-300" data-i18n="updateDate">更新日期：</strong> 2025年10月10日
           </p>
-          <p class="text-sm">
+          <p class="text-sm" data-i18n="aboutDescription">
             文化探索遊戲平台致力於通過互動式遊戲和社群交流，讓更多人了解和欣賞世界各地的文化。
           </p>
           <div class="pt-3 space-y-2">
-            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left">
+            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left" data-i18n="tutorial">
               📖 使用教學
             </button>
-            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left">
+            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left" data-i18n="contactUs">
               📧 聯絡我們
             </button>
-            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left">
+            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left" data-i18n="privacyPolicy">
               📄 隱私政策
             </button>
           </div>
@@ -196,13 +176,13 @@
 
     <!-- Danger Zone -->
     <div class="mt-6 bg-red-900 bg-opacity-20 p-6 rounded-xl border border-red-600">
-      <h3 class="text-xl font-bold text-red-400 mb-4">危險區域</h3>
+      <h3 class="text-xl font-bold text-red-400 mb-4" data-i18n="dangerZone">危險區域</h3>
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-gray-300 mb-1">清除所有遊戲數據</p>
-          <p class="text-sm text-gray-400">這將刪除您的遊戲進度和設定</p>
+          <p class="text-gray-300 mb-1" data-i18n="clearAllData">清除所有遊戲數據</p>
+          <p class="text-sm text-gray-400" data-i18n="clearDataWarning">這將刪除您的遊戲進度和設定</p>
         </div>
-        <button onclick="if(confirm('確定要清除所有數據嗎？此操作無法撤銷！')) { localStorage.clear(); alert('數據已清除'); location.reload(); }" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+        <button onclick="if(confirm(window.i18next ? window.i18next.t('clearDataConfirm') : '確定要清除所有資料嗎？此操作無法撤銷！')) { localStorage.clear(); alert(window.i18next ? window.i18next.t('dataCleared') : '資料已清除'); location.reload(); }" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors" data-i18n="clearData">
           清除數據
         </button>
       </div>
@@ -218,7 +198,7 @@
       localStorage.setItem('username', username);
       localStorage.setItem('email', email);
       
-      alert('設定已儲存！');
+      alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已儲存！');
     });
 
     // Load settings from localStorage

@@ -22,6 +22,8 @@
     }
   </script>
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/api-helper.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -35,11 +37,11 @@
         </svg>
       </button>
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-gold-300">角色扮演互動</h2>
+        <h2 class="text-2xl font-bold text-gold-300" data-i18n="roleplayInteraction">角色扮演互動</h2>
         <p class="text-gray-400" id="currentTheme"></p>
       </div>
       <div>
-        <button id="newCharacter" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors">
+        <button id="newCharacter" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors" data-i18n="changeCharacter">
           換個角色
         </button>
       </div>
@@ -47,7 +49,7 @@
 
     <div id="loadingContainer" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
-      <p class="text-gray-300">正在生成角色...</p>
+      <p class="text-gray-300" data-i18n="generatingCharacter">正在生成角色...</p>
     </div>
 
     <div id="gameContainer" class="hidden">
@@ -59,8 +61,8 @@
             <h3 class="text-2xl font-bold text-gold-300 mb-2" id="characterName">載入中...</h3>
             <p class="text-gray-300 mb-2" id="characterDescription"></p>
             <div class="text-sm text-gray-400">
-              <p><span class="text-gold-400">性格：</span><span id="characterPersonality"></span></p>
-              <p><span class="text-gold-400">專長：</span><span id="characterKnowledge"></span></p>
+              <p><span class="text-gold-400" data-i18n="personality">性格：</span><span id="characterPersonality"></span></p>
+              <p><span class="text-gold-400" data-i18n="expertise">專長：</span><span id="characterKnowledge"></span></p>
             </div>
           </div>
         </div>
@@ -76,12 +78,14 @@
         <input 
           type="text" 
           id="userMessage" 
+          data-i18n-placeholder="inputMessage"
           placeholder="輸入你的訊息..." 
           class="flex-1 p-4 bg-gray-800 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none"
         />
         <button 
           id="sendMessage" 
           class="px-6 py-4 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity"
+          data-i18n="send"
         >
           發送
         </button>
@@ -100,15 +104,14 @@
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
-    // Generate character from server API
+    // Generate character from server API with language support
     async function generateCharacter() {
       document.getElementById('loadingContainer').classList.remove('hidden');
       document.getElementById('gameContainer').classList.add('hidden');
       
       try {
-        const response = await fetch('/api/roleplay/character', {
+        const response = await window.apiHelper.request('/api/roleplay/character', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ theme: currentTheme })
         });
 
@@ -210,9 +213,8 @@
       addLoadingMessage();
       
       try {
-        const response = await fetch('/api/roleplay/chat', {
+        const response = await window.apiHelper.request('/api/roleplay/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             theme: currentTheme,
             character: currentCharacter,

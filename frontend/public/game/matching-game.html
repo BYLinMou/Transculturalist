@@ -22,6 +22,8 @@
     }
   </script>
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/api-helper.js"></script>
   <style>
     .draggable {
       cursor: move;
@@ -54,21 +56,21 @@
         </svg>
       </button>
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-gold-300">文化配對遊戲</h2>
+        <h2 class="text-2xl font-bold text-gold-300" data-i18n="culturalMatching">文化配對遊戲</h2>
         <p class="text-gray-400" id="currentTheme"></p>
       </div>
       <div class="text-right">
-        <div class="text-gold-300 font-bold">計時: <span id="timer">00:00</span></div>
+        <div class="text-gold-300 font-bold"><span data-i18n="timer">計時</span>: <span id="timer">00:00</span></div>
       </div>
     </div>
 
     <div id="loadingContainer" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
-      <p class="text-gray-300">正在生成配對項目...</p>
+      <p class="text-gray-300" data-i18n="generatingPairs">正在生成配對項目...</p>
     </div>
 
     <div id="gameContainer" class="hidden">
-      <p class="text-center text-gray-400 mb-6">拖動下方的選項到對應的文化題目位置</p>
+      <p class="text-center text-gray-400 mb-6" data-i18n="dragToMatch">拖動下方的選項到對應的文化題目位置</p>
       
       <!-- Questions Area -->
       <div class="grid md:grid-cols-2 gap-4 mb-8">
@@ -103,14 +105,14 @@
       
       <!-- Options Area -->
       <div class="border-t border-gray-600 pt-6">
-        <h4 class="text-lg font-semibold text-gold-300 mb-4 text-center">選項區域</h4>
+        <h4 class="text-lg font-semibold text-gold-300 mb-4 text-center" data-i18n="optionsArea">選項區域</h4>
         <div id="answerPool" class="flex flex-wrap justify-center gap-3">
           <!-- Draggable options will be populated here -->
         </div>
       </div>
 
       <div class="text-center mt-6">
-        <button id="checkAnswers" class="px-8 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity">
+        <button id="checkAnswers" class="px-8 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity" data-i18n="checkAnswer">
           檢查答案
         </button>
       </div>
@@ -118,10 +120,10 @@
 
     <div id="resultContainer" class="hidden text-center">
       <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700">
-        <h3 class="text-2xl font-bold mb-4 text-gold-300">遊戲結束！</h3>
-        <p class="text-xl mb-2">正確配對: <span id="correctCount" class="text-green-400 font-bold">0</span></p>
-        <p class="text-xl mb-4">完成時間: <span id="finalTime" class="text-gold-400 font-bold">00:00</span></p>
-        <button id="restartMatching" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity">
+        <h3 class="text-2xl font-bold mb-4 text-gold-300" data-i18n="gameOver">遊戲結束！</h3>
+        <p class="text-xl mb-2"><span data-i18n="correctMatches">正確配對</span>: <span id="correctCount" class="text-green-400 font-bold">0</span></p>
+        <p class="text-xl mb-4"><span data-i18n="completionTime">完成時間</span>: <span id="finalTime" class="text-gold-400 font-bold">00:00</span></p>
+        <button id="restartMatching" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity" data-i18n="restart">
           重新開始
         </button>
       </div>
@@ -172,15 +174,14 @@
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
-    // Load matching pairs from server API
+    // Load matching pairs from server API with language support
     async function loadMatchingPairs() {
       document.getElementById('loadingContainer').classList.remove('hidden');
       document.getElementById('gameContainer').classList.add('hidden');
       
       try {
-        const response = await fetch('/api/ai/generate', {
+        const response = await window.apiHelper.request('/api/ai/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             gameId: 'matching',
             theme: currentTheme,
