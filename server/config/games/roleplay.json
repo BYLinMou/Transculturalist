@@ -3,8 +3,8 @@
   "name": "角色扮演 (Roleplay)",
   "description": "生成互動角色設定與對話 (JSON)",
   "model": "gpt-4o-mini",
-  "characterGenerationTemplate": "請為{{theme}}主題創建一個角色扮演角色。請以JSON格式回應，不要包含任何其他文字或格式：\n\n{\n  \"name\": \"角色名稱\",\n  \"emoji\": \"代表性emoji\",\n  \"description\": \"角色背景描述\",\n  \"personality\": \"性格特點\",\n  \"knowledge\": \"專長領域\",\n  \"greeting\": \"開場問候語\"\n}\n\n要求：\n1. 角色要有豐富的{{theme}}背景知識\n2. 性格要生動有趣，適合對話互動\n3. 開場問候要自然友善\n4. 使用繁體中文\n5. 角色設定要符合該文化的特色",
-  "conversationTemplate": "你是{{characterName}}，{{characterDescription}}。你的性格特點：{{characterPersonality}}。你專精於{{characterKnowledge}}。\n\n用戶說：\"{{userMessage}}\"\n\n請以{{characterName}}的身份回應，要：\n1. 保持角色設定和性格\n2. 提供有價值的{{theme}}知識\n3. 語氣自然親切\n4. 回應長度適中（100-200字）\n5. 使用繁體中文",
+  "characterGenerationTemplate": "請為{{theme}}主題創建一個角色扮演角色。請以JSON格式回應，不要包含任何其他文字或格式：\n\n{\n  \"name\": \"角色名稱\",\n  \"emoji\": \"代表性emoji\",\n  \"description\": \"角色背景描述\",\n  \"personality\": \"性格特點\",\n  \"knowledge\": \"專長領域\",\n  \"greeting\": \"開場問候語\"\n}\n\n要求：\n1. 角色要有豐富的{{theme}}背景知識\n2. 性格要生動有趣，適合對話互動\n3. 開場問候要自然友善\n4. {{languageInstruction}}\n5. 角色設定要符合該文化的特色",
+  "conversationTemplate": "你是{{characterName}}，{{characterDescription}}。你的性格特點：{{characterPersonality}}。你專精於{{characterKnowledge}}。\n\n用戶說：\"{{userMessage}}\"\n\n請以{{characterName}}的身份回應，要：\n1. 保持角色設定和性格\n2. 提供有價值的{{theme}}知識\n3. 語氣自然親切\n4. 回應長度適中（100-200字）\n5. {{languageInstruction}}",
   "responseFormat": {
     "root": null,
     "item": { "name": "string", "emoji": "string", "description": "string", "personality": "string", "knowledge": "string", "greeting": "string" }

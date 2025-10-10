@@ -3,7 +3,7 @@
   "name": "文化問答 (MCQ)",
   "description": "生成多選題 (JSON)",
   "model": "gpt-4o-mini",
-  "template": "請為{{theme}}主題生成{{numQuestions}}道選擇題。請以JSON格式回應，不要包含任何其他文字或格式：\n\n{\n  \"questions\": [\n    {\n      \"question\": \"題目內容\",\n      \"options\": [\"選項A\", \"選項B\", \"選項C\", \"選項D\"],\n      \"correct\": 正確答案索引(0-3)\n    }\n  ]\n}\n\n要求：\n1. 題目要有適當難度，適合一般大眾\n2. 選項要合理且有迷惑性\n3. 涵蓋{{theme}}的不同面向（歷史、藝術、習俗、哲學等）\n4. 使用繁體中文\n5. 確保答案準確無誤",
+  "template": "請為{{theme}}主題生成{{numQuestions}}道選擇題。請以JSON格式回應，不要包含任何其他文字或格式：\n\n{\n  \"questions\": [\n    {\n      \"question\": \"題目內容\",\n      \"options\": [\"選項A\", \"選項B\", \"選項C\", \"選項D\"],\n      \"correct\": 正確答案索引(0-3)\n    }\n  ]\n}\n\n要求：\n1. 題目要有適當難度，適合一般大眾\n2. 選項要合理且有迷惑性\n3. 涵蓋{{theme}}的不同面向（歷史、藝術、習俗、哲學等）\n4. {{languageInstruction}}\n5. 確保答案準確無誤",
   "responseFormat": {
     "root": "questions",
     "item": {
