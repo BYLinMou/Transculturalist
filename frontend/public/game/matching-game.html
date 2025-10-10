@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="/assets/styles.css">
   <script src="/assets/i18n.js"></script>
   <script src="/assets/api-helper.js"></script>
+  <script src="/assets/error-display.js"></script>
   <style>
     .draggable {
       cursor: move;
@@ -144,34 +145,6 @@
     let aiGeneratedMatching = [];
     let isLoadingAI = false;
 
-    // Game data for fallback
-    const gameData = {
-      '中華文化': {
-        matching: [
-          { left: '孔子', right: '儒家思想' },
-          { left: '太極', right: '陰陽平衡' },
-          { left: '龍鳳', right: '吉祥象徵' },
-          { left: '茶道', right: '修身養性' }
-        ]
-      },
-      '日本文化': {
-        matching: [
-          { left: '櫻花', right: '春天象徵' },
-          { left: '和服', right: '傳統服裝' },
-          { left: '壽司', right: '日式料理' },
-          { left: '禪宗', right: '精神修養' }
-        ]
-      },
-      '西方文化': {
-        matching: [
-          { left: '民主', right: '古希臘起源' },
-          { left: '法治', right: '羅馬法系' },
-          { left: '人文主義', right: '文藝復興' },
-          { left: '科學方法', right: '啟蒙時代' }
-        ]
-      }
-    };
-
     document.getElementById('currentTheme').textContent = currentTheme;
 
     // Load matching pairs from server API with language support
@@ -200,8 +173,6 @@
         }
       } catch (error) {
         console.error('Error loading pairs:', error);
-        // Fallback to preset data
-        aiGeneratedMatching = gameData[currentTheme]?.matching || [];
         document.getElementById('loadingContainer').classList.add('hidden');
         setupGame();
       }
@@ -211,12 +182,15 @@
       document.getElementById('gameContainer').classList.remove('hidden');
       matchedPairs = [];
       
-      // Use AI generated matching pairs if available, otherwise fallback to preset
-      const pairs = aiGeneratedMatching.length >= 4 ? aiGeneratedMatching.slice(0, 4) : 
-                   (gameData[currentTheme] ? [...gameData[currentTheme].matching] : []);
-      
+      const pairs = aiGeneratedMatching.length >= 4 ? aiGeneratedMatching.slice(0, 4) : [];
       if (pairs.length === 0) {
-        showAIError("載入對應題目", "無法載入題目，請稍後再試");
+        const loadFailedText = window.errorDisplay.getTranslatedText('loadQuestionsFailed', '無法載入題目，請稍後再試');
+        const loadFailedTitle = window.errorDisplay.getTranslatedText('loadQuestionsTitle', '載入對應題目');
+        window.errorDisplay.showModalError(
+          loadFailedTitle,
+          loadFailedText,
+          { onConfirm: () => window.location.href = '/game/game-selection.html' }
+        );
         return;
       }
       
@@ -334,30 +308,6 @@
         
         draggedElement = null;
       }
-    }
-
-    function showAIError(title, message) {
-      isLoadingAI = false;
-      showCustomModal(title, message + "\n\n將使用預設題目進行遊戲。");
-      // Fallback to preset questions
-      setTimeout(() => {
-        setupGame();
-      }, 2000);
-    }
-
-    function showCustomModal(title, message) {
-      const modal = document.createElement('div');
-      modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-      modal.innerHTML = `
-        <div class="bg-gray-900 border border-gold-600 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
-          <h3 class="text-xl font-bold text-gold-300 mb-4">${title}</h3>
-          <p class="text-gray-300 mb-6">${message}</p>
-          <div class="flex justify-end">
-            <button class="px-4 py-2 gold-gradient text-black font-bold rounded hover:opacity-90 transition-opacity" onclick="this.closest('.fixed').remove()">確定</button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
     }
 
     function startTimer() {

@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="/assets/styles.css">
   <script src="/assets/i18n.js"></script>
   <script src="/assets/api-helper.js"></script>
+  <script src="/assets/error-display.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -104,10 +105,12 @@
         }
       } catch (error) {
         console.error('Error generating chapter:', error);
-        document.getElementById('loadingContainer').innerHTML = `
-          <p class="text-red-400 mb-4">生成故事失敗</p>
-          <button onclick="location.reload()" class="px-4 py-2 bg-gold-600 rounded-lg hover:bg-gold-700">重試</button>
-        `;
+        const generateFailedText = window.errorDisplay.getTranslatedText('generateStoryFailed', '生成故事失敗');
+        window.errorDisplay.showInlineError(
+          document.getElementById('loadingContainer'),
+          generateFailedText,
+          { retryAction: () => location.reload() }
+        );
       }
     }
 

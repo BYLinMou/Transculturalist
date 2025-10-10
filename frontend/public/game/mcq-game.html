@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="/assets/styles.css">
   <script src="/assets/i18n.js"></script>
   <script src="/assets/api-helper.js"></script>
+  <script src="/assets/error-display.js"></script>
   <script src="/assets/load-header.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
@@ -105,12 +106,12 @@
         }
       } catch (error) {
         console.error('Error loading questions:', error);
-        const loadFailedText = window.i18next ? window.i18next.t('loadFailed') : '載入題目失敗';
-        const retryText = window.i18next ? window.i18next.t('retry') : '重試';
-        document.getElementById('loadingContainer').innerHTML = `
-          <p class="text-red-400 mb-4">${loadFailedText}</p>
-          <button onclick="location.reload()" class="px-4 py-2 bg-gold-600 rounded-lg hover:bg-gold-700">${retryText}</button>
-        `;
+        const loadFailedText = window.errorDisplay.getTranslatedText('loadFailed', '載入題目失敗');
+        window.errorDisplay.showInlineError(
+          document.getElementById('loadingContainer'),
+          loadFailedText,
+          { retryAction: () => location.reload() }
+        );
       }
     }
 

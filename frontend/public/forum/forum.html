@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="/assets/styles.css">
   <script src="/assets/i18n.js"></script>
   <script src="/assets/api-helper.js"></script>
+  <script src="/assets/error-display.js"></script>
   <script src="/assets/load-header.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
@@ -329,7 +330,8 @@
         }
       } catch (error) {
         console.error('Upload error:', error);
-        alert('上傳失敗，請稍後再試');
+        const uploadFailedText = window.errorDisplay.getTranslatedText('uploadFailed', '上傳失敗，請稍後再試');
+        window.errorDisplay.showAlertError(uploadFailedText);
         document.getElementById('uploadProgress').classList.add('hidden');
         document.getElementById('progressBar').style.width = '0%';
       }
