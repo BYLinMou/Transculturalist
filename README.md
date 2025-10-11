@@ -47,10 +47,7 @@ You can run the application in any folder you like. You do NOT need to clone the
    };
    ```
 
-2. **Download or copy the `docker-compose.yml`** from this repository into the same folder.
-
-
-3. In your folder, run one of the following commands (use an absolute path or `${PWD}` for config.js):
+2. In your folder, run one of the following commands (use an absolute path or `${PWD}` for config.js):
 
    **Option A: Using `${PWD}` (recommended for PowerShell):**
    ```powershell
