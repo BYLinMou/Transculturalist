@@ -16,6 +16,9 @@ COPY server/ ./
 RUN mkdir -p /app/frontend
 COPY frontend/public /app/frontend/public
 
+# Copy root package.json for version info
+COPY package.json /app/package.json
+
 ENV NODE_ENV=production
 EXPOSE 3000
 
