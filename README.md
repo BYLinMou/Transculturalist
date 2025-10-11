@@ -70,9 +70,52 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 
 ### Option 1: Using Docker Compose (Recommended)
 
-```bash
-docker-compose up --build
-```
+#### 1.1 Using Pre-built Docker Image (Easiest)
+
+You can run the application in any folder you like. You do NOT need to clone the whole repository—just prepare the following files:
+
+1. **Create a `server/config.js` file** in your chosen folder (you can copy the template below):
+   ```javascript
+   module.exports = {
+     OPENAI_API_KEY: 'your-openai-api-key-here',
+     BASE_URL: 'https://api.openai.com/v1',
+     DEFAULT_MODEL: 'gpt-4o-mini'
+   };
+   ```
+
+2. **Download or copy the `docker-compose.yml`** from this repository into the same folder.
+
+3. In your folder, run:
+   ```bash
+   docker pull ghcr.io/bylinmou/transculturalist:latest
+   docker-compose up
+   ```
+
+The application will be available at `http://localhost:3030`
+
+**Note**: The `config.js` file is mounted into the container at runtime, so changes to `config.js` will take effect without rebuilding the image.
+
+#### 1.2 Building from Source
+
+If you prefer to build the image locally:
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/BYLinMou/Transculturalist.git
+   cd Transculturalist
+   ```
+
+2. Configure the API keys (same as above):
+   ```bash
+   cd server
+   cp config.example.js config.js
+   ```
+   Edit `server/config.js` and add your OpenAI API key and base URL.
+
+3. Build and run the application:
+   ```bash
+   docker-compose up --build
+   ```
 
 The application will be available at `http://localhost:3030`
 

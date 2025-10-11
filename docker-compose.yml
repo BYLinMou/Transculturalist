@@ -12,6 +12,8 @@ services:
     # volumes:
     #  - ./server:/app/server:ro
     #  - ./frontend/public:/app/frontend/public:ro
+    volumes:
+      - ./server/config.js:/app/server/config.js:ro
     environment:
       - NODE_ENV=production
     restart: unless-stopped
