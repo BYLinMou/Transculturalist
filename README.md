@@ -32,7 +32,7 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 
 ## Installation
 
-### Option 1: Using Docker Compose (Recommended)
+### Option 1: Using Docker (Recommended)
 
 #### 1.1 Using Pre-built Docker Image (Easiest)
 
