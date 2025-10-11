@@ -32,7 +32,7 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 
 ## Installation
 
-### Option 1: Using Docker Compose (Recommended)
+### Option 1: Using Docker (Recommended)
 
 #### 1.1 Using Pre-built Docker Image (Easiest)
 
@@ -143,12 +143,11 @@ The application will be available at `http://localhost:3030`
 
 ## Configuration
 
-The server configuration is handled through `server/config.js`. You can also use environment variables:
+The server configuration is handled through `server/config.js`:
 
 - `OPENAI_API_KEY`: Your OpenAI API key
-- `BASE_URL`: OpenAI API base URL (default: https://api.openai.com/v1)
-- `DEFAULT_MODEL`: Default AI model to use (default: gpt-4o-mini)
-- `PORT`: Server port (default: 3030)
+- `BASE_URL`: OpenAI API base URL (e.g. https://api.openai.com/v1)
+- `DEFAULT_MODEL`: Default AI model to use (e.g. gpt-4o-mini)
 
 ## API Endpoints
 
@@ -165,18 +164,25 @@ The server configuration is handled through `server/config.js`. You can also use
 ### Project Structure
 
 ```
-transculturalist/
-├── frontend/          # Static frontend files
-│   ├── public/        # Served static files
-│   ├── src/           # Source files
+Transculturalist/
+├── frontend/                # Static frontend files
+│   ├── public/              # Served static files
+│   │   ├── components/
+│   │   ├── forum/
+│   │   ├── game/
+│   │   └── assets/
+│   ├── src/                 # Source files
+│   ├── build.js
 │   └── package.json
-├── server/            # Node.js backend
+├── server/                  # Node.js backend
 │   ├── src/
-│   │   ├── routes/    # API routes
-│   │   └── services/  # Business logic
-│   ├── config/        # Game configurations
+│   │   ├── routes/          # API routes
+│   │   └── services/        # Business logic
+│   ├── config/              # Game configurations
+│   ├── Dockerfile
 │   └── package.json
-├── docker-compose.yml # Docker setup
+├── uploads/                 # Uploaded files
+├── docker-compose.yml       # Docker setup
 └── README.md
 ```
 

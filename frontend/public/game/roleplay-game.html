@@ -38,11 +38,11 @@
         </svg>
       </button>
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-gold-300" data-i18n="roleplayInteraction">角色扮演互動</h2>
-        <p class="text-gray-400" id="currentTheme"></p>
+        <h2 class="text-title-lg font-bold text-gold-300" data-i18n="roleplayInteraction">角色扮演互動</h2>
+        <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
       </div>
       <div>
-        <button id="newCharacter" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors" data-i18n="changeCharacter">
+        <button id="newCharacter" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm" data-i18n="changeCharacter">
           換個角色
         </button>
       </div>
@@ -50,18 +50,18 @@
 
     <div id="loadingContainer" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
-      <p class="text-gray-300" data-i18n="generatingCharacter">正在生成角色...</p>
+      <p class="text-gray-300 text-body" data-i18n="generatingCharacter">正在生成角色...</p>
     </div>
 
     <div id="gameContainer" class="hidden">
       <!-- Character card -->
       <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700 mb-6">
         <div class="flex items-start gap-4">
-          <div class="text-5xl" id="characterEmoji">👤</div>
+          <div class="emoji-lg" id="characterEmoji">👤</div>
           <div class="flex-1">
-            <h3 class="text-2xl font-bold text-gold-300 mb-2" id="characterName">載入中...</h3>
-            <p class="text-gray-300 mb-2" id="characterDescription"></p>
-            <div class="text-sm text-gray-400">
+            <h3 class="text-title-lg font-bold text-gold-300 mb-2" id="characterName">載入中...</h3>
+            <p class="text-gray-300 mb-2 text-body" id="characterDescription"></p>
+            <div class="text-body-sm text-gray-400">
               <p><span class="text-gold-400" data-i18n="personality">性格：</span><span id="characterPersonality"></span></p>
               <p><span class="text-gold-400" data-i18n="expertise">專長：</span><span id="characterKnowledge"></span></p>
             </div>
@@ -81,11 +81,11 @@
           id="userMessage" 
           data-i18n-placeholder="inputMessage"
           placeholder="輸入你的訊息..." 
-          class="flex-1 p-4 bg-gray-800 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none"
+          class="flex-1 p-4 bg-gray-800 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
         />
         <button 
           id="sendMessage" 
-          class="px-6 py-4 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity"
+          class="px-6 py-4 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity text-body"
           data-i18n="send"
         >
           發送

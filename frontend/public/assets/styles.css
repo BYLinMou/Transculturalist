@@ -1,5 +1,77 @@
-/* 基本樣式與從原始 HTML 抽出的自訂 CSS */
 @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+
+/* ===== Global Font Size Definitions ===== */
+/* Using px units, 15-20% smaller than original Tailwind default values */
+
+/* Heading fonts */
+.text-display {
+  font-size: 32px; /* Original text-4xl is 36px, reduced to 32px */
+  line-height: 1.3;
+}
+
+.text-title-lg {
+  font-size: 27px; /* Original text-3xl is 30px, reduced to 27px */
+  line-height: 1.3;
+}
+
+.text-title {
+  font-size: 20px; /* Original text-xl is 20px, kept at 20px */
+  line-height: 1.4;
+}
+
+.text-title-sm {
+  font-size: 17px; /* Original text-lg is 18px, reduced to 17px */
+  line-height: 1.4;
+}
+
+/* Body text fonts */
+.text-body-lg {
+  font-size: 16px; /* Original text-lg is 18px, reduced to 16px */
+  line-height: 1.5;
+}
+
+.text-body {
+  font-size: 15px; /* Original text-base is 16px, reduced to 15px */
+  line-height: 1.5;
+}
+
+.text-body-sm {
+  font-size: 13px; /* Original text-sm is 14px, reduced to 13px */
+  line-height: 1.4;
+}
+
+.text-caption {
+  font-size: 11px; /* Original text-xs is 12px, reduced to 11px */
+  line-height: 1.4;
+}
+
+/* Emoji/Icon sizes */
+.emoji-xl {
+  font-size: 58px; /* Original text-6xl is 60px, reduced to 58px */
+  line-height: 1; /* Reduce line-height to avoid excessive vertical spacing */
+  display: inline-block;
+}
+
+.emoji-lg {
+  font-size: 44px; /* Original text-5xl is 48px, reduced to 44px */
+  line-height: 1; /* Reduce line-height to avoid excessive vertical spacing */
+  display: inline-block;
+}
+
+.emoji-md {
+  font-size: 32px; /* Original text-4xl is 36px, reduced to 32px */
+  line-height: 1; /* Reduce line-height to avoid excessive vertical spacing */
+  display: inline-block;
+}
+
+/* Sticky Header */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
 
 .gradient-bg {
   background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
@@ -15,5 +87,3 @@
 .drag-over { border-color: #F7C41C !important; background-color: rgba(247,196,28,0.1) !important; }
 .question-slot.correct { border-color: #10B981 !important; background-color: rgba(16,185,129,0.1) !important; }
 .question-slot.incorrect { border-color: #EF4444 !important; background-color: rgba(239,68,68,0.1) !important; }
-
-/* 你可以把更多從原始 HTML 的 style 區塊搬到這裡 */
