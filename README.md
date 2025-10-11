@@ -32,6 +32,68 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 
 ## Installation
 
+### Option 1: Using Docker Compose (Recommended)
+
+#### 1.1 Using Pre-built Docker Image (Easiest)
+
+You can run the application in any folder you like. You do NOT need to clone the whole repository—just prepare the following files:
+
+1. **Create a `config.js` file** in your chosen folder (you can copy the template below):
+   ```javascript
+   module.exports = {
+     OPENAI_API_KEY: 'your-openai-api-key-here',
+     BASE_URL: 'https://api.openai.com/v1',
+     DEFAULT_MODEL: 'gpt-4o-mini'
+   };
+   ```
+
+2. **Download or copy the `docker-compose.yml`** from this repository into the same folder.
+
+
+3. In your folder, run one of the following commands (use an absolute path or `${PWD}` for config.js):
+
+   **Option A: Using `${PWD}` (recommended for PowerShell):**
+   ```powershell
+   docker run -d --name transculturalist_app -p 3030:3030 -v ${PWD}/config.js:/app/server/config.js:ro -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
+   ```
+
+   **Option B: Using absolute path (replace with your actual folder path):**
+   ```powershell
+   docker run -d --name transculturalist_app -p 3030:3030 -v C:/Users/YourName/YourFolder/config.js:/app/server/config.js:ro -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
+   ```
+
+The application will be available at `http://localhost:3030`
+
+**Note:**
+- Always use an absolute path or `${PWD}` for the left side of the `-v` option to avoid Docker mount errors, especially on Windows.
+
+#### 1.2 Building from Source
+
+If you prefer to build the image locally:
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/BYLinMou/Transculturalist.git
+   cd Transculturalist
+   ```
+
+2. Configure the API keys (same as above):
+   ```bash
+   cd server
+   cp config.example.js config.js
+   ```
+   Edit `server/config.js` and add your OpenAI API key and base URL.
+
+3. Build and run the application:
+   ```bash
+   docker compose up --build
+   ```
+
+The application will be available at `http://localhost:3030`
+
+
+### Option 2: Local Development
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/BYLinMou/Transculturalist.git
@@ -56,7 +118,6 @@ A platform for cultural learning through interactive AI-powered games. Experienc
    cd server
    cp config.example.js config.js
    ```
-   
    Edit `config.js` and add your OpenAI API key and base URL:
    ```javascript
    module.exports = {
@@ -66,26 +127,14 @@ A platform for cultural learning through interactive AI-powered games. Experienc
    };
    ```
 
-## Running the Application
-
-### Option 1: Using Docker Compose (Recommended)
-
-```bash
-docker-compose up --build
-```
-
-The application will be available at `http://localhost:3030`
-
-### Option 2: Local Development
-
-1. Build the frontend:
+4. Build the frontend:
    ```bash
    cd frontend
    npm run build
    cd ..
    ```
 
-2. Start the server:
+5. Start the server:
    ```bash
    cd server
    npm run dev  # For development with auto-reload
@@ -93,7 +142,7 @@ The application will be available at `http://localhost:3030`
    npm start    # For production
    ```
 
-3. Open your browser and navigate to `http://localhost:3030`
+6. Open your browser and navigate to `http://localhost:3030`
 
 ## Configuration
 

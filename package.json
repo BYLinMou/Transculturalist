@@ -1,0 +1,11 @@
+{
+  "name": "transculturalist",
+  "version": "0.0.2",
+  "description": "A transcultural learning platform",
+  "publishDate": "2025-10-11",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "server"
+  ]
+}
