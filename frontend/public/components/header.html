@@ -1,16 +1,16 @@
 <!-- Unified Header Component -->
 <header class="bg-black bg-opacity-50 p-4 border-b border-gold-600">
-    <div class="container mx-auto flex justify-between items-center">
-        <div class="flex items-center space-x-6">
-            <h1 class="text-2xl font-bold text-gold-400 cursor-pointer" onclick="window.location.href='/culture-selection.html'" data-i18n="platformTitle">
+    <div class="container mx-auto flex justify-between items-center gap-4">
+        <div class="flex items-center space-x-3 sm:space-x-4 md:space-x-6">
+            <h1 class="text-title font-bold text-gold-400 cursor-pointer" onclick="window.location.href='/culture-selection.html'" data-i18n="platformTitle">
                 文化探索平台
             </h1>
             <button onclick="window.location.href='/forum/forum.html'" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
                 <span class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 mr-2 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z"></path>
                     </svg>
-                    <span data-i18n="forum">論壇</span>
+                    <span class="text-body" data-i18n="forum">論壇</span>
                 </span>
             </button>
         </div>
@@ -22,12 +22,12 @@
                     </svg>
                 </button>
                 <div id="languageDropdown" class="absolute right-0 mt-2 w-32 bg-gray-800 border border-gray-600 rounded-lg shadow-lg hidden z-50">
-                    <button class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700" data-lang="zh">繁體中文</button>
-                    <button class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700" data-lang="zh-Hans">简体中文</button>
-                    <button class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700" data-lang="en">English</button>
-                    <button class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700" data-lang="ja">日本語</button>
-                    <button class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700" data-lang="ko">한국어</button>
-                    <button class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700" data-lang="auto">AutoTranslate</button>
+                    <button class="block w-full text-left px-4 py-2 text-white text-body-sm hover:bg-gray-700" data-lang="zh">繁體中文</button>
+                    <button class="block w-full text-left px-4 py-2 text-white text-body-sm hover:bg-gray-700" data-lang="zh-Hans">简体中文</button>
+                    <button class="block w-full text-left px-4 py-2 text-white text-body-sm hover:bg-gray-700" data-lang="en">English</button>
+                    <button class="block w-full text-left px-4 py-2 text-white text-body-sm hover:bg-gray-700" data-lang="ja">日本語</button>
+                    <button class="block w-full text-left px-4 py-2 text-white text-body-sm hover:bg-gray-700" data-lang="ko">한국어</button>
+                    <button class="block w-full text-left px-4 py-2 text-white text-body-sm hover:bg-gray-700" data-lang="auto">AutoTranslate</button>
                 </div>
             </div>
             <button onclick="window.location.href='/settings.html'" class="p-2 rounded-lg bg-gold-600 hover:bg-gold-700 transition-colors">
