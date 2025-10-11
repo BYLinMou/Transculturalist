@@ -4,29 +4,12 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const axios = require('axios');
 
-// Example health
-router.get('/health', (req, res) => res.json({ ok: true }));
-
-// Version info endpoint
-router.get('/version', (req, res) => {
-  try {
-    const packageInfo = require('../../../package.json');
-    res.json({
-      version: packageInfo.version,
-      publishDate: packageInfo.publishDate,
-      name: packageInfo.name,
-      description: packageInfo.description
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to load version info' });
-  }
-});
-
 // AI generation endpoint using game configs
-const { getGameConfig, renderTemplate } = require('../services/gameConfigService');
-const { listGames } = require('../services/gameConfigService');
+const { getGameConfig, renderTemplate, listGames } = require('../services/gameConfigService');
 
-// Helper function to load API configuration
+// ========== Configuration and Utilities ==========
+
+// Helper function to load API configuration (including default model)
 function loadApiConfig() {
   let config = {};
   try { 
@@ -41,12 +24,29 @@ function loadApiConfig() {
   }
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY || config.OPENAI_API_KEY;
   const BASE_URL = process.env.BASE_URL || config.BASE_URL;
+  const DEFAULT_MODEL = process.env.DEFAULT_MODEL || config.DEFAULT_MODEL;
 
   if (!OPENAI_API_KEY || !BASE_URL) {
     throw new Error('AI service not configured');
   }
 
-  return { OPENAI_API_KEY, BASE_URL };
+  if (!DEFAULT_MODEL) {
+    throw new Error('DEFAULT_MODEL not configured');
+  }
+
+  return { OPENAI_API_KEY, BASE_URL, DEFAULT_MODEL };
+}
+
+// Helper function to extract JSON from AI text response
+function extractJsonFromText(text) {
+  if (!text || typeof text !== 'string') return null;
+  const match = text.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try { 
+    return JSON.parse(match[0]); 
+  } catch (e) { 
+    return null; 
+  }
 }
 
 // Language instruction mapping for AI responses
@@ -67,103 +67,83 @@ const ROLEPLAY_LANGUAGE_INSTRUCTIONS = {
   'ko': '한국어로 답변하고 캐릭터를 유지하세요.'
 };
 
-// Default language instruction for unsupported languages
-const DEFAULT_LANGUAGE_INSTRUCTION = '請用繁體中文回答。';
-const DEFAULT_ROLEPLAY_LANGUAGE_INSTRUCTION = '請用繁體中文回答並保持角色設定。';
-
-// POST /api/ai/generate
-// Accepts model override from request body, query string, or header.
-// Priority: body.model > query.model > header 'x-model' or 'x-openai-model'
-router.post('/ai/generate', async (req, res) => {
-  const { gameId, theme, params = {}, language = 'zh' } = req.body || {};
-  const requestedModelFromBody = (req.body && req.body.model) || null;
-  const requestedModelFromQuery = (req.query && req.query.model) || null;
-  const requestedModelFromHeader = req.get('x-model') || req.get('x-openai-model') || null;
-  const requestedModel = requestedModelFromBody || requestedModelFromQuery || requestedModelFromHeader || null;
-
-  const cfg = getGameConfig(gameId);
-  if (!cfg) return res.status(400).json({ success: false, error: 'unknown gameId' });
-
-  // Merge params using cfg defaults
-  const templateVars = {};
-  if (cfg.params) {
-    Object.keys(cfg.params).forEach(k => {
-      templateVars[k] = (params[k] !== undefined) ? params[k] : cfg.params[k].default;
-    });
+// Get language instruction
+function getLanguageInstruction(language, isRoleplay = false) {
+  if (isRoleplay) {
+    return ROLEPLAY_LANGUAGE_INSTRUCTIONS[language] || '請用繁體中文回答並保持角色設定。';
   }
-  templateVars.theme = theme || '文化';
+  return LANGUAGE_INSTRUCTIONS[language] || '請用繁體中文回答。';
+}
 
-  // Determine language instruction for AI
-  const languageInstruction = LANGUAGE_INSTRUCTIONS[language] || DEFAULT_LANGUAGE_INSTRUCTION;
+// Helper function to call OpenAI API
+async function callOpenAI({ prompt, languageInstruction, maxTokens = 800, temperature = 0.7, timeout = 20000, expectJson = true }) {
+  const { OPENAI_API_KEY, BASE_URL, DEFAULT_MODEL } = loadApiConfig();
+  
+  const systemContent = expectJson 
+    ? `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}`
+    : languageInstruction;
 
-  templateVars.languageInstruction = languageInstruction;
+  const payload = {
+    model: DEFAULT_MODEL,
+    messages: [
+      { role: 'system', content: systemContent },
+      { role: 'user', content: prompt }
+    ],
+    max_tokens: maxTokens,
+    temperature
+  };
 
-  const prompt = renderTemplate(cfg.template, templateVars);
+  console.log('Calling OpenAI with model:', DEFAULT_MODEL);
 
-  // Load API key and base url (config or env)
-  const { OPENAI_API_KEY, BASE_URL } = loadApiConfig();
+  const response = await axios.post(`${BASE_URL}/chat/completions`, payload, {
+    headers: { 
+      Authorization: `Bearer ${OPENAI_API_KEY}`, 
+      'Content-Type': 'application/json' 
+    },
+    timeout
+  });
 
-  // Determine model: request override > cfg.model > DEFAULT_MODEL env/config > fallback
-  let defaultModel = null;
-  try {
-    const config = require('../../config');
-    if (config.DEFAULT_MODEL) defaultModel = config.DEFAULT_MODEL;
-  } catch (e) {
-    try {
-      const config = require('/app/server/config');
-      if (config.DEFAULT_MODEL) defaultModel = config.DEFAULT_MODEL;
-    } catch (e2) {
-      // use null
-    }
+  const raw = response.data;
+  // console.log('OpenAI response:', JSON.stringify(raw).slice(0, 2000)); // Log first 2000 chars
+  let text = null;
+  
+  if (raw && raw.choices && raw.choices[0] && raw.choices[0].message) {
+    text = raw.choices[0].message.content;
+  } else if (raw && raw.choices && raw.choices[0] && raw.choices[0].text) {
+    text = raw.choices[0].text;
   }
-  const modelToUse = requestedModel || cfg.model || process.env.DEFAULT_MODEL || defaultModel;
 
-  try {
-    const payload = {
-      model: modelToUse,
-      messages: [
-        { role: 'system', content: `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}` },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: cfg.max_tokens || 800,
-      temperature: (cfg.temperature !== undefined) ? cfg.temperature : 0.7
-    };
-
-    const response = await axios.post(`${BASE_URL}/chat/completions`, payload, {
-      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      timeout: cfg.timeout || 20000
-    });
-
-    // Attempt to extract JSON from model output
-    const raw = response.data;
-    // Prefer text content from chat response if available
-    let text = null;
-    if (raw && raw.choices && raw.choices[0] && raw.choices[0].message) {
-      text = raw.choices[0].message.content;
-    } else if (raw && raw.choices && raw.choices[0] && raw.choices[0].text) {
-      text = raw.choices[0].text;
-    }
-
-    function extractJsonFromText(t) {
-      if (!t || typeof t !== 'string') return null;
-      const m = t.match(/\{[\s\S]*\}/);
-      if (!m) return null;
-      try { return JSON.parse(m[0]); } catch (e) { return null; }
-    }
-
+  if (expectJson) {
     const parsed = extractJsonFromText(text) || raw;
-
     if (!parsed) {
-      console.error('Failed to parse JSON from AI response');
-      return res.status(500).json({ success: false, error: 'Failed to parse AI response' });
+      throw new Error('Failed to parse JSON from AI response');
     }
+    return parsed;
+  }
 
-    return res.json({ success: true, data: parsed });
+  return text || '';
+}
+
+// ========== Routes ==========
+
+// Example health
+router.get('/health', (req, res) => res.json({ ok: true }));
+
+// Version info endpoint
+router.get('/version', (req, res) => {
+  try {
+    const packageInfo = require('../../../package.json');
+    res.json({
+      version: packageInfo.version,
+      publishDate: packageInfo.publishDate,
+      name: packageInfo.name,
+      description: packageInfo.description
+    });
   } catch (err) {
-    console.error('AI proxy error:', err.message || err);
-    return res.status(500).json({ success: false, error: 'AI service error: ' + (err.message || 'Unknown error') });
+    res.status(500).json({ error: 'Failed to load version info' });
   }
 });
+
 
 // Expose available games to frontend
 router.get('/games', (req, res) => {
@@ -175,198 +155,182 @@ router.get('/games', (req, res) => {
   }
 });
 
-// POST /api/roleplay/character - Generate roleplay character
-router.post('/roleplay/character', async (req, res) => {
-  const { theme, language = 'zh' } = req.body || {};
-  if (!theme) return res.status(400).json({ success: false, error: 'theme required' });
-
-  const cfg = getGameConfig('roleplay');
-  if (!cfg || !cfg.characterGenerationTemplate) {
-    return res.status(500).json({ success: false, error: 'roleplay config not found' });
-  }
-
-  // Determine language instruction for AI
-  const languageInstruction = LANGUAGE_INSTRUCTIONS[language] || DEFAULT_LANGUAGE_INSTRUCTION;
-
-  const prompt = renderTemplate(cfg.characterGenerationTemplate, { theme, languageInstruction });
-
-  const { OPENAI_API_KEY, BASE_URL } = loadApiConfig();
-
+// POST /api/ai/generate - Main AI generation endpoint
+router.post('/ai/generate', async (req, res) => {
   try {
-    const modelToUse = req.body.model || cfg.model || process.env.DEFAULT_MODEL || 'gpt-4o-mini';
-    const payload = {
-      model: modelToUse,
-      messages: [
-        { role: 'system', content: `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}` },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: cfg.max_tokens || 800,
-      temperature: cfg.temperature || 0.6
-    };
+    const { gameId, theme, params = {}, language = 'zh' } = req.body || {};
 
-    const response = await axios.post(`${BASE_URL}/chat/completions`, payload, {
-      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      timeout: cfg.timeout || 20000
+    const cfg = getGameConfig(gameId);
+    if (!cfg) {
+      return res.status(400).json({ success: false, error: 'unknown gameId' });
+    }
+
+    // Merge params using cfg defaults
+    const templateVars = { theme: theme || '文化' };
+    if (cfg.params) {
+      Object.keys(cfg.params).forEach(k => {
+        templateVars[k] = (params[k] !== undefined) ? params[k] : cfg.params[k].default;
+      });
+    }
+
+    const languageInstruction = getLanguageInstruction(language);
+    templateVars.languageInstruction = languageInstruction;
+
+    const prompt = renderTemplate(cfg.template, templateVars);
+
+    const data = await callOpenAI({
+      prompt,
+      languageInstruction,
+      maxTokens: cfg.max_tokens || 800,
+      temperature: (cfg.temperature !== undefined) ? cfg.temperature : 0.7,
+      timeout: cfg.timeout || 20000,
+      expectJson: true
     });
 
-    const raw = response.data;
-    let text = null;
-    if (raw && raw.choices && raw.choices[0] && raw.choices[0].message) {
-      text = raw.choices[0].message.content;
+    return res.json({ success: true, data });
+  } catch (err) {
+    console.error('AI generation error:', err.message || err);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'AI service error: ' + (err.message || 'Unknown error') 
+    });
+  }
+});
+
+// POST /api/roleplay/character - Generate roleplay character
+router.post('/roleplay/character', async (req, res) => {
+  try {
+    const { theme, language = 'zh' } = req.body || {};
+    if (!theme) {
+      return res.status(400).json({ success: false, error: 'theme required' });
     }
 
-    function extractJsonFromText(t) {
-      if (!t || typeof t !== 'string') return null;
-      const m = t.match(/\{[\s\S]*\}/);
-      if (!m) return null;
-      try { return JSON.parse(m[0]); } catch (e) { return null; }
+    const cfg = getGameConfig('roleplay');
+    if (!cfg || !cfg.characterGenerationTemplate) {
+      return res.status(500).json({ success: false, error: 'roleplay config not found' });
     }
 
-    const parsed = extractJsonFromText(text) || raw;
-    
-    if (!parsed) {
-      console.error('Failed to parse character JSON from AI response');
-      return res.status(500).json({ success: false, error: 'Failed to parse AI response' });
-    }
-    
-    return res.json({ success: true, data: parsed });
+    const languageInstruction = getLanguageInstruction(language);
+    const prompt = renderTemplate(cfg.characterGenerationTemplate, { theme, languageInstruction });
+
+    const data = await callOpenAI({
+      prompt,
+      languageInstruction,
+      maxTokens: cfg.max_tokens || 800,
+      temperature: cfg.temperature || 0.6,
+      timeout: cfg.timeout || 20000,
+      expectJson: true
+    });
+
+    return res.json({ success: true, data });
   } catch (err) {
     console.error('Roleplay character generation error:', err.message || err);
-    return res.status(500).json({ success: false, error: 'AI service error: ' + (err.message || 'Unknown error') });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'AI service error: ' + (err.message || 'Unknown error') 
+    });
   }
 });
 
 // POST /api/roleplay/chat - Continue roleplay conversation
 router.post('/roleplay/chat', async (req, res) => {
-  const { theme, character, userMessage, language = 'zh' } = req.body || {};
-  if (!theme || !character || !userMessage) {
-    return res.status(400).json({ success: false, error: 'theme, character, and userMessage required' });
-  }
-
-  const cfg = getGameConfig('roleplay');
-  if (!cfg || !cfg.conversationTemplate) {
-    return res.status(500).json({ success: false, error: 'roleplay config not found' });
-  }
-
-  // Determine language instruction for AI
-  const languageInstruction = ROLEPLAY_LANGUAGE_INSTRUCTIONS[language] || DEFAULT_ROLEPLAY_LANGUAGE_INSTRUCTION;
-
-  const prompt = renderTemplate(cfg.conversationTemplate, {
-    theme,
-    characterName: character.name || '角色',
-    characterDescription: character.description || '',
-    characterPersonality: character.personality || '',
-    characterKnowledge: character.knowledge || '',
-    userMessage,
-    languageInstruction
-  });
-
-  const { OPENAI_API_KEY, BASE_URL } = loadApiConfig();
-
   try {
-    const modelToUse = req.body.model || cfg.model || process.env.DEFAULT_MODEL || 'gpt-4o-mini';
-    const payload = {
-      model: modelToUse,
-      messages: [
-        { role: 'system', content: languageInstruction },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: cfg.max_tokens || 500,
-      temperature: cfg.temperature || 0.6
-    };
+    const { theme, character, userMessage, language = 'zh' } = req.body || {};
+    if (!theme || !character || !userMessage) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'theme, character, and userMessage required' 
+      });
+    }
 
-    const response = await axios.post(`${BASE_URL}/chat/completions`, payload, {
-      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      timeout: cfg.timeout || 20000
+    const cfg = getGameConfig('roleplay');
+    if (!cfg || !cfg.conversationTemplate) {
+      return res.status(500).json({ success: false, error: 'roleplay config not found' });
+    }
+
+    const languageInstruction = getLanguageInstruction(language, true);
+    const prompt = renderTemplate(cfg.conversationTemplate, {
+      theme,
+      characterName: character.name || '角色',
+      characterDescription: character.description || '',
+      characterPersonality: character.personality || '',
+      characterKnowledge: character.knowledge || '',
+      userMessage,
+      languageInstruction
     });
 
-    const raw = response.data;
-    let text = '';
-    if (raw && raw.choices && raw.choices[0] && raw.choices[0].message) {
-      text = raw.choices[0].message.content;
-    }
+    const text = await callOpenAI({
+      prompt,
+      languageInstruction,
+      maxTokens: cfg.max_tokens || 500,
+      temperature: cfg.temperature || 0.6,
+      timeout: cfg.timeout || 20000,
+      expectJson: false
+    });
 
     return res.json({ success: true, data: { response: text } });
   } catch (err) {
     console.error('Roleplay chat error:', err.message || err);
-    return res.status(500).json({ success: false, error: 'AI service error: ' + (err.message || 'Unknown error') });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'AI service error: ' + (err.message || 'Unknown error') 
+    });
   }
 });
 
 // POST /api/story/chapter - Generate story chapter
 router.post('/story/chapter', async (req, res) => {
-  const { theme, previousChoice, chapterNumber, language = 'zh' } = req.body || {};
-  if (!theme) return res.status(400).json({ success: false, error: 'theme required' });
-
-  const cfg = getGameConfig('story');
-  if (!cfg) {
-    return res.status(500).json({ success: false, error: 'story config not found' });
-  }
-
-  // Determine language instruction for AI
-  const languageInstruction = LANGUAGE_INSTRUCTIONS[language] || DEFAULT_LANGUAGE_INSTRUCTION;
-
-  let template, templateVars;
-  if (!previousChoice || chapterNumber === 1) {
-    template = cfg.initialChapterTemplate;
-    templateVars = { theme, languageInstruction };
-  } else {
-    template = cfg.continueChapterTemplate;
-    templateVars = { theme, previousChoice, languageInstruction };
-  }
-
-  const prompt = renderTemplate(template, templateVars);
-
-  const { OPENAI_API_KEY, BASE_URL } = loadApiConfig();
-
   try {
-    const modelToUse = req.body.model || cfg.model || process.env.DEFAULT_MODEL || 'gpt-4o-mini';
-    const payload = {
-      model: modelToUse,
-      messages: [
-        { role: 'system', content: `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}` },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: cfg.max_tokens || 1000,
-      temperature: cfg.temperature || 0.7
-    };
+    const { theme, previousChoice, chapterNumber, language = 'zh' } = req.body || {};
+    if (!theme) {
+      return res.status(400).json({ success: false, error: 'theme required' });
+    }
 
-    const response = await axios.post(`${BASE_URL}/chat/completions`, payload, {
-      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      timeout: cfg.timeout || 30000
+    const cfg = getGameConfig('story');
+    if (!cfg) {
+      return res.status(500).json({ success: false, error: 'story config not found' });
+    }
+
+    const languageInstruction = getLanguageInstruction(language);
+    
+    let template, templateVars;
+    if (!previousChoice || chapterNumber === 1) {
+      template = cfg.initialChapterTemplate;
+      templateVars = { theme, languageInstruction };
+    } else {
+      template = cfg.continueChapterTemplate;
+      templateVars = { theme, previousChoice, languageInstruction };
+    }
+
+    const prompt = renderTemplate(template, templateVars);
+
+    const data = await callOpenAI({
+      prompt,
+      languageInstruction,
+      maxTokens: cfg.max_tokens || 1000,
+      temperature: cfg.temperature || 0.7,
+      timeout: cfg.timeout || 30000,
+      expectJson: true
     });
 
-    const raw = response.data;
-    let text = null;
-    if (raw && raw.choices && raw.choices[0] && raw.choices[0].message) {
-      text = raw.choices[0].message.content;
-    }
-
-    function extractJsonFromText(t) {
-      if (!t || typeof t !== 'string') return null;
-      const m = t.match(/\{[\s\S]*\}/);
-      if (!m) return null;
-      try { return JSON.parse(m[0]); } catch (e) { return null; }
-    }
-
-    const parsed = extractJsonFromText(text) || raw;
-    
-    if (!parsed) {
-      console.error('Failed to parse story JSON from AI response');
-      return res.status(500).json({ success: false, error: 'Failed to parse AI response' });
-    }
-    
-    return res.json({ success: true, data: parsed });
+    return res.json({ success: true, data });
   } catch (err) {
     console.error('Story generation error:', err.message || err);
-    return res.status(500).json({ success: false, error: 'AI service error: ' + (err.message || 'Unknown error') });
+    return res.status(500).json({ 
+      success: false, 
+      error: 'AI service error: ' + (err.message || 'Unknown error') 
+    });
   }
 });
 
 // File upload handler (stores to server/uploads)
 router.post('/upload', upload.array('files', 10), (req, res) => {
   const files = req.files || [];
-  const mapped = files.map(f => ({ originalname: f.originalname, path: f.path, size: f.size }));
+  const mapped = files.map(f => ({ 
+    originalname: f.originalname, 
+    path: f.path, 
+    size: f.size 
+  }));
   res.json({ success: true, files: mapped });
 });
 
