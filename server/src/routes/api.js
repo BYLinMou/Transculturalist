@@ -29,9 +29,15 @@ const { listGames } = require('../services/gameConfigService');
 // Helper function to load API configuration
 function loadApiConfig() {
   let config = {};
-  try { config = require('../../config'); } catch (e) { 
-    console.error('Failed to load config:', e.message);
-    config = {}; 
+  try { 
+    config = require('../../config'); 
+  } catch (e) { 
+    try {
+      config = require('/app/server/config');
+    } catch (e2) {
+      console.error('Failed to load config from both paths:', e.message, e2.message);
+      config = {}; 
+    }
   }
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY || config.OPENAI_API_KEY;
   const BASE_URL = process.env.BASE_URL || config.BASE_URL;
@@ -98,7 +104,19 @@ router.post('/ai/generate', async (req, res) => {
   const { OPENAI_API_KEY, BASE_URL } = loadApiConfig();
 
   // Determine model: request override > cfg.model > DEFAULT_MODEL env/config > fallback
-  const modelToUse = requestedModel || cfg.model || process.env.DEFAULT_MODEL || (require('../../config').DEFAULT_MODEL || null) || 'gpt-4o-mini';
+  let defaultModel = null;
+  try {
+    const config = require('../../config');
+    if (config.DEFAULT_MODEL) defaultModel = config.DEFAULT_MODEL;
+  } catch (e) {
+    try {
+      const config = require('/app/server/config');
+      if (config.DEFAULT_MODEL) defaultModel = config.DEFAULT_MODEL;
+    } catch (e2) {
+      // use null
+    }
+  }
+  const modelToUse = requestedModel || cfg.model || process.env.DEFAULT_MODEL || defaultModel;
 
   try {
     const payload = {

@@ -38,7 +38,7 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 
 You can run the application in any folder you like. You do NOT need to clone the whole repository—just prepare the following files:
 
-1. **Create a `server/config.js` file** in your chosen folder (you can copy the template below):
+1. **Create a `config.js` file** in your chosen folder (you can copy the template below):
    ```javascript
    module.exports = {
      OPENAI_API_KEY: 'your-openai-api-key-here',
@@ -51,13 +51,12 @@ You can run the application in any folder you like. You do NOT need to clone the
 
 3. In your folder, run:
    ```bash
-   docker pull ghcr.io/bylinmou/transculturalist:latest
-   docker-compose up
+   docker run -d -p 3030:3030 -v ./config.js:/app/server/config.js:ro -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
    ```
 
 The application will be available at `http://localhost:3030`
 
-**Note**: The `config.js` file is mounted into the container at runtime, so changes to `config.js` will take effect without rebuilding the image.
+**Note**: The `config.js` file is mounted into the container at `/app/server/config.js` at runtime, so changes to `config.js` will take effect without rebuilding the image.
 
 #### 1.2 Building from Source
 
@@ -78,7 +77,7 @@ If you prefer to build the image locally:
 
 3. Build and run the application:
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
 The application will be available at `http://localhost:3030`
