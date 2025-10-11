@@ -32,42 +32,6 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 
 ## Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/BYLinMou/Transculturalist.git
-   cd Transculturalist
-   ```
-
-2. Install dependencies:
-   ```bash
-   # Frontend dependencies (if any)
-   cd frontend
-   npm install
-   cd ..
-
-   # Backend dependencies
-   cd server
-   npm install
-   cd ..
-   ```
-
-3. Configure API keys:
-   ```bash
-   cd server
-   cp config.example.js config.js
-   ```
-   
-   Edit `config.js` and add your OpenAI API key and base URL:
-   ```javascript
-   module.exports = {
-     OPENAI_API_KEY: 'your-openai-api-key-here',
-     BASE_URL: 'https://api.openai.com/v1',
-     DEFAULT_MODEL: 'gpt-4o-mini'
-   };
-   ```
-
-## Running the Application
-
 ### Option 1: Using Docker Compose (Recommended)
 
 #### 1.1 Using Pre-built Docker Image (Easiest)
@@ -119,16 +83,50 @@ If you prefer to build the image locally:
 
 The application will be available at `http://localhost:3030`
 
+
 ### Option 2: Local Development
 
-1. Build the frontend:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/BYLinMou/Transculturalist.git
+   cd Transculturalist
+   ```
+
+2. Install dependencies:
+   ```bash
+   # Frontend dependencies (if any)
+   cd frontend
+   npm install
+   cd ..
+
+   # Backend dependencies
+   cd server
+   npm install
+   cd ..
+   ```
+
+3. Configure API keys:
+   ```bash
+   cd server
+   cp config.example.js config.js
+   ```
+   Edit `config.js` and add your OpenAI API key and base URL:
+   ```javascript
+   module.exports = {
+     OPENAI_API_KEY: 'your-openai-api-key-here',
+     BASE_URL: 'https://api.openai.com/v1',
+     DEFAULT_MODEL: 'gpt-4o-mini'
+   };
+   ```
+
+4. Build the frontend:
    ```bash
    cd frontend
    npm run build
    cd ..
    ```
 
-2. Start the server:
+5. Start the server:
    ```bash
    cd server
    npm run dev  # For development with auto-reload
@@ -136,7 +134,7 @@ The application will be available at `http://localhost:3030`
    npm start    # For production
    ```
 
-3. Open your browser and navigate to `http://localhost:3030`
+6. Open your browser and navigate to `http://localhost:3030`
 
 ## Configuration
 
