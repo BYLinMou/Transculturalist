@@ -1,5 +1,6 @@
 services:
   app:
+    container_name: transculturalist_app
     build:
       context: .
       dockerfile: server/Dockerfile
