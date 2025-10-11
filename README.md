@@ -50,11 +50,15 @@ You can run the application in any folder you like. You do NOT need to clone the
 2. **Download or copy the `docker-compose.yml`** from this repository into the same folder.
 
 
-3. In your folder, run (IMPORTANT: use an absolute path or ${PWD} for config.js):
+3. In your folder, run one of the following commands (use an absolute path or `${PWD}` for config.js):
+
+   **Option A: Using `${PWD}` (recommended for PowerShell):**
    ```powershell
-   # On Windows PowerShell (recommended):
    docker run -d -p 3030:3030 -v ${PWD}/config.js:/app/server/config.js:ro -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
-   # Or, use your absolute path (replace with your actual folder):
+   ```
+
+   **Option B: Using absolute path (replace with your actual folder path):**
+   ```powershell
    docker run -d -p 3030:3030 -v C:/Users/YourName/YourFolder/config.js:/app/server/config.js:ro -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
    ```
 
