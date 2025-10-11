@@ -1,5 +1,8 @@
-/* 基本樣式與從原始 HTML 抽出的自訂 CSS */
 @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+
+body {
+  font-size: 14px;
+}
 
 .gradient-bg {
   background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
@@ -15,5 +18,3 @@
 .drag-over { border-color: #F7C41C !important; background-color: rgba(247,196,28,0.1) !important; }
 .question-slot.correct { border-color: #10B981 !important; background-color: rgba(16,185,129,0.1) !important; }
 .question-slot.incorrect { border-color: #EF4444 !important; background-color: rgba(239,68,68,0.1) !important; }
-
-/* 你可以把更多從原始 HTML 的 style 區塊搬到這裡 */
