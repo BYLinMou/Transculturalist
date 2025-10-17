@@ -1,8 +1,8 @@
 {
   "name": "transculturalist",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A transcultural learning platform",
-  "publishDate": "2025-10-12",
+  "publishDate": "2025-10-17",
   "private": true,
   "workspaces": [
     "frontend",

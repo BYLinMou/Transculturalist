@@ -76,19 +76,32 @@ function getLanguageInstruction(language, isRoleplay = false) {
 }
 
 // Helper function to call OpenAI API
-async function callOpenAI({ prompt, languageInstruction, maxTokens = 800, temperature = 0.7, timeout = 20000, expectJson = true }) {
+async function callOpenAI({ prompt, languageInstruction, maxTokens = 800, temperature = 0.7, timeout = 20000, expectJson = true, history = [] }) {
   const { OPENAI_API_KEY, BASE_URL, DEFAULT_MODEL } = loadApiConfig();
   
   const systemContent = expectJson 
     ? `You are a helpful assistant that returns only JSON as requested. ${languageInstruction}`
     : languageInstruction;
 
+  const messages = [
+    { role: 'system', content: systemContent },
+    ...history,
+    { role: 'user', content: prompt }
+  ];
+
+  // console.log('=== OpenAI Request Debug ===');
+  // console.log('Model:', DEFAULT_MODEL);
+  // console.log('History length:', history.length);
+  // console.log('History messages:');
+  // history.forEach((msg, index) => {
+  //   console.log(`  [${index}] ${msg.role}: ${msg.content.substring(0, 100)}${msg.content.length > 100 ? '...' : ''}`);
+  // });
+  // console.log('Current prompt:', prompt.substring(0, 200) + (prompt.length > 200 ? '...' : ''));
+  // console.log('===========================');
+
   const payload = {
     model: DEFAULT_MODEL,
-    messages: [
-      { role: 'system', content: systemContent },
-      { role: 'user', content: prompt }
-    ],
+    messages,
     max_tokens: maxTokens,
     temperature
   };
@@ -222,7 +235,12 @@ router.post('/roleplay/character', async (req, res) => {
       expectJson: true
     });
 
-    return res.json({ success: true, data });
+    // Include maxHistory in response for frontend to use
+    return res.json({ 
+      success: true, 
+      data,
+      maxHistory: cfg.maxHistory || 5 // Default to 5 pairs (10 messages) if not configured
+    });
   } catch (err) {
     console.error('Roleplay character generation error:', err.message || err);
     return res.status(500).json({ 
@@ -235,7 +253,7 @@ router.post('/roleplay/character', async (req, res) => {
 // POST /api/roleplay/chat - Continue roleplay conversation
 router.post('/roleplay/chat', async (req, res) => {
   try {
-    const { theme, character, userMessage, language = 'zh' } = req.body || {};
+    const { theme, character, userMessage, language = 'zh', history = [] } = req.body || {};
     if (!theme || !character || !userMessage) {
       return res.status(400).json({ 
         success: false, 
@@ -247,6 +265,16 @@ router.post('/roleplay/chat', async (req, res) => {
     if (!cfg || !cfg.conversationTemplate) {
       return res.status(500).json({ success: false, error: 'roleplay config not found' });
     }
+
+    // Limit history to maxHistory pairs (e.g., 5 pairs = 10 messages: 5 user + 5 assistant)
+    const maxHistory = cfg.maxHistory || 5;
+    const limitedHistory = history.slice(-maxHistory * 2); // multiply by 2 because each pair has 2 messages
+
+    console.log(`Config maxHistory: ${maxHistory} pairs (${maxHistory * 2} total messages)`);
+    console.log(`Limited history length: ${limitedHistory.length} messages`);
+    limitedHistory.forEach((msg, index) => {
+      console.log(`  Limited [${index}]: ${msg.role} - ${msg.content.substring(0, 50)}${msg.content.length > 50 ? '...' : ''}`);
+    });
 
     const languageInstruction = getLanguageInstruction(language, true);
     const prompt = renderTemplate(cfg.conversationTemplate, {
@@ -265,7 +293,8 @@ router.post('/roleplay/chat', async (req, res) => {
       maxTokens: cfg.max_tokens || 500,
       temperature: cfg.temperature || 0.6,
       timeout: cfg.timeout || 20000,
-      expectJson: false
+      expectJson: false,
+      history: limitedHistory
     });
 
     return res.json({ success: true, data: { response: text } });
@@ -281,7 +310,7 @@ router.post('/roleplay/chat', async (req, res) => {
 // POST /api/story/chapter - Generate story chapter
 router.post('/story/chapter', async (req, res) => {
   try {
-    const { theme, previousChoice, chapterNumber, language = 'zh' } = req.body || {};
+    const { theme, previousChoice, chapterNumber, language = 'zh', history = [] } = req.body || {};
     if (!theme) {
       return res.status(400).json({ success: false, error: 'theme required' });
     }
@@ -290,6 +319,10 @@ router.post('/story/chapter', async (req, res) => {
     if (!cfg) {
       return res.status(500).json({ success: false, error: 'story config not found' });
     }
+
+    // Limit history to maxHistory pairs (e.g., 5 pairs = 10 messages: 5 user + 5 assistant)
+    const maxHistory = cfg.maxHistory || 5;
+    const limitedHistory = history.slice(-maxHistory * 2); // multiply by 2 because each pair has 2 messages
 
     const languageInstruction = getLanguageInstruction(language);
     
@@ -310,10 +343,16 @@ router.post('/story/chapter', async (req, res) => {
       maxTokens: cfg.max_tokens || 1000,
       temperature: cfg.temperature || 0.7,
       timeout: cfg.timeout || 30000,
-      expectJson: true
+      expectJson: true,
+      history: limitedHistory
     });
 
-    return res.json({ success: true, data });
+    // Include maxHistory in response for frontend to use
+    return res.json({ 
+      success: true, 
+      data,
+      maxHistory: maxHistory // Return maxHistory so frontend knows the limit
+    });
   } catch (err) {
     console.error('Story generation error:', err.message || err);
     return res.status(500).json({ 
