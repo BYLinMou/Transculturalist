@@ -26,42 +26,57 @@
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
 </head>
-<body class="gradient-bg min-h-screen text-white">
+<body class="gradient-bg text-white">
   <!-- Header placeholder -->
   <header></header>
 
-  <div class="container mx-auto p-6">
-    <div class="flex items-center justify-between mb-8">
-      <button id="backToGames" class="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
-      </button>
-      <div class="text-center">
-        <h2 class="text-title-lg font-bold text-gold-300" data-i18n="storyExploration">互動式故事探索</h2>
-        <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
-      </div>
-      <div class="text-right">
-        <div class="text-gold-300 font-bold text-body"><span data-i18n="chapter">章節</span>: <span id="chapterNum">1</span></div>
-      </div>
-    </div>
-
-    <div id="loadingContainer" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
-      <p class="text-gray-300 text-body" data-i18n="generatingStory">正在生成故事...</p>
-    </div>
-
-    <div id="storyContainer" class="hidden">
-      <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700 mb-6">
-        <h3 class="text-title-lg font-bold text-gold-300 mb-4" id="storyTitle">載入中...</h3>
-        <div class="text-gray-100 leading-relaxed whitespace-pre-wrap mb-6 text-body" id="storyContent"></div>
-        
-        <div class="border-t border-gray-700 pt-6">
-          <h4 class="text-title-sm font-semibold text-gold-400 mb-4" data-i18n="chooseAction">選擇你的行動：</h4>
-          <div id="choicesContainer" class="space-y-3"></div>
+  <div class="flex flex-col h-screen">
+    <!-- Header Section - Fixed -->
+    <div class="container mx-auto p-6 flex-shrink-0">
+      <div class="flex items-center justify-between">
+        <button id="backToGames" class="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <div class="text-center">
+          <h2 class="text-title-lg font-bold text-gold-300" data-i18n="storyExploration">互動式故事探索</h2>
+          <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
+        </div>
+        <div class="text-right">
+          <div class="text-gold-300 font-bold text-body"><span data-i18n="chapter">章節</span>: <span id="chapterNum">1</span></div>
         </div>
       </div>
+    </div>
 
+    <!-- Chat History Container - Scrollable -->
+    <div class="flex-1 overflow-y-auto container mx-auto px-6">
+      <div id="chatHistoryContainer" class="space-y-4 pb-6">
+        <!-- Chat items will be inserted here -->
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingContainer" class="text-center py-12 hidden">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gold-400 mb-4"></div>
+        <p class="text-gray-300 text-body" data-i18n="generatingStory">正在生成故事...</p>
+      </div>
+
+      <!-- Current Story Display -->
+      <div id="storyContainer" class="hidden">
+        <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700">
+          <h3 class="text-title-lg font-bold text-gold-300 mb-4" id="storyTitle">載入中...</h3>
+          <div class="text-gray-100 leading-relaxed whitespace-pre-wrap mb-6 text-body" id="storyContent"></div>
+          
+          <div class="border-t border-gray-700 pt-6">
+            <h4 class="text-title-sm font-semibold text-gold-400 mb-4" data-i18n="chooseAction">選擇你的行動：</h4>
+            <div id="choicesContainer" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons - Fixed Bottom -->
+    <div class="container mx-auto px-6 py-4 flex-shrink-0">
       <div class="text-center">
         <button id="restartStory" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors text-body-sm" data-i18n="restartStory">
           重新開始故事
@@ -151,6 +166,9 @@
       document.getElementById('storyTitle').textContent = chapterData.title || `第 ${chapterNumber} 章`;
       document.getElementById('storyContent').textContent = chapterData.content || '';
       
+      // Store current chapter data for later use when user makes a choice
+      window.currentChapterData = chapterData;
+      
       // Display choices
       const choicesContainer = document.getElementById('choicesContainer');
       choicesContainer.innerHTML = '';
@@ -177,7 +195,9 @@
           choicesContainer.appendChild(button);
         });
       } else {
-        // Story ended
+        // Story ended - add final chapter to history
+        addChatItem('system-chapter', chapterData.content || '', chapterData.title || `第 ${chapterNumber} 章`);
+        
         const endMessage = document.createElement('div');
         endMessage.className = 'text-center p-6 bg-gray-800 rounded-lg border border-gold-600';
         const storyEndedText = window.i18next ? window.i18next.t('storyEnded') : '故事結束';
@@ -187,10 +207,25 @@
           <p class="text-gray-400">${thankYouText}</p>
         `;
         choicesContainer.appendChild(endMessage);
+        
+        // Hide current story display since it's now in history
+        document.getElementById('storyContainer').classList.add('hidden');
       }
     }
 
     function makeChoice(choiceText) {
+      // Add current chapter to chat history first
+      if (window.currentChapterData) {
+        const chapterTitle = window.currentChapterData.title || `第 ${chapterNumber} 章`;
+        addChatItem('system-chapter', window.currentChapterData.content || '', chapterTitle);
+      }
+      
+      // Then add user's choice to chat history
+      addChatItem('user-choice', choiceText);
+      
+      // Hide current story display since it's now in history
+      document.getElementById('storyContainer').classList.add('hidden');
+      
       storyHistory.push({
         chapter: chapterNumber,
         choice: choiceText
@@ -204,7 +239,46 @@
       chapterNumber = 1;
       storyHistory = [];
       conversationHistory = []; // Clear conversation history on restart
+      
+      // Clear chat history display
+      document.getElementById('chatHistoryContainer').innerHTML = '';
+      
       generateChapter();
+    }
+
+    // Add chat item to history
+    function addChatItem(type, content, title = null) {
+      const chatHistoryContainer = document.getElementById('chatHistoryContainer');
+      const chatItem = document.createElement('div');
+      
+      if (type === 'user-choice') {
+        // User's choice - lighter style
+        chatItem.className = 'bg-gray-800 bg-opacity-60 p-4 rounded-lg border-l-4 border-gold-400';
+        // Get the current translation for yourChoice
+        const yourChoiceLabel = window.i18next ? window.i18next.t('yourChoice') : '你的選擇';
+        chatItem.innerHTML = `
+          <p class="text-gold-300 font-semibold text-body-sm">
+            <span class="choice-label">${yourChoiceLabel}</span>：${content}
+          </p>
+        `;
+        // Store the key for later updates when language changes
+        const choiceLabel = chatItem.querySelector('.choice-label');
+        choiceLabel.setAttribute('data-i18n', 'yourChoice');
+      } else if (type === 'system-chapter') {
+        // System generated chapter - darker style
+        chatItem.className = 'bg-gray-900 bg-opacity-80 p-6 rounded-lg border border-gray-700';
+        chatItem.innerHTML = `
+          <h4 class="text-gold-300 font-bold text-title-sm mb-3">${title || '第 ? 章'}</h4>
+          <div class="text-gray-100 text-body leading-relaxed whitespace-pre-wrap">${content}</div>
+        `;
+      }
+      
+      chatHistoryContainer.appendChild(chatItem);
+      
+      // Auto-scroll to bottom
+      setTimeout(() => {
+        chatHistoryContainer.parentElement.scrollTop = chatHistoryContainer.parentElement.scrollHeight;
+      }, 100);
     }
 
     // Event listeners

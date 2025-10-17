@@ -89,15 +89,15 @@ async function callOpenAI({ prompt, languageInstruction, maxTokens = 800, temper
     { role: 'user', content: prompt }
   ];
 
-  console.log('=== OpenAI Request Debug ===');
-  console.log('Model:', DEFAULT_MODEL);
-  console.log('History length:', history.length);
-  console.log('History messages:');
-  history.forEach((msg, index) => {
-    console.log(`  [${index}] ${msg.role}: ${msg.content.substring(0, 100)}${msg.content.length > 100 ? '...' : ''}`);
-  });
-  console.log('Current prompt:', prompt.substring(0, 200) + (prompt.length > 200 ? '...' : ''));
-  console.log('===========================');
+  // console.log('=== OpenAI Request Debug ===');
+  // console.log('Model:', DEFAULT_MODEL);
+  // console.log('History length:', history.length);
+  // console.log('History messages:');
+  // history.forEach((msg, index) => {
+  //   console.log(`  [${index}] ${msg.role}: ${msg.content.substring(0, 100)}${msg.content.length > 100 ? '...' : ''}`);
+  // });
+  // console.log('Current prompt:', prompt.substring(0, 200) + (prompt.length > 200 ? '...' : ''));
+  // console.log('===========================');
 
   const payload = {
     model: DEFAULT_MODEL,
@@ -315,14 +315,6 @@ router.post('/story/chapter', async (req, res) => {
       return res.status(400).json({ success: false, error: 'theme required' });
     }
 
-    console.log('=== Story Chapter Request ===');
-    console.log('Chapter:', chapterNumber, 'Previous choice:', previousChoice);
-    console.log('History received from frontend:', history.length, 'messages');
-    history.forEach((msg, index) => {
-      console.log(`  History [${index}]: ${msg.role} - ${msg.content.substring(0, 50)}${msg.content.length > 50 ? '...' : ''}`);
-    });
-    console.log('=============================');
-
     const cfg = getGameConfig('story');
     if (!cfg) {
       return res.status(500).json({ success: false, error: 'story config not found' });
@@ -331,14 +323,6 @@ router.post('/story/chapter', async (req, res) => {
     // Limit history to maxHistory pairs (e.g., 5 pairs = 10 messages: 5 user + 5 assistant)
     const maxHistory = cfg.maxHistory || 5;
     const limitedHistory = history.slice(-maxHistory * 2); // multiply by 2 because each pair has 2 messages
-
-    console.log(`Config maxHistory: ${maxHistory} pairs (${maxHistory * 2} total messages)`);
-    console.log(`Limited history length: ${limitedHistory.length} messages`);
-    limitedHistory.forEach((msg, index) => {
-      console.log(`  Limited [${index}]: ${msg.role} - ${msg.content.substring(0, 50)}${msg.content.length > 50 ? '...' : ''}`);
-    });
-
-    console.log(`Limiting history to ${maxHistory * 2} messages (${maxHistory} pairs), actual limited history:`, limitedHistory.length);
 
     const languageInstruction = getLanguageInstruction(language);
     
