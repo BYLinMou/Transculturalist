@@ -101,7 +101,8 @@
     const currentTheme = urlParams.get('theme') || '中華文化';
     
     let currentCharacter = null;
-    let conversationHistory = [];
+    let conversationHistory = []; // Array of { role: 'user' | 'assistant', content: 'message' }
+    let maxHistoryPairs = 5; // Default: 5 pairs (5 user + 5 assistant = 10 messages), will be updated from server config
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
@@ -120,6 +121,13 @@
         
         if (result.success && result.data) {
           currentCharacter = result.data;
+          
+          // Update maxHistoryPairs from server config
+          if (result.maxHistory !== undefined) {
+            maxHistoryPairs = result.maxHistory; // This represents X pairs (X user + X assistant = 2X messages)
+            console.log(`Chat history limit set to ${maxHistoryPairs} pairs (${maxHistoryPairs * 2} messages total)`);
+          }
+          
           setupCharacter(currentCharacter);
         } else {
           throw new Error('Failed to generate character');
@@ -150,7 +158,12 @@
       chatMessages.innerHTML = '';
       conversationHistory = [];
       
-      addMessage('character', character.greeting || '你好！很高興與你交流。', character.name);
+      // Add greeting message to UI
+      const greetingText = character.greeting || '你好！很高興與你交流。';
+      addMessage('character', greetingText, character.name);
+      
+      // Add greeting to conversation history so it's included in future context
+      conversationHistory.push({ role: 'assistant', content: greetingText });
     }
 
     function addMessage(sender, content, name = '') {
@@ -207,10 +220,13 @@
       
       if (!message) return;
       
-      // Add user message
+      // Add user message to UI
       addMessage('user', message);
       input.value = '';
       input.disabled = true;
+      
+      // Add user message to history
+      conversationHistory.push({ role: 'user', content: message });
       
       // Add loading indicator
       addLoadingMessage();
@@ -221,7 +237,8 @@
           body: JSON.stringify({
             theme: currentTheme,
             character: currentCharacter,
-            userMessage: message
+            userMessage: message,
+            history: conversationHistory.slice(-maxHistoryPairs * 2) // Keep last X pairs (2X messages)
           })
         });
 
@@ -230,7 +247,16 @@
         removeLoadingMessage();
         
         if (result.success && result.data && result.data.response) {
-          addMessage('character', result.data.response, currentCharacter.name);
+          const assistantMessage = result.data.response;
+          addMessage('character', assistantMessage, currentCharacter.name);
+          
+          // Add assistant message to history
+          conversationHistory.push({ role: 'assistant', content: assistantMessage });
+          
+          // Trim history to keep only last X pairs (2X messages total)
+          if (conversationHistory.length > maxHistoryPairs * 2) {
+            conversationHistory = conversationHistory.slice(-maxHistoryPairs * 2);
+          }
         } else {
           throw new Error('Failed to get response');
         }

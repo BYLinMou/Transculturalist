@@ -10,5 +10,6 @@
     "item": { "title": "string", "content": "string", "choices": "array_of_objects" }
   },
   "timeout": 30000,
-  "temperature": 0.7
+  "temperature": 0.7,
+  "maxHistory": 5
 }
