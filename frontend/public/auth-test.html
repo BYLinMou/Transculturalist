@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <body>
+    <h3>注册 / 登录（Supabase）</h3>
+    <input id="email" placeholder="email" />
+    <input id="password" placeholder="password" type="password" />
+    <button id="signup">注册</button>
+    <button id="login">登录</button>
+    <button id="whoami">测试 /api/auth/me</button>
+    <pre id="out" style="white-space:pre-wrap;border:1px solid #ccc;padding:8px;margin-top:8px;"></pre>
+
+    <script type="module">
+      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+      // ⚠️ 把下面两行换成你 server/.env 里对应的真实值
+      const SUPABASE_URL = 'https://lekfuecgfvntgcjowzhr.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxla2Z1ZWNnZnZudGdjam93emhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NDQ5MTUsImV4cCI6MjA3NjEyMDkxNX0.4BSDsAwBr5TYrTe4xxy4pML0OW_ESz7wuB8Fn2PDY1E';
+
+      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.supabase = supabase;
+      
+      const $ = (id) => document.getElementById(id);
+      const log = (v) => { $('out').textContent = typeof v==='string' ? v : JSON.stringify(v, null, 2); };
+
+      $('signup').onclick = async () => {
+        const { data, error } = await supabase.auth.signUp({
+          email: $('email').value, password: $('password').value
+        });
+        log(error ? error.message : data);
+      };
+
+      $('login').onclick = async () => {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: $('email').value, password: $('password').value
+        });
+        if (error) return log(error.message);
+        const { data: sess } = await supabase.auth.getSession();
+        log({ loginResult: data, tokenStart: sess.session?.access_token?.slice(0, 24)+'...' });
+      };
+
+      $('whoami').onclick = async () => {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess.session?.access_token;
+        if (!token) return log('未登录：请先登录');
+        const resp = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        const json = await resp.json();
+        log(json);
+      };
+    </script>
+  </body>
+</html>

@@ -8,10 +8,49 @@
   <script src="/assets/i18n.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/load-header.js"></script>
+
+  <!-- 🔸 新增 Supabase 模块 -->
+  <script type="module" src="/components/supabase-client.js"></script>    
+  <script type="module" src="/components/auth-widget.js"></script>
+
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header -->
   <header></header>
+
+  <!-- 🔸 新增登录区域 -->
+  <!-- 顶部右侧登录按钮（仅一个按钮） -->
+  <section class="container mx-auto mt-4 flex justify-end">
+    <button id="btn-auth" class="px-3 py-1 bg-gold-300 text-gray-900 rounded hover:bg-gold-200 transition">
+      Log In
+    </button>
+  </section>
+
+  <!-- 加载 supabase 客户端 -->
+  <script type="module" src="/components/supabase-client.js"></script>
+  <script type="module">
+    // 根据登录状态决定按钮文案；点击后：已登录则登出；未登录则跳转到登录页
+    const btn = document.getElementById('btn-auth');
+
+    async function refreshButton() {
+      const { data } = await supabase.auth.getSession();
+      btn.textContent = data.session ? 'Log Out' : 'Log In';
+    }
+
+    btn.addEventListener('click', async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        await supabase.auth.signOut();
+        await refreshButton();
+      } else {
+        // 跳转到独立登录页，并带回跳地址
+        const redirect = encodeURIComponent(location.pathname + location.search);
+        location.href = `/components/login.html?redirect=${redirect}`;
+      }
+    });
+
+    refreshButton();
+  </script>
 
   <main class="container mx-auto p-6">
     <div class="text-center mb-12">
@@ -69,6 +108,23 @@
       </div>
     </div>
   </main>
+
+  <!-- 🔸 新增脚本测试 /api/auth/me -->
+  <script type="module">
+    import { authFetch } from '/components/supabase-client.js';
+    const btn = document.getElementById('btn-me');
+    const out = document.getElementById('me-out');
+    if (btn) {
+      btn.onclick = async () => {
+        try {
+          const r = await authFetch('/api/auth/me');
+          out.textContent = JSON.stringify(await r.json(), null, 2);
+        } catch (e) {
+          out.textContent = String(e);
+        }
+      };
+    }
+  </script>
 
   <script>
     document.querySelectorAll('.cultural-theme').forEach(card => {
