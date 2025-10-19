@@ -4,7 +4,8 @@ const router = express.Router();
 router.post('/profile/init', async (req, res) => {
   const user = req.user;
   const supabase = req.supabase; // <-- use the user-scoped client
-  const displayName = req.body.display_name || null;
+  const DEFAULT_NAME = '文化爱好者';
+  const displayName = req.body.display_name || DEFAULT_NAME;
   const avatarUrl   = req.body.avatar_url || null;
 
   // check if exists

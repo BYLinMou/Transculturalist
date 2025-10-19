@@ -12,6 +12,8 @@
     .row { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
     input { padding:10px; border-radius:8px; border:1px solid #3a4252; background:#0f1524; color:#fff; }
     .btn { width:100%; padding:10px; border-radius:8px; border:1px solid #3a4252; background:#ffc857; color:#111; font-weight:600; cursor:pointer; }
+    .btn-secondary { margin-top:8px; background:transparent; color:#ffc857; border-color:#ffc857; }
+    .btn-secondary:hover { background:rgba(255,200,87,0.1); }
     .sub { text-align:center; margin-top:10px; opacity:.85; }
     .link { color:#ffc857; cursor:pointer; }
     .error { color:#ff7b7b; font-size:13px; min-height:18px; }
@@ -30,6 +32,7 @@
     </div>
     <div class="error" id="err"></div>
     <button class="btn" id="btn-submit">Log in</button>
+    <button class="btn btn-secondary" id="btn-cancel" type="button">Back to previous page</button>
     <div class="sub">
       Don’t have an account? <span class="link" id="link-signup">Sign up</span>
     </div>
@@ -46,6 +49,7 @@
     const errEl   = document.getElementById('err');
     const btn     = document.getElementById('btn-submit');
     const linkSu  = document.getElementById('link-signup');
+    const btnCancel = document.getElementById('btn-cancel');
 
     let mode = 'login'; // 'login' or 'signup'
     function setMode(m) {
@@ -97,6 +101,22 @@
     }
 
     btn.addEventListener('click', handleAuth);
+    btnCancel.addEventListener('click', () => {
+      const ref = document.referrer;
+      let canReturn = false;
+      if (ref) {
+        try {
+          canReturn = new URL(ref).origin === location.origin;
+        } catch (_) {
+          canReturn = false;
+        }
+      }
+      if (canReturn) {
+        history.back();
+      } else {
+        location.href = redirect;
+      }
+    });
     // Enter 提交
     [emailEl, passEl].forEach(node => node.addEventListener('keydown', e => {
       if (e.key === 'Enter') handleAuth();
