@@ -1,28 +1,28 @@
-require('dotenv').config();
+const config = require('./config-loader');
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
 const app = express();
-const apiRouter = require('./routes/api');                    // 你原来的公开 API
+const apiRouter = require('./routes/api');                    // Your original public API
 const { requireAuth } = require('./auth/require-auth-middleware');
 const currentUserRoute = require('./routes/current-user-route');
 let profileInitRoute;
-try { profileInitRoute = require('./routes/profile-init-route'); } catch (_) { /* 可选 */ }
+try { profileInitRoute = require('./routes/profile-init-route'); } catch (_) { /* Optional */ }
 
-const PORT = process.env.PORT || 3030;
+const PORT = config.PORT;
 
-// 全局中间件
+// Global middleware
 app.use(cors());
 app.use(express.json());
 
-// 静态文件（保持你原有行为）
+// Static files (keep your original behavior)
 app.use(express.static(path.join(__dirname, '../../frontend/public')));
 
-// 公开 API（保持你原有行为）
+// Public API (keep your original behavior)
 app.use('/api', apiRouter);
 
-// 受保护 API：需要携带 Authorization: Bearer <token>
+// Protected API: Requires Authorization: Bearer <token>
 app.use('/api/auth', requireAuth, currentUserRoute);
 if (profileInitRoute) app.use('/api/auth', requireAuth, profileInitRoute);
 

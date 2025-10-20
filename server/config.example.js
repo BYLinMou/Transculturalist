@@ -12,5 +12,11 @@ module.exports = {
   // Optional: default model to use when a request doesn't provide one.
   // Example: DEFAULT_MODEL: 'gpt-4o-mini'
   DEFAULT_MODEL: '',
+  // Server
+  PORT: 3030,
+  ENABLE_AUTH: false, // Set to true to enable Supabase authentication
+  // Supabase configuration (optional, only needed if ENABLE_AUTH is true)
+  SUPABASE_URL: '',
+  SUPABASE_ANON_KEY: '',
   // Other settings (S3, DB connections)
 };

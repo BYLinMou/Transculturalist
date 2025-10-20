@@ -14,14 +14,14 @@ router.get('/me', async (req, res) => {
     .maybeSingle();
   if (error) return res.status(500).json({ error: error.message });
 
-  if (!profile) { // 自动建档（可带默认昵称）
+  if (!profile) { // Auto-create profile (with default nickname if needed)
     const defaultName = DEFAULT_NAME;
     const { error: insErr } = await supabase
       .from('profiles')
       .insert({ user_id: user.id, display_name: defaultName });
     if (insErr) return res.status(500).json({ error: insErr.message });
 
-    // 重新查询一次返回
+    // Query again to return the new profile
     const r2 = await supabase
       .from('profiles')
       .select('*')
