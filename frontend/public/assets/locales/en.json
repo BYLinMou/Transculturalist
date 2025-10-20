@@ -124,5 +124,6 @@
   "clearData": "Clear Data",
   "clearDataConfirm": "Are you sure you want to clear all data? This action cannot be undone!",
   "dataCleared": "Data has been cleared",
-  "settingsSaved": "Settings saved!"
+  "settingsSaved": "Settings saved!",
+  "anonymous": "Anonymous"
 }

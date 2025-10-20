@@ -6,6 +6,12 @@ function html(strings, ...vals){ return strings.map((s,i)=>s+(vals[i]??'')).join
 
 async function render(container) {
   const { data: { user } } = await window.supabase.auth.getUser();
+  
+  // Get the translated "anonymous" text
+  const getAnonymousText = () => {
+    return window.i18next?.t('anonymous') || '匿名';
+  };
+  const anonymousText = getAnonymousText();
 
   container.innerHTML = html`
     <style>
@@ -22,8 +28,8 @@ async function render(container) {
         .auth-btn { cursor:pointer; }
     </style>
     <div class="auth-widget">
-        <span>登录状态：</span>
-        <span class="auth-email">${user ? user.email : '未登录'}</span>
+        <span>登録状態：</span>
+        <span class="auth-email">${user ? user.email : anonymousText}</span>
         ${user ? `
         <button type="button" class="auth-btn" id="btn-logout">退出</button>
         <button type="button" class="auth-btn" id="btn-me">测试 /api/auth/me</button>
@@ -56,6 +62,9 @@ async function render(container) {
     };
   } else {
     container.querySelector('#btn-logout').onclick = async () => {
+      // 清除保存的 email 和相關資訊
+      localStorage.removeItem('email');
+      localStorage.removeItem('username');
       await window.supabase.auth.signOut();
       location.reload();
     };

@@ -124,5 +124,6 @@
   "clearData": "データをクリア",
   "clearDataConfirm": "すべてのデータをクリアしてもよろしいですか？ この操作は元に戻せません！",
   "dataCleared": "データがクリアされました",
-  "settingsSaved": "設定が保存されました！"
+  "settingsSaved": "設定が保存されました！",
+  "anonymous": "匿名"
 }

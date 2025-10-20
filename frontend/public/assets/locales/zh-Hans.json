@@ -124,5 +124,6 @@
   "clearData": "清除数据",
   "clearDataConfirm": "确定要清除所有数据吗？此操作无法撤销！",
   "dataCleared": "数据已清除",
-  "settingsSaved": "设置已保存"
+  "settingsSaved": "设置已保存",
+  "anonymous": "匿名"
 }

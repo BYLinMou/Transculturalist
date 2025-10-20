@@ -207,6 +207,34 @@
       return fallback;
     }
 
+    async function waitForI18n() {
+      // Wait for i18next to be ready with translations
+      return new Promise((resolve) => {
+        const checkI18n = setInterval(() => {
+          // Check if window.updatePageText exists and i18next is initialized
+          if (window.i18next && window.updatePageText) {
+            // Try to get the translation - if it's not just the key, it's loaded
+            const result = window.i18next.t('anonymous');
+            // Also check a common key to verify translations are actually loaded
+            const userSettingsTranslated = window.i18next.t('userSettings');
+            
+            if (result && result !== 'anonymous' && userSettingsTranslated && userSettingsTranslated !== 'userSettings') {
+              clearInterval(checkI18n);
+              resolve();
+              return;
+            }
+          }
+        }, 100);
+        
+        // Timeout after 3 seconds - proceed anyway
+        setTimeout(() => {
+          clearInterval(checkI18n);
+          console.warn('i18next initialization timeout - proceeding anyway');
+          resolve();
+        }, 3000);
+      });
+    }
+
     function lockEmailInput(value) {
       emailInput.value = value || '';
       emailInput.disabled = true;
@@ -223,7 +251,14 @@
       const savedUsername = localStorage.getItem('username');
       const savedEmail = localStorage.getItem('email');
       usernameInput.value = savedUsername || DEFAULT_NAME;
-      if (savedEmail) emailInput.value = savedEmail;
+      if (savedEmail) {
+        emailInput.value = savedEmail;
+      } else {
+        // Get translated "anonymous" from i18next
+        const anonymousText = window.i18next?.t('anonymous') || 'anonymous';
+        console.log('loadLocalSettings - anonymousText:', anonymousText, 'currentLanguage:', window.i18next?.currentLanguage);
+        lockEmailInput(anonymousText);
+      }
     }
 
     async function loadRemoteProfile() {
@@ -242,7 +277,6 @@
         const { data: userData } = await supabaseClient.auth.getUser();
         const email = userData?.user?.email || '';
         lockEmailInput(email);
-        if (email) localStorage.setItem('email', email);
 
         const response = await authFetch('/api/auth/me');
         const payload = await response.json();
@@ -274,7 +308,6 @@
       try {
         if (!supabaseClient) {
           localStorage.setItem('username', desiredName);
-          localStorage.setItem('email', emailInput.value);
           alert(getI18nText('settingsSaved', '設定已儲存！'));
           return;
         }
@@ -282,7 +315,6 @@
         const { data: sessionData } = await supabaseClient.auth.getSession();
         if (!sessionData.session) {
           localStorage.setItem('username', desiredName);
-          localStorage.setItem('email', emailInput.value);
           alert(getI18nText('settingsSaved', '設定已儲存！'));
           return;
         }
@@ -307,9 +339,39 @@
       }
     });
 
-    window.addEventListener('load', () => {
+    window.addEventListener('load', async () => {
+      // Wait for i18next to be ready before loading profile
+      await waitForI18n();
       loadRemoteProfile();
       loadVersionInfo();
+    });
+
+    // Listen for i18next language change event
+    window.addEventListener('i18n-language-changed', (event) => {
+      console.log('i18n language changed to:', event.detail.language);
+      // If email input is showing a translation of "anonymous", update it
+      if (emailInput.disabled && !emailInput.value.includes('@')) {
+        // This is likely the anonymous placeholder, not a real email
+        const newAnonymousText = window.i18next?.t('anonymous') || 'anonymous';
+        lockEmailInput(newAnonymousText);
+        console.log('Updated anonymous text to:', newAnonymousText);
+      }
+    });
+
+    // Also listen for storage changes (for multi-tab language sync)
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'language') {
+        console.log('Language changed in another tab to:', event.newValue);
+        // If email input is showing a translation of "anonymous", update it
+        if (emailInput.disabled && !emailInput.value.includes('@')) {
+          // Wait a bit for i18next to update
+          setTimeout(() => {
+            const newAnonymousText = window.i18next?.t('anonymous') || 'anonymous';
+            lockEmailInput(newAnonymousText);
+            console.log('Updated anonymous text to:', newAnonymousText);
+          }, 100);
+        }
+      }
     });
   </script>
 </body>
