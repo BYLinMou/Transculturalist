@@ -54,6 +54,8 @@
         localStorage.setItem('language', lang);
         // Update page text immediately, even if translations aren't loaded yet
         updatePageText();
+        // Trigger custom event for language change
+        window.dispatchEvent(new CustomEvent('i18n-language-changed', { detail: { language: lang } }));
         if (callback) callback(null, this.t.bind(this));
       }
     };

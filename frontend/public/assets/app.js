@@ -1,5 +1,5 @@
 // Minimal app bootstrap that injects the original HTML content into #app
-// This file is intentionally small. 後續可以把各部分拆成模組元件。
+// This file is intentionally small. The following parts can be split into module components later.
 import gameHtml from './app-content.js';
 
 const mount = document.getElementById('app');

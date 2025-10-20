@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="login">登入</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .card { width: 360px; background:#0b0f1a; border:1px solid #2a2f3a; border-radius:12px; padding:20px; color:#fff; }
+    .title { font-size:18px; margin-bottom:12px; }
+    .row { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+    input { padding:10px; border-radius:8px; border:1px solid #3a4252; background:#0f1524; color:#fff; }
+    .btn { width:100%; padding:10px; border-radius:8px; border:1px solid #3a4252; background:#ffc857; color:#111; font-weight:600; cursor:pointer; }
+    .btn-secondary { margin-top:8px; background:transparent; color:#ffc857; border-color:#ffc857; }
+    .btn-secondary:hover { background:rgba(255,200,87,0.1); }
+    .sub { text-align:center; margin-top:10px; opacity:.85; }
+    .link { color:#ffc857; cursor:pointer; }
+    .error { color:#ff7b7b; font-size:13px; min-height:18px; }
+  </style>
+</head>
+<body class="gradient-bg">
+  <div class="card">
+    <div class="title" data-i18n="welcome">歡迎</div>
+    <div class="row">
+      <label data-i18n="email">電子郵件</label>
+      <input id="email" type="email" autocomplete="email" />
+    </div>
+    <div class="row">
+      <label data-i18n="passwordPlaceholder">密碼</label>
+      <input id="password" type="password" autocomplete="current-password" />
+    </div>
+    <div class="error" id="err"></div>
+    <button class="btn" id="btn-submit" data-i18n="login">登入</button>
+    <button class="btn btn-secondary" id="btn-cancel" type="button" data-i18n="backToPreviousPage">返回上一頁</button>
+    <div class="sub">
+      <span data-i18n="dontHaveAccount">沒有帳號？</span> <span class="link" id="link-signup" data-i18n="signup">註冊</span>
+    </div>
+  </div>
+
+  <script type="module" src="/components/supabase-client.js"></script>
+  <script type="module">
+    // 从 ?redirect= 读取回跳地址
+    const params = new URLSearchParams(location.search);
+    const redirect = params.get('redirect') || '/culture-selection.html';
+
+    const emailEl = document.getElementById('email');
+    const passEl  = document.getElementById('password');
+    const errEl   = document.getElementById('err');
+    const btn     = document.getElementById('btn-submit');
+    const linkSu  = document.getElementById('link-signup');
+    const btnCancel = document.getElementById('btn-cancel');
+
+    // Helper function to get translation
+    function t(key, fallback) {
+      if (window.i18next && typeof window.i18next.t === 'function') {
+        const result = window.i18next.t(key);
+        if (result && result !== key) {
+          return result;
+        }
+      }
+      return fallback;
+    }
+
+    let mode = 'login'; // 'login' or 'signup'
+    function setMode(m) {
+      mode = m;
+      btn.textContent = mode === 'login' ? t('login', '登入') : t('createAccount', '建立帳號');
+    }
+    setMode('login');
+
+    linkSu.addEventListener('click', ()=> setMode(mode === 'login' ? 'signup' : 'login'));
+
+    async function handleAuth() {
+      errEl.textContent = '';
+      const email = emailEl.value.trim();
+      const password = passEl.value;
+
+      if (!email || !password) {
+        errEl.textContent = t('pleaseEnterEmailPassword', '請輸入電子郵件和密碼');
+        return;
+      }
+
+      try {
+        if (mode === 'signup') {
+          // 注册
+          const { error } = await supabase.auth.signUp({ email, password });
+          if (error) throw error;
+          // 如果邮箱确认开启，这里会无 session，需要用户去邮箱确认后再登录
+        } else {
+          // 登录
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        }
+
+        // （可选）首次自动创建 profile
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess.session?.access_token;
+        if (token) {
+          await fetch('/api/auth/profile/init', {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({})
+          }).catch(()=>{});
+        }
+
+        // 跳回来源页
+        location.href = redirect;
+      } catch (e) {
+        errEl.textContent = e?.message || String(e);
+      }
+    }
+
+    btn.addEventListener('click', handleAuth);
+    btnCancel.addEventListener('click', () => {
+      const ref = document.referrer;
+      let canReturn = false;
+      if (ref) {
+        try {
+          canReturn = new URL(ref).origin === location.origin;
+        } catch (_) {
+          canReturn = false;
+        }
+      }
+      if (canReturn) {
+        history.back();
+      } else {
+        location.href = redirect;
+      }
+    });
+    // Enter 提交
+    [emailEl, passEl].forEach(node => node.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleAuth();
+    }));
+    
+    // Listen for language changes and update button text
+    window.addEventListener('i18n-language-changed', () => {
+      setMode(mode); // Re-apply the current mode to update button text
+    });
+  </script>
+</body>
+</html>

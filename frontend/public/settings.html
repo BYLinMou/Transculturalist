@@ -49,6 +49,24 @@
       <h2 class="text-title-lg font-bold text-gold-300" data-i18n="userSettings">用戶設定</h2>
     </div>
 
+    <!-- Login Status Card -->
+    <div class="mb-6 bg-gradient-to-r from-gray-900 to-gray-800 bg-opacity-90 p-6 rounded-xl border-2 border-gold-500 shadow-xl">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gold-300 text-gray-900 text-xl">
+            <span id="settings-auth-icon" aria-hidden="true">🔐</span>
+          </div>
+          <div>
+            <p class="text-title font-bold text-gold-200" data-i18n="loginStatus">登入狀態</p>
+            <p class="text-body text-gray-300" id="settings-auth-status">檢查中...</p>
+          </div>
+        </div>
+        <button id="settings-btn-auth" class="px-6 py-3 text-body font-semibold rounded-lg bg-gold-600 text-gray-900 hover:bg-gold-700 transition shadow-lg">
+          登入
+        </button>
+      </div>
+    </div>
+
     <div class="grid md:grid-cols-2 gap-6">
       <!-- Account Settings -->
       <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
@@ -61,13 +79,13 @@
         <div class="space-y-4">
           <div>
             <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="username">用戶名稱</label>
-            <input type="text" id="username" value="文化愛好者" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500" data-i18n-placeholder="username">
+            <input type="text" id="username" value="文化爱好者" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500" data-i18n-placeholder="username">
           </div>
           <div>
             <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="email">電子郵件</label>
             <input type="email" id="email" placeholder="your@email.com" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500" data-i18n-placeholder="email">
           </div>
-          <button class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body" data-i18n="saveChanges">
+          <button id="save-profile-btn" type="button" class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body" data-i18n="saveChanges">
             儲存變更
           </button>
         </div>
@@ -190,42 +208,242 @@
     </div>
   </main>
 
-  <script>
-    // Save settings to localStorage
-    document.querySelector('.bg-gold-600.text-black').addEventListener('click', function() {
-      const username = document.getElementById('username').value;
-      const email = document.getElementById('email').value;
-      
-      localStorage.setItem('username', username);
-      localStorage.setItem('email', email);
-      
-      alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已儲存！');
-    });
+  <script type="module">
+    import { authFetch } from '/components/supabase-client.js';
 
-    // Load settings from localStorage
-    window.addEventListener('load', function() {
+    const DEFAULT_NAME = '文化爱好者';
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const saveBtn = document.getElementById('save-profile-btn');
+    const supabaseClient = window.supabase;
+    
+    // Login status elements
+    const settingsAuthIcon = document.getElementById('settings-auth-icon');
+    const settingsAuthStatus = document.getElementById('settings-auth-status');
+    const settingsAuthBtn = document.getElementById('settings-btn-auth');
+
+    function getI18nText(key, fallback) {
+      if (window.i18next) {
+        const translated = window.i18next.t(key);
+        if (translated && translated !== key) return translated;
+      }
+      return fallback;
+    }
+
+    async function waitForI18n() {
+      // Wait for i18next to be ready with translations
+      return new Promise((resolve) => {
+        const checkI18n = setInterval(() => {
+          // Check if window.updatePageText exists and i18next is initialized
+          if (window.i18next && window.updatePageText) {
+            // Try to get the translation - if it's not just the key, it's loaded
+            const result = window.i18next.t('anonymous');
+            // Also check a common key to verify translations are actually loaded
+            const userSettingsTranslated = window.i18next.t('userSettings');
+            
+            if (result && result !== 'anonymous' && userSettingsTranslated && userSettingsTranslated !== 'userSettings') {
+              clearInterval(checkI18n);
+              resolve();
+              return;
+            }
+          }
+        }, 100);
+        
+        // Timeout after 3 seconds - proceed anyway
+        setTimeout(() => {
+          clearInterval(checkI18n);
+          console.warn('i18next initialization timeout - proceeding anyway');
+          resolve();
+        }, 3000);
+      });
+    }
+
+    function lockEmailInput(value) {
+      emailInput.value = value || '';
+      emailInput.disabled = true;
+      emailInput.classList.add('opacity-60', 'cursor-not-allowed');
+    }
+
+    function unlockEmailInput() {
+      emailInput.disabled = false;
+      emailInput.classList.remove('opacity-60', 'cursor-not-allowed');
+    }
+
+    function loadLocalSettings() {
+      unlockEmailInput();
       const savedUsername = localStorage.getItem('username');
       const savedEmail = localStorage.getItem('email');
-      
-      if (savedUsername) {
-        document.getElementById('username').value = savedUsername;
-      }
+      usernameInput.value = savedUsername || DEFAULT_NAME;
       if (savedEmail) {
-        document.getElementById('email').value = savedEmail;
+        emailInput.value = savedEmail;
+      } else {
+        // Get translated "anonymous" from i18next
+        const anonymousText = window.i18next?.t('anonymous') || 'anonymous';
+        console.log('loadLocalSettings - anonymousText:', anonymousText, 'currentLanguage:', window.i18next?.currentLanguage);
+        lockEmailInput(anonymousText);
       }
+    }
 
-      // Load version info
-      fetch('/api/version')
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('app-version').textContent = data.version;
-          document.getElementById('publish-date').textContent = data.publishDate;
-        })
-        .catch(err => {
-          console.error('Failed to load version info:', err);
-          document.getElementById('app-version').textContent = '無法載入';
-          document.getElementById('publish-date').textContent = '無法載入';
+    async function loadRemoteProfile() {
+      try {
+        if (!supabaseClient) {
+          loadLocalSettings();
+          return;
+        }
+
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        if (!sessionData.session) {
+          loadLocalSettings();
+          return;
+        }
+
+        const { data: userData } = await supabaseClient.auth.getUser();
+        const email = userData?.user?.email || '';
+        lockEmailInput(email);
+
+        const response = await authFetch('/api/auth/me');
+        const payload = await response.json();
+        const displayName = (payload.profile?.display_name || '').trim() || DEFAULT_NAME;
+        usernameInput.value = displayName;
+        localStorage.setItem('username', displayName);
+      } catch (error) {
+        console.error('Failed to load remote profile:', error);
+        loadLocalSettings();
+      }
+    }
+
+    async function loadVersionInfo() {
+      try {
+        const response = await fetch('/api/version');
+        const data = await response.json();
+        document.getElementById('app-version').textContent = data.version;
+        document.getElementById('publish-date').textContent = data.publishDate;
+      } catch (err) {
+        console.error('Failed to load version info:', err);
+        document.getElementById('app-version').textContent = '無法載入';
+        document.getElementById('publish-date').textContent = '無法載入';
+      }
+    }
+
+    saveBtn.addEventListener('click', async () => {
+      const desiredName = usernameInput.value.trim() || DEFAULT_NAME;
+
+      try {
+        if (!supabaseClient) {
+          localStorage.setItem('username', desiredName);
+          alert(getI18nText('settingsSaved', '設定已儲存！'));
+          return;
+        }
+
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        if (!sessionData.session) {
+          localStorage.setItem('username', desiredName);
+          alert(getI18nText('settingsSaved', '設定已儲存！'));
+          return;
+        }
+
+        const response = await authFetch('/api/auth/me', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ display_name: desiredName })
         });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.error || 'Failed to update profile');
+        }
+
+        const updatedName = (payload.profile?.display_name || '').trim() || desiredName;
+        usernameInput.value = updatedName;
+        localStorage.setItem('username', updatedName);
+        alert(getI18nText('settingsSaved', '設定已儲存！'));
+      } catch (error) {
+        console.error('Failed to save settings:', error);
+        alert(getI18nText('settingsSaveFailed', '無法儲存設定，請稍後再試。'));
+      }
+    });
+
+    // Update login status card
+    async function updateLoginStatus() {
+      if (!supabaseClient) {
+        settingsAuthStatus.textContent = getI18nText('browsingAsGuest', '您正在作為訪客瀏覽');
+        settingsAuthBtn.textContent = getI18nText('login', '登入');
+        settingsAuthIcon.textContent = '🔐';
+        return;
+      }
+      
+      const { data } = await supabaseClient.auth.getSession();
+      const session = data.session;
+      
+      if (session) {
+        const email = session.user?.email;
+        settingsAuthStatus.textContent = email ? `${getI18nText('signedInAs', '已登入為')} ${email}` : getI18nText('signedIn', '已登入');
+        settingsAuthBtn.textContent = getI18nText('logout', '登出');
+        settingsAuthIcon.textContent = '👋';
+      } else {
+        settingsAuthStatus.textContent = getI18nText('browsingAsGuest', '您正在作為訪客瀏覽');
+        settingsAuthBtn.textContent = getI18nText('login', '登入');
+        settingsAuthIcon.textContent = '🔐';
+      }
+    }
+    
+    // Handle login/logout button click
+    if (settingsAuthBtn) {
+      settingsAuthBtn.addEventListener('click', async () => {
+        if (!supabaseClient) {
+          const redirect = encodeURIComponent(location.pathname + location.search);
+          location.href = `/components/login.html?redirect=${redirect}`;
+          return;
+        }
+        
+        const { data } = await supabaseClient.auth.getSession();
+        if (data.session) {
+          // Logout
+          await supabaseClient.auth.signOut();
+          location.reload();
+        } else {
+          // Go to login
+          const redirect = encodeURIComponent(location.pathname + location.search);
+          location.href = `/components/login.html?redirect=${redirect}`;
+        }
+      });
+    }
+
+    window.addEventListener('load', async () => {
+      // Wait for i18next to be ready before loading profile
+      await waitForI18n();
+      loadRemoteProfile();
+      loadVersionInfo();
+      updateLoginStatus();
+    });
+
+    // Listen for i18next language change event
+    window.addEventListener('i18n-language-changed', (event) => {
+      console.log('i18n language changed to:', event.detail.language);
+      // If email input is showing a translation of "anonymous", update it
+      if (emailInput.disabled && !emailInput.value.includes('@')) {
+        // This is likely the anonymous placeholder, not a real email
+        const newAnonymousText = window.i18next?.t('anonymous') || 'anonymous';
+        lockEmailInput(newAnonymousText);
+        console.log('Updated anonymous text to:', newAnonymousText);
+      }
+      // Update login status card text
+      updateLoginStatus();
+    });
+
+    // Also listen for storage changes (for multi-tab language sync)
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'language') {
+        console.log('Language changed in another tab to:', event.newValue);
+        // If email input is showing a translation of "anonymous", update it
+        if (emailInput.disabled && !emailInput.value.includes('@')) {
+          // Wait a bit for i18next to update
+          setTimeout(() => {
+            const newAnonymousText = window.i18next?.t('anonymous') || 'anonymous';
+            lockEmailInput(newAnonymousText);
+            console.log('Updated anonymous text to:', newAnonymousText);
+          }, 100);
+        }
+      }
     });
   </script>
 </body>

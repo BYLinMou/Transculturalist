@@ -24,11 +24,34 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 - **AI Integration**: OpenAI API
 - **Containerization**: Docker & Docker Compose
 
+
 ## Prerequisites
 
 - Node.js (v14 or higher)
 - Docker & Docker Compose (for containerized deployment)
 - OpenAI API key
+
+## Configuration
+
+All configuration is managed in `server/config.js`. You can copy and edit `server/config.example.js` as a template:
+
+```
+cp server/config.example.js server/config.js
+```
+
+Edit `server/config.js` and fill in your keys:
+
+````javascript
+module.exports = {
+   OPENAI_API_KEY: 'your-openai-api-key-here',
+   BASE_URL: 'https://api.openai.com/v1',
+   DEFAULT_MODEL: 'gpt-4o-mini',
+   PORT: 3030,
+   ENABLE_AUTH: false, // Set to true to enable Supabase authentication
+   SUPABASE_URL: '',   // Only needed if ENABLE_AUTH is true
+   SUPABASE_ANON_KEY: '',
+};
+````
 
 ## Installation
 
@@ -38,14 +61,7 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 
 You can run the application in any folder you like. You do NOT need to clone the whole repository—just prepare the following files:
 
-1. **Create a `config.js` file** in your chosen folder (you can copy the template below):
-   ```javascript
-   module.exports = {
-     OPENAI_API_KEY: 'your-openai-api-key-here',
-     BASE_URL: 'https://api.openai.com/v1',
-     DEFAULT_MODEL: 'gpt-4o-mini'
-   };
-   ```
+1. **Configure your settings**: See the [Configuration](#configuration) section above to create and edit your `config.js` file.
 
 2. In your folder, run one of the following commands (use an absolute path or `${PWD}` for config.js):
 
@@ -74,12 +90,7 @@ If you prefer to build the image locally:
    cd Transculturalist
    ```
 
-2. Configure the API keys (same as above):
-   ```bash
-   cd server
-   cp config.example.js config.js
-   ```
-   Edit `server/config.js` and add your OpenAI API key and base URL.
+2. **Configure your settings**: See the [Configuration](#configuration) section above to create and edit your `config.js` file.
 
 3. Build and run the application:
    ```bash
@@ -89,7 +100,7 @@ If you prefer to build the image locally:
 The application will be available at `http://localhost:3030`
 
 
-### Option 2: Local Development
+### Option 2: Using Node.js
 
 1. Clone the repository:
    ```bash
@@ -110,19 +121,7 @@ The application will be available at `http://localhost:3030`
    cd ..
    ```
 
-3. Configure API keys:
-   ```bash
-   cd server
-   cp config.example.js config.js
-   ```
-   Edit `config.js` and add your OpenAI API key and base URL:
-   ```javascript
-   module.exports = {
-     OPENAI_API_KEY: 'your-openai-api-key-here',
-     BASE_URL: 'https://api.openai.com/v1',
-     DEFAULT_MODEL: 'gpt-4o-mini'
-   };
-   ```
+3. **Configure your settings**: See the [Configuration](#configuration) section above to create and edit your `config.js` file.
 
 4. Build the frontend:
    ```bash
@@ -140,14 +139,6 @@ The application will be available at `http://localhost:3030`
    ```
 
 6. Open your browser and navigate to `http://localhost:3030`
-
-## Configuration
-
-The server configuration is handled through `server/config.js`:
-
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `BASE_URL`: OpenAI API base URL (e.g. https://api.openai.com/v1)
-- `DEFAULT_MODEL`: Default AI model to use (e.g. gpt-4o-mini)
 
 ## API Endpoints
 
