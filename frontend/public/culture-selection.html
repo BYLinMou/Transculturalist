@@ -19,20 +19,20 @@
   <header></header>
 
   <!-- 🔸 新增登录区域 -->
-  <!-- 顶部登录状态卡片 -->
-  <section class="container mx-auto mt-6">
+  <!-- 顶部登录状态卡片 - 僅在未登入時顯示 -->
+  <section id="auth-prompt-section" class="container mx-auto mt-6" style="display: none;">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-900 bg-opacity-80 border border-gold-300 rounded-xl px-6 py-5 shadow-lg">
       <div class="flex items-center gap-3 text-center sm:text-left">
         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gold-300 text-gray-900 text-title">
           <span id="auth-icon" aria-hidden="true">🔐</span>
         </div>
         <div>
-          <p class="text-title font-semibold text-gold-200" id="auth-status">Checking session…</p>
-          <p class="text-body-sm text-gray-400" id="auth-hint">Log in to save your progress and tailor your cultural journey.</p>
+          <p class="text-title font-semibold text-gold-200" id="auth-status" data-i18n="checkingSession">檢查會話...</p>
+          <p class="text-body-sm text-gray-400" id="auth-hint" data-i18n="loginToSaveProgress">登入以保存您的進度並定制您的文化之旅。</p>
         </div>
       </div>
-      <button id="btn-auth" class="w-full sm:w-auto px-6 py-3 text-title font-semibold rounded-xl gold-gradient text-gray-900 shadow-lg hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-200 focus:ring-offset-gray-900">
-        Log In
+      <button id="btn-auth" class="w-full sm:w-auto px-6 py-3 text-title font-semibold rounded-xl gold-gradient text-gray-900 shadow-lg hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-200 focus:ring-offset-gray-900" data-i18n="login">
+        登入
       </button>
     </div>
   </section>
@@ -40,47 +40,60 @@
   <!-- 加载 supabase 客户端 -->
   <script type="module" src="/components/supabase-client.js"></script>
   <script type="module">
-    // 根据登录状态决定按钮文案；点击后：已登录则登出；未登录则跳转到登录页
+    // 根据登录状态决定是否显示登录提示卡片
+    const authSection = document.getElementById('auth-prompt-section');
     const btn = document.getElementById('btn-auth');
     const statusEl = document.getElementById('auth-status');
     const hintEl = document.getElementById('auth-hint');
     const iconEl = document.getElementById('auth-icon');
 
-    if (!btn) {
-      console.warn('Auth button not found on culture selection page.');
+    if (!btn || !authSection) {
+      console.warn('Auth elements not found on culture selection page.');
     } else {
+      // Helper function to get translation
+      function t(key, fallback) {
+        if (window.i18next && typeof window.i18next.t === 'function') {
+          const result = window.i18next.t(key);
+          if (result && result !== key) {
+            return result;
+          }
+        }
+        return fallback;
+      }
+
       async function refreshButton() {
         const { data } = await supabase.auth.getSession();
         const session = data.session;
 
-        btn.textContent = session ? 'Log Out' : 'Log In';
-        btn.setAttribute('aria-label', session ? 'Log out of your account' : 'Log in to your account');
-
-        if (statusEl) {
-          if (session) {
-            const email = session.user?.email;
-            statusEl.textContent = email ? `Signed in as ${email}` : 'Signed in';
-          } else {
-            statusEl.textContent = 'You are browsing as a guest';
+        // 如果已登入，隱藏整個登入提示卡片
+        if (session) {
+          authSection.style.display = 'none';
+        } else {
+          // 未登入時顯示登入提示卡片
+          authSection.style.display = 'block';
+          btn.textContent = t('login', '登入');
+          btn.setAttribute('aria-label', t('login', '登入'));
+          
+          if (statusEl) {
+            statusEl.textContent = t('browsingAsGuest', '您正在作為訪客瀏覽');
           }
-        }
-
-        if (hintEl) {
-          hintEl.textContent = session
-            ? 'Log out to switch accounts or secure your session.'
-            : 'Log in to save progress and unlock personalized recommendations.';
-        }
-
-        if (iconEl) {
-          iconEl.textContent = session ? 'Hi' : '🔐';
+          
+          if (hintEl) {
+            hintEl.textContent = t('loginHint', '登入以保存進度並解鎖個性化推薦。');
+          }
+          
+          if (iconEl) {
+            iconEl.textContent = '🔐';
+          }
         }
       }
 
       btn.addEventListener('click', async () => {
         const { data } = await supabase.auth.getSession();
         if (data.session) {
+          // 已登入的情況（理論上不會執行到這裡，因為按鈕已隱藏）
           await supabase.auth.signOut();
-          await refreshButton();
+          location.reload();
         } else {
           // 跳转到独立登录页，并带回跳地址
           const redirect = encodeURIComponent(location.pathname + location.search);
@@ -89,6 +102,11 @@
       });
 
       refreshButton();
+      
+      // Listen for language changes and update button text
+      window.addEventListener('i18n-language-changed', () => {
+        refreshButton();
+      });
     }
   </script>
 
@@ -152,10 +170,10 @@
   <!-- 🔸 新增脚本测试 /api/auth/me -->
   <script type="module">
     import { authFetch } from '/components/supabase-client.js';
-    const btn = document.getElementById('btn-me');
+    const btnTest = document.getElementById('btn-me');
     const out = document.getElementById('me-out');
-    if (btn) {
-      btn.onclick = async () => {
+    if (btnTest) {
+      btnTest.onclick = async () => {
         try {
           const r = await authFetch('/api/auth/me');
           out.textContent = JSON.stringify(await r.json(), null, 2);

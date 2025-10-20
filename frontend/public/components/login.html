@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Log in</title>
+  <title data-i18n="login">登入</title>
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
   <style>
     body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
     .card { width: 360px; background:#0b0f1a; border:1px solid #2a2f3a; border-radius:12px; padding:20px; color:#fff; }
@@ -21,20 +22,20 @@
 </head>
 <body class="gradient-bg">
   <div class="card">
-    <div class="title">Welcome</div>
+    <div class="title" data-i18n="welcome">歡迎</div>
     <div class="row">
-      <label>Email</label>
+      <label data-i18n="email">電子郵件</label>
       <input id="email" type="email" autocomplete="email" />
     </div>
     <div class="row">
-      <label>Password</label>
+      <label data-i18n="passwordPlaceholder">密碼</label>
       <input id="password" type="password" autocomplete="current-password" />
     </div>
     <div class="error" id="err"></div>
-    <button class="btn" id="btn-submit">Log in</button>
-    <button class="btn btn-secondary" id="btn-cancel" type="button">Back to previous page</button>
+    <button class="btn" id="btn-submit" data-i18n="login">登入</button>
+    <button class="btn btn-secondary" id="btn-cancel" type="button" data-i18n="backToPreviousPage">返回上一頁</button>
     <div class="sub">
-      Don’t have an account? <span class="link" id="link-signup">Sign up</span>
+      <span data-i18n="dontHaveAccount">沒有帳號？</span> <span class="link" id="link-signup" data-i18n="signup">註冊</span>
     </div>
   </div>
 
@@ -51,10 +52,21 @@
     const linkSu  = document.getElementById('link-signup');
     const btnCancel = document.getElementById('btn-cancel');
 
+    // Helper function to get translation
+    function t(key, fallback) {
+      if (window.i18next && typeof window.i18next.t === 'function') {
+        const result = window.i18next.t(key);
+        if (result && result !== key) {
+          return result;
+        }
+      }
+      return fallback;
+    }
+
     let mode = 'login'; // 'login' or 'signup'
     function setMode(m) {
       mode = m;
-      btn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+      btn.textContent = mode === 'login' ? t('login', '登入') : t('createAccount', '建立帳號');
     }
     setMode('login');
 
@@ -66,7 +78,7 @@
       const password = passEl.value;
 
       if (!email || !password) {
-        errEl.textContent = 'Please enter email & password';
+        errEl.textContent = t('pleaseEnterEmailPassword', '請輸入電子郵件和密碼');
         return;
       }
 
@@ -121,6 +133,11 @@
     [emailEl, passEl].forEach(node => node.addEventListener('keydown', e => {
       if (e.key === 'Enter') handleAuth();
     }));
+    
+    // Listen for language changes and update button text
+    window.addEventListener('i18n-language-changed', () => {
+      setMode(mode); // Re-apply the current mode to update button text
+    });
   </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // frontend/public/components/auth-widget.js
-// 作用：在页面上渲染一个小部件，显示当前用户、登录/登出按钮、测试按钮等
+// Purpose: Render a small widget on the page, displaying the current user, login/logout buttons, test buttons, etc.
 import { authFetch } from './supabase-client.js';
 
 function html(strings, ...vals){ return strings.map((s,i)=>s+(vals[i]??'')).join(''); }
@@ -7,17 +7,34 @@ function html(strings, ...vals){ return strings.map((s,i)=>s+(vals[i]??'')).join
 async function render(container) {
   const { data: { user } } = await window.supabase.auth.getUser();
   
-  // Get the translated "anonymous" text
-  const getAnonymousText = () => {
-    return window.i18next?.t('anonymous') || '匿名';
+  // Get translated text using i18next
+  const t = (key, fallback) => {
+    if (window.i18next && typeof window.i18next.t === 'function') {
+      const result = window.i18next.t(key);
+      // If result is not the key itself, translation is loaded
+      if (result && result !== key) {
+        return result;
+      }
+    }
+    return fallback;
   };
-  const anonymousText = getAnonymousText();
+  
+  const anonymousText = t('anonymous', '匿名');
+  const loginStatusText = t('loginStatus', '登入狀態');
+  const logoutText = t('logout', '登出');
+  const testApiText = t('testApi', '測試 API');
+  const signupText = t('signup', '註冊');
+  const loginText = t('login', '登入');
+  const emailPlaceholder = t('emailPlaceholder', 'email');
+  const passwordPlaceholder = t('passwordPlaceholder', 'password');
+  
+  // console.log('auth-widget render - loginStatusText:', loginStatusText, 'currentLanguage:', window.i18next?.currentLanguage);
 
   container.innerHTML = html`
     <style>
         .auth-widget { display:flex; gap:8px; align-items:center; flex-wrap:wrap; font: 14px/1.4 system-ui; }
         .auth-email { opacity:.85 }
-        /* 关键改动：强制按钮与输入用深色文字，避免被全局 text-white 影响 */
+        /* Key change: Force buttons and inputs to use dark text to avoid being affected by global text-white */
         .auth-btn, .auth-input {
         padding:6px 10px;
         border:1px solid #ccc;
@@ -28,16 +45,16 @@ async function render(container) {
         .auth-btn { cursor:pointer; }
     </style>
     <div class="auth-widget">
-        <span>登録状態：</span>
+        <span>${loginStatusText}：</span>
         <span class="auth-email">${user ? user.email : anonymousText}</span>
         ${user ? `
-        <button type="button" class="auth-btn" id="btn-logout">退出</button>
-        <button type="button" class="auth-btn" id="btn-me">测试 /api/auth/me</button>
+        <button type="button" class="auth-btn" id="btn-logout">${logoutText}</button>
+        <button type="button" class="auth-btn" id="btn-me">${testApiText}</button>
         ` : `
-        <input class="auth-input" id="in-email" placeholder="email" />
-        <input class="auth-input" id="in-pass" type="password" placeholder="password" />
-        <button type="button" class="auth-btn" id="btn-signup">注册</button>
-        <button type="button" class="auth-btn" id="btn-login">登录</button>
+        <input class="auth-input" id="in-email" placeholder="${emailPlaceholder}" />
+        <input class="auth-input" id="in-pass" type="password" placeholder="${passwordPlaceholder}" />
+        <button type="button" class="auth-btn" id="btn-signup">${signupText}</button>
+        <button type="button" class="auth-btn" id="btn-login">${loginText}</button>
         `}
     </div>
     <pre id="auth-log" style="margin-top:8px; white-space:pre-wrap; padding:8px; border:1px solid #eee; max-width:680px; background:#fff; color:#111;"></pre>
@@ -58,11 +75,11 @@ async function render(container) {
       const password = container.querySelector('#in-pass').value;
       const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
       log(error ? error.message : { tokenStart: data?.session?.access_token?.slice(0,24)+'...' });
-      if (!error) location.reload(); // 刷新以更新部件显示
+      if (!error) location.reload(); // Refresh to update widget display
     };
   } else {
     container.querySelector('#btn-logout').onclick = async () => {
-      // 清除保存的 email 和相關資訊
+      // Clear saved email and related information
       localStorage.removeItem('email');
       localStorage.removeItem('username');
       await window.supabase.auth.signOut();
@@ -75,11 +92,59 @@ async function render(container) {
   }
 }
 
-// 自动在有 #auth-widget 的元素上渲染
-window.addEventListener('DOMContentLoaded', ()=>{
+// Wait for i18next to be ready
+async function waitForI18n() {
+  return new Promise((resolve) => {
+    const checkI18n = setInterval(() => {
+      if (window.i18next && typeof window.i18next.t === 'function') {
+        const testTranslation = window.i18next.t('loginStatus');
+        // If translation is loaded (not just returning the key)
+        if (testTranslation && testTranslation !== 'loginStatus') {
+          clearInterval(checkI18n);
+          resolve();
+          return;
+        }
+      }
+    }, 100);
+    
+    // Timeout after 3 seconds
+    setTimeout(() => {
+      clearInterval(checkI18n);
+      console.warn('auth-widget: i18next timeout, rendering with fallbacks');
+      resolve();
+    }, 3000);
+  });
+}
+
+// Automatically render on elements with #auth-widget
+window.addEventListener('DOMContentLoaded', async ()=>{
   const host = document.querySelector('#auth-widget');
-  if (host) render(host);
+  if (host) {
+    await waitForI18n();
+    await render(host);
+  }
 });
 
-// 也导出一个手动渲染函数（可选）
+// Also listen for load event to ensure rendering after all resources are loaded
+window.addEventListener('load', async ()=>{
+  const host = document.querySelector('#auth-widget');
+  if (host && !host.querySelector('.auth-widget')) {
+    // If widget hasn't been rendered yet, render it now
+    await waitForI18n();
+    await render(host);
+  }
+});
+
+// Listen for language change events, re-render to update translations
+window.addEventListener('i18n-language-changed', async () => {
+  const host = document.querySelector('#auth-widget');
+  if (host) {
+    // console.log('auth-widget: Language changed, re-rendering');
+    // Wait a bit for translations to update
+    await new Promise(resolve => setTimeout(resolve, 50));
+    render(host);
+  }
+});
+
+// Also export a manual rendering function (optional)
 export function mountAuthWidget(el){ render(el); }

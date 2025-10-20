@@ -49,6 +49,24 @@
       <h2 class="text-title-lg font-bold text-gold-300" data-i18n="userSettings">用戶設定</h2>
     </div>
 
+    <!-- Login Status Card -->
+    <div class="mb-6 bg-gradient-to-r from-gray-900 to-gray-800 bg-opacity-90 p-6 rounded-xl border-2 border-gold-500 shadow-xl">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gold-300 text-gray-900 text-xl">
+            <span id="settings-auth-icon" aria-hidden="true">🔐</span>
+          </div>
+          <div>
+            <p class="text-title font-bold text-gold-200" data-i18n="loginStatus">登入狀態</p>
+            <p class="text-body text-gray-300" id="settings-auth-status">檢查中...</p>
+          </div>
+        </div>
+        <button id="settings-btn-auth" class="px-6 py-3 text-body font-semibold rounded-lg bg-gold-600 text-gray-900 hover:bg-gold-700 transition shadow-lg">
+          登入
+        </button>
+      </div>
+    </div>
+
     <div class="grid md:grid-cols-2 gap-6">
       <!-- Account Settings -->
       <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
@@ -198,6 +216,11 @@
     const emailInput = document.getElementById('email');
     const saveBtn = document.getElementById('save-profile-btn');
     const supabaseClient = window.supabase;
+    
+    // Login status elements
+    const settingsAuthIcon = document.getElementById('settings-auth-icon');
+    const settingsAuthStatus = document.getElementById('settings-auth-status');
+    const settingsAuthBtn = document.getElementById('settings-btn-auth');
 
     function getI18nText(key, fallback) {
       if (window.i18next) {
@@ -339,11 +362,58 @@
       }
     });
 
+    // Update login status card
+    async function updateLoginStatus() {
+      if (!supabaseClient) {
+        settingsAuthStatus.textContent = getI18nText('browsingAsGuest', '您正在作為訪客瀏覽');
+        settingsAuthBtn.textContent = getI18nText('login', '登入');
+        settingsAuthIcon.textContent = '🔐';
+        return;
+      }
+      
+      const { data } = await supabaseClient.auth.getSession();
+      const session = data.session;
+      
+      if (session) {
+        const email = session.user?.email;
+        settingsAuthStatus.textContent = email ? `${getI18nText('signedInAs', '已登入為')} ${email}` : getI18nText('signedIn', '已登入');
+        settingsAuthBtn.textContent = getI18nText('logout', '登出');
+        settingsAuthIcon.textContent = '👋';
+      } else {
+        settingsAuthStatus.textContent = getI18nText('browsingAsGuest', '您正在作為訪客瀏覽');
+        settingsAuthBtn.textContent = getI18nText('login', '登入');
+        settingsAuthIcon.textContent = '🔐';
+      }
+    }
+    
+    // Handle login/logout button click
+    if (settingsAuthBtn) {
+      settingsAuthBtn.addEventListener('click', async () => {
+        if (!supabaseClient) {
+          const redirect = encodeURIComponent(location.pathname + location.search);
+          location.href = `/components/login.html?redirect=${redirect}`;
+          return;
+        }
+        
+        const { data } = await supabaseClient.auth.getSession();
+        if (data.session) {
+          // Logout
+          await supabaseClient.auth.signOut();
+          location.reload();
+        } else {
+          // Go to login
+          const redirect = encodeURIComponent(location.pathname + location.search);
+          location.href = `/components/login.html?redirect=${redirect}`;
+        }
+      });
+    }
+
     window.addEventListener('load', async () => {
       // Wait for i18next to be ready before loading profile
       await waitForI18n();
       loadRemoteProfile();
       loadVersionInfo();
+      updateLoginStatus();
     });
 
     // Listen for i18next language change event
@@ -356,6 +426,8 @@
         lockEmailInput(newAnonymousText);
         console.log('Updated anonymous text to:', newAnonymousText);
       }
+      // Update login status card text
+      updateLoginStatus();
     });
 
     // Also listen for storage changes (for multi-tab language sync)
