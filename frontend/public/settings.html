@@ -83,30 +83,30 @@
           <div class="flex items-center justify-between">
             <span class="text-gray-300 text-body" data-i18n="gameSound">遊戲音效</span>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked class="sr-only peer">
+              <input type="checkbox" id="gameSound-toggle" checked class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-gray-300 text-body" data-i18n="backgroundMusic">背景音樂</span>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer">
+              <input type="checkbox" id="backgroundMusic-toggle" class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-gray-300 text-body" data-i18n="notifications">通知提醒</span>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked class="sr-only peer">
+              <input type="checkbox" id="notifications-toggle" checked class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div>
             <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="difficulty">遊戲難度</label>
-            <select class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500">
-              <option data-i18n="easy">簡單</option>
-              <option selected data-i18n="medium">中等</option>
-              <option data-i18n="hard">困難</option>
+            <select id="difficulty-select" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500">
+              <option value="easy" data-i18n="easy">簡單</option>
+              <option value="medium" selected data-i18n="medium">中等</option>
+              <option value="hard" data-i18n="hard">困難</option>
             </select>
           </div>
         </div>
@@ -207,6 +207,62 @@
   </main>
 
   <script>
+    // Default preferences constant
+    const DEFAULT_PREFERENCES = {
+      gameSound: true,
+      backgroundMusic: true,
+      notifications: true,
+      difficulty: 'medium'
+    };
+
+    // Refresh user info from database (to sync changes made on other devices)
+    async function refreshUserInfoFromDatabase() {
+      if (!window.auth || !window.auth.isLoggedIn()) {
+        return; // Not logged in, skip
+      }
+
+      try {
+        const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+        if (!authUser.id || !authUser.token) {
+          return; // No user ID or token
+        }
+
+        // Fetch latest user info from backend
+        const response = await fetch('/api/user/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authUser.token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user) {
+            // Update localStorage with latest user info
+            const updatedUser = {
+              ...authUser,
+              username: data.user.username,
+              email: data.user.email
+            };
+            localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+            
+            // Update window.auth object
+            if (window.auth && window.auth.currentUser) {
+              window.auth.currentUser = updatedUser;
+            }
+            
+            console.log('[Settings] User info refreshed from database:', updatedUser.username);
+            return true;
+          }
+        } else {
+          console.warn('[Settings] Failed to refresh user info from database');
+        }
+      } catch (error) {
+        console.error('[Settings] Error refreshing user info:', error);
+      }
+      return false;
+    }
+
     // Update account settings UI based on auth state
     function updateAccountSettingsUI() {
       console.log('[Settings] Updating account settings UI');
@@ -349,17 +405,17 @@
         },
         // Preference settings
         preferences: {
-          gameSound: document.querySelector('input[type="checkbox"]:nth-of-type(1)')?.checked || false,
-          backgroundMusic: document.querySelector('input[type="checkbox"]:nth-of-type(2)')?.checked || false,
-          notifications: document.querySelector('input[type="checkbox"]:nth-of-type(3)')?.checked || false,
-          difficulty: document.querySelector('select')?.value || 'medium'
+          gameSound: document.getElementById('gameSound-toggle')?.checked || false,
+          backgroundMusic: document.getElementById('backgroundMusic-toggle')?.checked || false,
+          notifications: document.getElementById('notifications-toggle')?.checked || false,
+          difficulty: document.getElementById('difficulty-select')?.value || 'medium'
         }
       };
       return settings;
     }
 
     // Handle saving all settings
-    function handleSaveAllSettings() {
+    async function handleSaveAllSettings() {
       const settings = collectAllSettings();
       
       // Validate username if logged in
@@ -370,16 +426,87 @@
         }
       }
 
-      // TODO: Send all settings to backend
-      // For now, save to localStorage for preferences
-      localStorage.setItem('userSettings', JSON.stringify(settings));
-      
-      console.log('All settings saved:', settings);
-      alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已保存');
+      // Check if user is logged in
+      if (window.auth && window.auth.isLoggedIn()) {
+        try {
+          // Get auth token from storage if available
+          const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+          
+          // Save preferences to database
+          const preferencesResponse = await fetch('/api/user/settings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authUser.token || ''}`
+            },
+            body: JSON.stringify({
+              preferences: settings.preferences
+            })
+          });
+
+          if (!preferencesResponse.ok) {
+            const error = await preferencesResponse.json();
+            throw new Error(error.error || '保存偏好設定失敗');
+          }
+
+          // Update profile (username) if changed
+          if (settings.account.username) {
+            const profileResponse = await fetch('/api/user/profile', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authUser.token || ''}`
+              },
+              body: JSON.stringify({
+                username: settings.account.username
+              })
+            });
+
+            if (!profileResponse.ok) {
+              const error = await profileResponse.json();
+              throw new Error(error.error || '保存帳號設定失敗');
+            }
+
+            // Update local storage with new username
+            authUser.username = settings.account.username;
+            localStorage.setItem('auth_user', JSON.stringify(authUser));
+
+            // 自动更新所有UI显示的用户名
+            // 1. 更新“登入為”区域
+            const authStatusContainer = document.getElementById('authStatusContainer');
+            if (authStatusContainer) {
+              const loginAsSpan = authStatusContainer.querySelector('strong');
+              if (loginAsSpan) {
+                loginAsSpan.textContent = settings.account.username;
+              }
+            }
+            // 2. 更新个人信息输入框
+            const usernameInput = document.getElementById('username');
+            if (usernameInput) {
+              usernameInput.value = settings.account.username;
+            }
+            // 3. 如果 window.auth.currentUser 存在，也同步更新
+            if (window.auth && window.auth.currentUser) {
+              window.auth.currentUser.username = settings.account.username;
+            }
+          }
+
+          console.log('All settings saved to database:', settings);
+          alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已保存');
+        } catch (error) {
+          console.error('Error saving settings:', error);
+          alert(error.message || (window.i18next ? window.i18next.t('settingsSaved') : '保存設定出錯'));
+        }
+      } else {
+        // For guest users, save to localStorage only (no database access)
+        localStorage.setItem('userSettings', JSON.stringify(settings));
+        console.log('Guest settings saved to localStorage:', settings);
+        alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已保存');
+      }
     }
 
     // Handle reset settings
-    function handleResetSettings() {
+    async function handleResetSettings() {
       if (confirm(window.i18next ? window.i18next.t('resetSettingsConfirm') : '確定要重設所有設定嗎？')) {
         // Reset form values
         if (window.auth && window.auth.isLoggedIn()) {
@@ -387,21 +514,96 @@
           document.getElementById('username').value = user.username;
         }
         
-        // Reset checkboxes to defaults
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-        checkboxes[0].checked = true;  // gameSound
-        checkboxes[1].checked = false; // backgroundMusic
-        checkboxes[2].checked = true;  // notifications
+        // Reset checkboxes to default values
+        document.getElementById('gameSound-toggle').checked = DEFAULT_PREFERENCES.gameSound;
+        document.getElementById('backgroundMusic-toggle').checked = DEFAULT_PREFERENCES.backgroundMusic;
+        document.getElementById('notifications-toggle').checked = DEFAULT_PREFERENCES.notifications;
         
-        // Reset difficulty
-        document.querySelector('select').value = 'medium';
+        // Reset difficulty to default
+        document.getElementById('difficulty-select').value = DEFAULT_PREFERENCES.difficulty;
         
-        alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+        // If user is logged in, save to database
+        if (window.auth && window.auth.isLoggedIn()) {
+          try {
+            const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+            
+            const response = await fetch('/api/user/settings', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authUser.token || ''}`
+              },
+              body: JSON.stringify({
+                preferences: DEFAULT_PREFERENCES
+              })
+            });
+
+            if (response.ok) {
+              console.log('[Settings] Default preferences saved to database');
+              alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+            } else {
+              console.warn('[Settings] Failed to save default preferences to database');
+              alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+            }
+          } catch (error) {
+            console.error('[Settings] Error saving reset to database:', error);
+            alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+          }
+        } else {
+          // For guest users, save to localStorage
+          localStorage.setItem('userSettings', JSON.stringify({
+            account: {},
+            preferences: DEFAULT_PREFERENCES
+          }));
+          alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+        }
       }
     }
 
     // Load saved settings on page load
-    function loadSavedSettings() {
+    async function loadSavedSettings() {
+      const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+      
+      // If user is logged in, load settings from database
+      if (window.auth && window.auth.isLoggedIn() && authUser.id) {
+        try {
+          const response = await fetch('/api/user/settings', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${authUser.token || ''}`
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.settings && data.settings.preferences) {
+              const prefs = data.settings.preferences;
+              
+              // Apply preferences from database using proper IDs
+              document.getElementById('gameSound-toggle').checked = prefs.gameSound !== false;
+              document.getElementById('backgroundMusic-toggle').checked = prefs.backgroundMusic === true;
+              document.getElementById('notifications-toggle').checked = prefs.notifications !== false;
+              
+              document.getElementById('difficulty-select').value = prefs.difficulty || DEFAULT_PREFERENCES.difficulty;
+              
+              console.log('[Settings] Loaded settings from database:', data.settings);
+            }
+          } else {
+            console.warn('[Settings] Failed to load settings from database, using defaults');
+            loadDefaultSettings();
+          }
+        } catch (error) {
+          console.error('[Settings] Error loading settings from database:', error);
+          loadDefaultSettings();
+        }
+      } else {
+        // For guest users, load from localStorage
+        loadDefaultSettings();
+      }
+    }
+
+    // Load default/saved settings from localStorage (for guests)
+    function loadDefaultSettings() {
       const saved = localStorage.getItem('userSettings');
       if (saved) {
         try {
@@ -409,18 +611,30 @@
           
           // Apply preferences
           if (settings.preferences) {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            if (checkboxes[0]) checkboxes[0].checked = settings.preferences.gameSound;
-            if (checkboxes[1]) checkboxes[1].checked = settings.preferences.backgroundMusic;
-            if (checkboxes[2]) checkboxes[2].checked = settings.preferences.notifications;
+            document.getElementById('gameSound-toggle').checked = settings.preferences.gameSound !== false;
+            document.getElementById('backgroundMusic-toggle').checked = settings.preferences.backgroundMusic === true;
+            document.getElementById('notifications-toggle').checked = settings.preferences.notifications !== false;
             
-            const select = document.querySelector('select');
-            if (select) select.value = settings.preferences.difficulty || 'medium';
+            document.getElementById('difficulty-select').value = settings.preferences.difficulty || DEFAULT_PREFERENCES.difficulty;
           }
         } catch (e) {
           console.error('Failed to load saved settings:', e);
+          // Apply default settings if parsing fails
+          applyDefaultSettings();
         }
+      } else {
+        // No saved settings, apply defaults
+        applyDefaultSettings();
       }
+    }
+
+    // Apply default preference settings to UI
+    function applyDefaultSettings() {
+      document.getElementById('gameSound-toggle').checked = DEFAULT_PREFERENCES.gameSound;
+      document.getElementById('backgroundMusic-toggle').checked = DEFAULT_PREFERENCES.backgroundMusic;
+      document.getElementById('notifications-toggle').checked = DEFAULT_PREFERENCES.notifications;
+      
+      document.getElementById('difficulty-select').value = DEFAULT_PREFERENCES.difficulty;
     }
 
     // Initialize when page loads
@@ -431,10 +645,14 @@
       function checkAuthAndUpdate() {
         if (window.auth && window.auth.isAuthEnabled !== undefined) {
           console.log('[Settings] Auth initialized, updating UI');
-          updateAccountSettingsUI();
           
-          // Load saved settings after UI is updated
-          setTimeout(loadSavedSettings, 100);
+          // First, refresh user info from database to ensure we have latest data
+          refreshUserInfoFromDatabase().then(() => {
+            updateAccountSettingsUI();
+            
+            // Load saved settings after UI is updated
+            setTimeout(loadSavedSettings, 100);
+          });
         } else {
           console.log('[Settings] Auth not ready yet, retrying...');
           setTimeout(checkAuthAndUpdate, 100);

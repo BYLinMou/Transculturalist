@@ -64,6 +64,10 @@ async function initializeApp() {
   // JSON body parsing
   app.use(express.json());
 
+  // Authentication middleware
+  const { authMiddleware } = require('./middleware/auth');
+  app.use('/api', authMiddleware);
+
   // API
   app.use('/api', apiRouter);
 

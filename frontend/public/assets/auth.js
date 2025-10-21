@@ -147,6 +147,7 @@
               id: data.user.id,
               email: data.user.email,
               username: data.user.username,
+              token: data.user.id,  // Use user ID as token for API calls
               loginTime: new Date().toISOString()
             };
             localStorage.setItem(AUTH_KEY, JSON.stringify(loggedInUser));
