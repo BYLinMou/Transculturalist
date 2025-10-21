@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>認證系統測試</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/gold-theme.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/auth.js"></script>
+  <script src="/assets/auth-modal.js"></script>
+</head>
+<body class="gradient-bg min-h-screen text-white p-8">
+  <div class="container mx-auto max-w-2xl">
+    <h1 class="text-4xl font-bold text-gold-400 mb-8">認證系統測試頁面</h1>
+    
+    <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700 space-y-6">
+      <!-- 認證狀態 -->
+      <div class="space-y-2">
+        <h2 class="text-2xl font-bold text-gold-300 mb-4">認證狀態</h2>
+        <p class="text-gray-300">
+          <strong>已登入：</strong> <span id="isLoggedIn">檢查中...</span>
+        </p>
+        <p class="text-gray-300">
+          <strong>當前用戶：</strong> <span id="currentUser">檢查中...</span>
+        </p>
+        <p class="text-gray-300">
+          <strong>顯示名稱：</strong> <span id="displayName">檢查中...</span>
+        </p>
+        <p class="text-gray-300">
+          <strong>顯示郵箱：</strong> <span id="displayEmail">檢查中...</span>
+        </p>
+      </div>
+
+      <!-- 按鈕 -->
+      <div class="space-y-3">
+        <button 
+          onclick="testLogin()"
+          class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors"
+        >
+          打開登入對話框
+        </button>
+        <button 
+          onclick="testRegister()"
+          class="w-full px-4 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          打開註冊對話框
+        </button>
+        <button 
+          onclick="testLogout()"
+          class="w-full px-4 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+        >
+          登出
+        </button>
+      </div>
+
+      <!-- 快速測試 -->
+      <div class="space-y-3 pt-4 border-t border-gray-700">
+        <h3 class="text-xl font-bold text-gold-300 mb-3">快速測試</h3>
+        
+        <div class="space-y-2">
+          <label class="block text-gray-300 text-body-sm">郵箱</label>
+          <input 
+            type="email" 
+            id="testEmail" 
+            placeholder="test@example.com"
+            class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500"
+          >
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-gray-300 text-body-sm">密碼</label>
+          <input 
+            type="password" 
+            id="testPassword" 
+            placeholder="••••••••"
+            class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500"
+          >
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-gray-300 text-body-sm">用戶名</label>
+          <input 
+            type="text" 
+            id="testUsername" 
+            placeholder="文化愛好者"
+            class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-gold-500"
+          >
+        </div>
+
+        <button 
+          onclick="quickRegister()"
+          class="w-full px-4 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
+        >
+          快速註冊
+        </button>
+
+        <button 
+          onclick="quickLogin()"
+          class="w-full px-4 py-3 bg-cyan-600 text-white font-bold rounded-lg hover:bg-cyan-700 transition-colors"
+        >
+          快速登入
+        </button>
+      </div>
+
+      <!-- 測試結果 -->
+      <div class="space-y-2 pt-4 border-t border-gray-700">
+        <h3 class="text-xl font-bold text-gold-300 mb-3">操作結果</h3>
+        <div 
+          id="testResult" 
+          class="p-3 bg-gray-800 border border-gray-600 rounded-lg text-body-sm text-gray-300 min-h-12"
+        >
+          準備好進行測試...
+        </div>
+      </div>
+
+      <!-- 本地存儲內容 -->
+      <div class="space-y-2 pt-4 border-t border-gray-700">
+        <h3 class="text-xl font-bold text-gold-300 mb-3">本地存儲</h3>
+        <div class="space-y-2">
+          <p class="text-gray-300 text-body-sm">
+            <strong>auth_user：</strong> <span id="storageAuthUser" class="break-all">檢查中...</span>
+          </p>
+          <p class="text-gray-300 text-body-sm">
+            <strong>auth_users：</strong> <span id="storageAuthUsers" class="break-all">檢查中...</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- 清理按鈕 -->
+      <div class="pt-4 border-t border-gray-700">
+        <button 
+          onclick="clearAllData()"
+          class="w-full px-4 py-3 bg-red-700 text-white font-bold rounded-lg hover:bg-red-800 transition-colors"
+        >
+          清空所有數據
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 更新認證狀態顯示
+    function updateAuthStatus() {
+      document.getElementById('isLoggedIn').textContent = window.auth?.isLoggedIn() ? '是' : '否';
+      
+      const user = window.auth?.getCurrentUser();
+      document.getElementById('currentUser').textContent = user ? JSON.stringify(user) : '游客';
+      document.getElementById('displayName').textContent = window.auth?.getDisplayName() || '-';
+      document.getElementById('displayEmail').textContent = window.auth?.getDisplayEmail() || '-';
+
+      // 更新本地存儲顯示
+      document.getElementById('storageAuthUser').textContent = localStorage.getItem('auth_user') || '(空)';
+      document.getElementById('storageAuthUsers').textContent = localStorage.getItem('auth_users') || '(空)';
+    }
+
+    // 測試打開登入對話框
+    function testLogin() {
+      openAuthModal('login');
+      addResult('打開登入對話框');
+    }
+
+    // 測試打開註冊對話框
+    function testRegister() {
+      openAuthModal('register');
+      addResult('打開註冊對話框');
+    }
+
+    // 測試登出
+    function testLogout() {
+      if (window.auth.isLoggedIn()) {
+        window.auth.logout();
+        addResult('已登出');
+        updateAuthStatus();
+      } else {
+        addResult('當前不是登入狀態，無法登出');
+      }
+    }
+
+    // 快速註冊
+    function quickRegister() {
+      const email = document.getElementById('testEmail').value;
+      const password = document.getElementById('testPassword').value;
+      const username = document.getElementById('testUsername').value;
+
+      if (!email || !password) {
+        addResult('❌ 錯誤：郵箱和密碼不能為空');
+        return;
+      }
+
+      const result = window.auth.register(email, password, username);
+      addResult(result.success ? '✅ ' + result.message : '❌ ' + result.error);
+      updateAuthStatus();
+    }
+
+    // 快速登入
+    function quickLogin() {
+      const email = document.getElementById('testEmail').value;
+      const password = document.getElementById('testPassword').value;
+
+      if (!email || !password) {
+        addResult('❌ 錯誤：郵箱和密碼不能為空');
+        return;
+      }
+
+      const result = window.auth.login(email, password);
+      addResult(result.success ? '✅ ' + result.message : '❌ ' + result.error);
+      updateAuthStatus();
+    }
+
+    // 清空所有數據
+    function clearAllData() {
+      if (confirm('確定要清空所有數據嗎？')) {
+        window.auth.clearAllData();
+        addResult('已清空所有數據');
+        updateAuthStatus();
+      }
+    }
+
+    // 添加操作結果
+    function addResult(message) {
+      const resultDiv = document.getElementById('testResult');
+      const timestamp = new Date().toLocaleTimeString();
+      resultDiv.innerHTML = `<div class="text-yellow-300">[${timestamp}] ${message}</div>` + 
+                           (resultDiv.innerHTML ? '<div class="mt-2 text-gray-400">' + resultDiv.innerHTML.replace('<div', '<div class="text-xs"') + '</div>' : '');
+    }
+
+    // 初始化頁面
+    window.addEventListener('load', function() {
+      updateAuthStatus();
+      
+      // 監聽認證狀態變化
+      window.addEventListener('auth-changed', updateAuthStatus);
+      
+      addResult('認證系統已初始化');
+    });
+
+    // 定期更新狀態（每秒）
+    setInterval(updateAuthStatus, 1000);
+  </script>
+</body>
+</html>
