@@ -30,6 +30,7 @@
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
   <script src="/assets/load-header.js"></script>
+  <script src="/assets/timer.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -48,6 +49,7 @@
         <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
       </div>
       <div class="text-right">
+        <div class="text-gold-300 font-bold text-body"><span data-i18n="timer">計時</span>: <span id="timer">00:00</span></div>
         <div class="text-gold-300 font-bold text-body"><span data-i18n="score">分數</span>: <span id="score">0</span></div>
         <div class="text-gray-400 text-body-sm"><span data-i18n="question">題目</span>: <span id="questionNum">1</span>/5</div>
       </div>
@@ -81,6 +83,7 @@
     let currentQuestionIndex = 0;
     let score = 0;
     let answered = false;
+    let gameTimer = null;
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
@@ -104,6 +107,7 @@
         if (result.success && result.data && result.data.questions) {
           questions = result.data.questions;
           document.getElementById('loadingContainer').classList.add('hidden');
+          startTimer();
           loadQuestion();
         } else {
           throw new Error('Failed to generate questions');
@@ -174,12 +178,18 @@
     }
 
     function showResult() {
+      if (gameTimer) {
+        gameTimer.pause();
+      }
       document.getElementById('questionContainer').classList.add('hidden');
       document.getElementById('resultContainer').classList.remove('hidden');
       document.getElementById('finalScore').textContent = score;
     }
 
     function restartGame() {
+      if (gameTimer) {
+        gameTimer.reset();
+      }
       currentQuestionIndex = 0;
       score = 0;
       document.getElementById('score').textContent = score;
@@ -189,10 +199,26 @@
 
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
+      if (gameTimer) {
+        gameTimer.destroy();
+      }
       window.location.href = '/game/game-selection.html';
     });
 
     document.getElementById('restartMCQ').addEventListener('click', restartGame);
+
+    // Add timer display support and startup
+    function startTimer() {
+      if (!gameTimer) {
+        gameTimer = new window.GameTimer({
+          displayElement: document.getElementById('timer') || null,
+          gameName: 'mcq',
+          theme: currentTheme,
+          syncIntervalSeconds: 30
+        });
+      }
+      gameTimer.start();
+    }
 
     // Start game
     loadQuestions();

@@ -29,6 +29,7 @@
   <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
+  <script src="/assets/timer.js"></script>
 </head>
 <body class="gradient-bg text-white">
   <!-- Header placeholder -->
@@ -48,6 +49,7 @@
           <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
         </div>
         <div class="text-right">
+          <div class="text-gold-300 font-bold text-body"><span data-i18n="timer">計時</span>: <span id="timer">00:00</span></div>
           <div class="text-gold-300 font-bold text-body"><span data-i18n="chapter">章節</span>: <span id="chapterNum">1</span></div>
         </div>
       </div>
@@ -99,6 +101,7 @@
     let storyHistory = []; // Story choice history
     let conversationHistory = []; // AI conversation history for context
     let maxHistoryPairs = 5; // Default: 5 pairs (5 user + 5 assistant = 10 messages), will be updated from server config
+    let gameTimer = null;
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
@@ -129,6 +132,11 @@
         const result = await response.json();
         
         if (result.success && result.data) {
+          // Start timer on first chapter
+          if (chapterNumber === 1 && !gameTimer) {
+            startTimer();
+          }
+
           // Update maxHistoryPairs from server config (first time only)
           if (result.maxHistory !== undefined && chapterNumber === 1) {
             maxHistoryPairs = result.maxHistory; // This represents X pairs (X user + X assistant = 2X messages)
@@ -287,10 +295,26 @@
 
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
+      if (gameTimer) {
+        gameTimer.destroy();
+      }
       window.location.href = '/game/game-selection.html';
     });
 
     document.getElementById('restartStory').addEventListener('click', restartStory);
+
+    // Timer initialization
+    function startTimer() {
+      if (!gameTimer) {
+        gameTimer = new window.GameTimer({
+          displayElement: document.getElementById('timer'),
+          gameName: 'story',
+          theme: currentTheme,
+          syncIntervalSeconds: 30
+        });
+      }
+      gameTimer.start();
+    }
 
     // Start game
     generateChapter();

@@ -29,6 +29,7 @@
   <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
+  <script src="/assets/timer.js"></script>
   <style>
     .draggable {
       cursor: move;
@@ -143,11 +144,10 @@
     
     let pairs = [];
     let matchedPairs = [];
-    let startTime = 0;
-    let timerInterval = null;
     let draggedElement = null;
     let aiGeneratedMatching = [];
     let isLoadingAI = false;
+    let gameTimer = null;
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
@@ -315,17 +315,19 @@
     }
 
     function startTimer() {
-      startTime = Date.now();
-      timerInterval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-        const seconds = (elapsed % 60).toString().padStart(2, '0');
-        document.getElementById('timer').textContent = `${minutes}:${seconds}`;
-      }, 1000);
+      if (!gameTimer) {
+        gameTimer = new window.GameTimer({
+          displayElement: document.getElementById('timer'),
+          gameName: 'matching',
+          theme: currentTheme,
+          syncIntervalSeconds: 30
+        });
+      }
+      gameTimer.start();
     }
 
     function checkAnswers() {
-      clearInterval(timerInterval);
+      gameTimer.pause();
       let correctCount = 0;
       
       const questionSlots = ['questionSlot1', 'questionSlot2', 'questionSlot3', 'questionSlot4'];
@@ -354,7 +356,9 @@
     }
 
     function restartGame() {
-      clearInterval(timerInterval);
+      if (gameTimer) {
+        gameTimer.reset();
+      }
       document.getElementById('resultContainer').classList.add('hidden');
       document.getElementById('timer').textContent = '00:00';
       
@@ -374,7 +378,9 @@
 
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
-      clearInterval(timerInterval);
+      if (gameTimer) {
+        gameTimer.destroy();
+      }
       window.location.href = '/game/game-selection.html';
     });
 

@@ -29,6 +29,7 @@
   <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
+  <script src="/assets/timer.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -45,7 +46,8 @@
         <h2 class="text-title-lg font-bold text-gold-300" data-i18n="roleplayInteraction">角色扮演互動</h2>
         <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
       </div>
-      <div>
+      <div class="flex gap-4">
+        <div class="text-gold-300 font-bold text-body"><span data-i18n="timer">計時</span>: <span id="timer">00:00</span></div>
         <button id="newCharacter" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm" data-i18n="changeCharacter">
           換個角色
         </button>
@@ -107,6 +109,7 @@
     let currentCharacter = null;
     let conversationHistory = []; // Array of { role: 'user' | 'assistant', content: 'message' }
     let maxHistoryPairs = 5; // Default: 5 pairs (5 user + 5 assistant = 10 messages), will be updated from server config
+    let gameTimer = null;
 
     document.getElementById('currentTheme').textContent = currentTheme;
 
@@ -133,6 +136,7 @@
           }
           
           setupCharacter(currentCharacter);
+          startTimer();
         } else {
           throw new Error('Failed to generate character');
         }
@@ -277,10 +281,19 @@
 
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
+      if (gameTimer) {
+        gameTimer.destroy();
+      }
       window.location.href = '/game/game-selection.html';
     });
 
-    document.getElementById('newCharacter').addEventListener('click', generateCharacter);
+    document.getElementById('newCharacter').addEventListener('click', () => {
+      if (gameTimer) {
+        gameTimer.reset();
+      }
+      conversationHistory = [];
+      generateCharacter();
+    });
     
     document.getElementById('sendMessage').addEventListener('click', sendUserMessage);
     
@@ -290,6 +303,19 @@
         sendUserMessage();
       }
     });
+
+    // Timer initialization
+    function startTimer() {
+      if (!gameTimer) {
+        gameTimer = new window.GameTimer({
+          displayElement: document.getElementById('timer'),
+          gameName: 'roleplay',
+          theme: currentTheme,
+          syncIntervalSeconds: 30
+        });
+      }
+      gameTimer.start();
+    }
 
     // Start game
     generateCharacter();
