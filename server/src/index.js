@@ -26,7 +26,7 @@ app.use('/api', apiRouter);
 // Protected API: Requires Authorization: Bearer <token>
 app.use('/api/auth', requireAuth, currentUserRoute);
 if (profileInitRoute) app.use('/api/auth', requireAuth, profileInitRoute);
-app.use('/api/knowledge', requireAuth, knowledgeRoute);
+app.use('/api/knowledge', knowledgeRoute);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server listening on http://0.0.0.0:${PORT}`);

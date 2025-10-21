@@ -257,14 +257,27 @@
       progressTextEl.textContent = `${percent}%`;
     }
 
-    async function ensureAuthenticated() {
-      if (!supabaseClient) {
-        throw new Error('Supabase client not found');
-      }
+    async function getSession() {
+      if (!supabaseClient) return null;
       const { data } = await supabaseClient.auth.getSession();
-      if (!data.session) {
-        throw new Error('請先登入後再分享文化資源');
+      return data?.session || null;
+    }
+
+    async function requireLogin() {
+      const session = await getSession();
+      if (!session) {
+        alert(window.errorDisplay.getTranslatedText('loginRequired', '請先登入後再分享文化資源'));
+        return false;
       }
+      return true;
+    }
+
+    async function knowledgeFetch(path, options = {}) {
+      const session = await getSession();
+      if (session) {
+        return authFetch(path, options);
+      }
+      return fetch(path, options);
     }
 
     function renderResources(entries) {
@@ -310,8 +323,7 @@
 
     async function fetchResources() {
       try {
-        await ensureAuthenticated();
-        const response = await authFetch(`/api/knowledge/entries?locale=${DEFAULT_LOCALE}`);
+        const response = await knowledgeFetch(`/api/knowledge/entries?locale=${DEFAULT_LOCALE}`);
         const payload = await response.json();
         renderResources(payload.entries || []);
       } catch (error) {
@@ -361,15 +373,10 @@
         return;
       }
 
-      try {
-        await ensureAuthenticated();
-      } catch (error) {
-        window.errorDisplay.showAlertError(error.message);
-        return;
-      }
-
       uploadProgressEl.classList.remove('hidden');
       setProgress(10);
+
+      if (!await requireLogin()) { return; }
 
       try {
         const formData = new FormData();
@@ -380,7 +387,7 @@
         formData.append('tags', tags || category);
         formData.append('locale', DEFAULT_LOCALE);
 
-        const response = await authFetch('/api/knowledge/files', {
+        const response = await knowledgeFetch('/api/knowledge/files', {
           method: 'POST',
           body: formData
         });

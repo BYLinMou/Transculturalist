@@ -100,22 +100,32 @@
     const entriesWrapper = document.getElementById('entries-table-wrapper');
     const entriesBody = document.getElementById('entries-body');
 
-    async function ensureAuthenticated() {
-      if (!supabaseClient) {
-        statusEl.textContent = 'Supabase 尚未初始化，請重新整理頁面。';
-        throw new Error('Supabase client missing');
-      }
+    async function getSession() {
+      if (!supabaseClient) return null;
       const { data } = await supabaseClient.auth.getSession();
-      if (!data.session) {
-        statusEl.textContent = '請先登入後再使用知識庫功能。';
-        throw new Error('Unauthenticated');
+      return data?.session || null;
+    }
+
+    async function requireLogin() {
+      const session = await getSession();
+      if (!session) {
+        statusEl.textContent = "請先登入後再使用知識庫功能。";
+        return false;
       }
+      return true;
+    }
+
+    async function knowledgeFetch(path, options = {}) {
+      const session = await getSession();
+      if (session) {
+        return authFetch(path, options);
+      }
+      return fetch(path, options);
     }
 
     async function fetchEntries() {
       try {
-        await ensureAuthenticated();
-        const response = await authFetch('/api/knowledge/entries?locale=zh-TW');
+        const response = await knowledgeFetch('/api/knowledge/entries?locale=zh-TW');
         if (!response.ok) {
           throw new Error('無法獲取條目');
         }
@@ -167,17 +177,14 @@
       event.preventDefault();
       statusEl.textContent = '';
 
-      try {
-        await ensureAuthenticated();
-      } catch {
-        return;
-      }
+      const canUpload = await requireLogin();
+      if (!canUpload) return;
 
       const formData = new FormData(uploadForm);
 
       try {
         statusEl.textContent = '正在上傳，請稍候…';
-        const response = await authFetch('/api/knowledge/files', {
+        const response = await knowledgeFetch('/api/knowledge/files', {
           method: 'POST',
           body: formData
         });

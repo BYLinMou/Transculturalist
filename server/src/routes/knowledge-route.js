@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { randomUUID } = require('crypto');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 
 const config = require('../config-loader');
 const router = express.Router();
@@ -31,21 +32,48 @@ function sanitizeFilename(original, fallback) {
   return safe.length ? safe : fallback;
 }
 
+async function getSupabaseContext(req) {
+  const supabaseUrl = config.SUPABASE_URL;
+  const supabaseAnonKey = config.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Supabase not configured');
+  }
+
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (token) {
+    try {
+      const supabaseForVerify = createClient(supabaseUrl, supabaseAnonKey);
+      const { data: { user }, error } = await supabaseForVerify.auth.getUser(token);
+      if (!error && user) {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: `Bearer ${token}` } }
+        });
+        return { supabase, user };
+      }
+    } catch (error) {
+      console.warn('[knowledge] token verification failed, falling back to guest:', error.message);
+    }
+  }
+
+  return {
+    supabase: createClient(supabaseUrl, supabaseAnonKey),
+    user: null
+  };
+}
+
 router.post('/files', upload.single('file'), async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    const { supabase, user } = await getSupabaseContext(req);
+    if (!user) {
+      return res.status(401).json({ error: '請先登入後再分享文化資源' });
     }
+    const userId = user.id;
 
     const file = req.file;
     if (!file) {
       return res.status(400).json({ error: '缺少文件' });
-    }
-
-    const user = req.user;
-    const supabase = req.supabase;
-    if (!supabase) {
-      return res.status(500).json({ error: 'Supabase client not available' });
     }
 
     const fileId = randomUUID();
@@ -58,7 +86,8 @@ router.post('/files', upload.single('file'), async (req, res) => {
     const extension = path.extname(file.originalname) || '';
     const fallbackName = `file${extension || '.dat'}`;
     const safeFilename = sanitizeFilename(file.originalname, fallbackName);
-    const storagePath = `uploads/${user.id}/${fileId}/${safeFilename}`;
+    const ownerFolder = userId;
+    const storagePath = `uploads/${ownerFolder}/${fileId}/${safeFilename}`;
 
     const contentType = file.mimetype && file.mimetype.startsWith('text/')
       ? `${file.mimetype}; charset=utf-8`
@@ -73,7 +102,7 @@ router.post('/files', upload.single('file'), async (req, res) => {
       });
 
     if (uploadResult.error) {
-      console.error('[knowledge-upload] storage upload error:', uploadResult.error, { storagePath, user: user.id });
+      console.error('[knowledge-upload] storage upload error:', uploadResult.error, { storagePath, user: ownerFolder });
       return res.status(500).json({
         error: uploadResult.error.message,
         details: uploadResult.error.message,
@@ -83,7 +112,7 @@ router.post('/files', upload.single('file'), async (req, res) => {
 
     const fileRecord = {
       id: fileId,
-      user_id: user.id,
+      user_id: userId,
       filename: file.originalname,
       file_path: storagePath,
       file_type: file.mimetype,
@@ -95,7 +124,7 @@ router.post('/files', upload.single('file'), async (req, res) => {
       .from('files')
       .insert(fileRecord);
     if (insertFileError) {
-      console.error('[knowledge-upload] insert files error:', insertFileError, { fileRecord, user: user.id });
+      console.error('[knowledge-upload] insert files error:', insertFileError, { fileRecord, user: userId });
       return res.status(500).json({
         error: insertFileError.message,
         details: insertFileError.details,
@@ -107,14 +136,15 @@ router.post('/files', upload.single('file'), async (req, res) => {
     const knowledgeRecord = {
       id: randomUUID(),
       file_id: fileId,
-      user_id: user.id,
+      user_id: userId,
       theme_name: buildLocaleJson(themeInput, locale, '未命名主題'),
       description: buildLocaleJson(descriptionInput, locale, '暫無描述'),
       summary: buildLocaleJson(summaryInput, locale, `此內容源自 ${file.originalname}`),
       tags: buildTagTranslations(tagsInput, locale),
       metadata: {
         locale,
-        uploader_email: user.email,
+        uploader_type: user ? 'authenticated' : 'guest',
+        uploader_email: user?.email || null,
         filename: file.originalname,
         storage_filename: safeFilename
       },
@@ -126,7 +156,7 @@ router.post('/files', upload.single('file'), async (req, res) => {
       .insert(knowledgeRecord);
 
     if (insertKnowledgeError) {
-      console.error('[knowledge-upload] insert knowledge error:', insertKnowledgeError, { knowledgeRecord, user: user.id });
+      console.error('[knowledge-upload] insert knowledge error:', insertKnowledgeError, { knowledgeRecord, user: userId });
       return res.status(500).json({
         error: insertKnowledgeError.message,
         details: insertKnowledgeError.details,
@@ -147,11 +177,7 @@ router.post('/files', upload.single('file'), async (req, res) => {
 
 router.get('/entries', async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const supabase = req.supabase;
+    const { supabase } = await getSupabaseContext(req);
     const locale = (req.query.locale || 'zh-TW').trim();
     const search = (req.query.q || '').trim();
     const status = (req.query.status || '').trim();
@@ -222,11 +248,7 @@ router.get('/entries', async (req, res) => {
 
 router.get('/files', async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const supabase = req.supabase;
+    const { supabase } = await getSupabaseContext(req);
     const status = (req.query.status || '').trim();
 
     let query = supabase
