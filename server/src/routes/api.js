@@ -157,6 +157,23 @@ router.get('/version', (req, res) => {
   }
 });
 
+// Client configuration endpoint - returns safe configuration for frontend
+router.get('/config', (req, res) => {
+  try {
+    const config = require('../../config');
+    // Only return safe configuration values that frontend needs
+    res.json({
+      enableAuth: config.ENABLE_AUTH || false,
+      port: config.PORT || 3030
+    });
+  } catch (err) {
+    // If config fails to load, default to guest mode
+    res.json({
+      enableAuth: false,
+      port: 3030
+    });
+  }
+});
 
 // Expose available games to frontend
 router.get('/games', (req, res) => {

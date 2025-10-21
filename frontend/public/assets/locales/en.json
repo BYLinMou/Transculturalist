@@ -153,5 +153,6 @@
   "anonymous": "Anonymous",
   "guestMode": "Guest Mode",
   "accountSettings": "Account Settings",
-  "emailNotChangeable": "Email cannot be changed"
+  "emailNotChangeable": "Email cannot be changed",
+  "authDisabled": "Authentication is disabled"
 }

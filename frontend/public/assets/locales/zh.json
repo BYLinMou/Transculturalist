@@ -153,5 +153,6 @@
   "anonymous": "匿名",
   "guestMode": "遊客模式",
   "accountSettings": "帳號設定",
-  "emailNotChangeable": "電子郵件無法更改"
+  "emailNotChangeable": "電子郵件無法更改",
+  "authDisabled": "認證功能已停用"
 }

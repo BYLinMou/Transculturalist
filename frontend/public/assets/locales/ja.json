@@ -153,5 +153,6 @@
   "anonymous": "匿名",
   "guestMode": "ゲストモード",
   "accountSettings": "アカウント設定",
-  "emailNotChangeable": "メールアドレスは変更できません"
+  "emailNotChangeable": "メールアドレスは変更できません",
+  "authDisabled": "認証機能は無効です"
 }

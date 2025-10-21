@@ -14,7 +14,6 @@ module.exports = {
   DEFAULT_MODEL: '',
   // Server port
   PORT: 3030,
-  // Enable Supabase authentication (optional)
-  ENABLE_AUTH: false,
+  ENABLE_AUTH: false,   // Set to true to enable multi-user authentication
   // Other settings (S3, DB connections)
 };

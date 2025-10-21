@@ -39,6 +39,8 @@
   }
 
   function initLoginPromptBanner() {
+    console.log('[LoginPrompt] Initializing login prompt banner');
+    
     // Add banner to page if not exists (should be added after header)
     if (!document.getElementById('loginPromptBanner')) {
       const header = document.querySelector('header');
@@ -46,6 +48,9 @@
         const bannerContainer = document.createElement('div');
         bannerContainer.innerHTML = createLoginPromptBanner();
         header.insertAdjacentElement('afterend', bannerContainer.firstElementChild);
+        console.log('[LoginPrompt] Banner added to DOM');
+      } else {
+        console.warn('[LoginPrompt] Header not found');
       }
     }
 
@@ -57,14 +62,26 @@
     const banner = document.getElementById('loginPromptBanner');
     if (!banner) return;
 
-    // Show banner only if user is not logged in
-    if (window.auth && !window.auth.isLoggedIn()) {
+    console.log('[LoginPrompt] updateLoginPromptBanner called');
+    console.log('[LoginPrompt] window.auth:', window.auth);
+    
+    // Wait for auth to be initialized if not ready
+    if (!window.auth || window.auth.isAuthEnabled === undefined) {
+      console.log('[LoginPrompt] Auth not ready, waiting...');
+      setTimeout(updateLoginPromptBanner, 100);
+      return;
+    }
+
+    // Only show banner if auth is enabled AND user is not logged in
+    if (window.auth.isAuthEnabled && !window.auth.isLoggedIn()) {
+      console.log('[LoginPrompt] Showing banner - auth enabled and not logged in');
       banner.classList.remove('hidden');
       // Update text in case language changed
       if (window.updatePageText) {
         window.updatePageText();
       }
     } else {
+      console.log('[LoginPrompt] Hiding banner - auth disabled or user logged in');
       banner.classList.add('hidden');
     }
   }
@@ -82,6 +99,12 @@
   } else {
     initLoginPromptBanner();
   }
+
+  // Listen for auth initialization
+  window.addEventListener('auth-ready', function() {
+    console.log('[LoginPrompt] auth-ready event received, updating banner');
+    updateLoginPromptBanner();
+  });
 
   // Listen for auth changes to update banner
   window.addEventListener('auth-changed', updateLoginPromptBanner);

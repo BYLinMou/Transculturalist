@@ -153,5 +153,6 @@
   "anonymous": "익명",
   "guestMode": "게스트 모드",
   "accountSettings": "계정 설정",
-  "emailNotChangeable": "이메일은 변경할 수 없습니다"
+  "emailNotChangeable": "이메일은 변경할 수 없습니다",
+  "authDisabled": "인증 기능이 비활성화되었습니다"
 }

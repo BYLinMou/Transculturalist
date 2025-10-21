@@ -153,6 +153,7 @@
   "anonymous": "匿名",
   "guestMode": "游客模式",
   "accountSettings": "帐号设置",
-  "emailNotChangeable": "电子邮件无法更改"
+  "emailNotChangeable": "电子邮件无法更改",
+  "authDisabled": "认证功能已停用"
 }
 

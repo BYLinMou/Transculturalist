@@ -191,10 +191,21 @@
   <script>
     // Update account settings UI based on auth state
     function updateAccountSettingsUI() {
+      console.log('[Settings] Updating account settings UI');
       const authStatusContainer = document.getElementById('authStatusContainer');
       const personalInfoContainer = document.getElementById('personalInfoContainer');
       
-      if (window.auth && window.auth.isLoggedIn()) {
+      if (!authStatusContainer || !personalInfoContainer) {
+        console.error('[Settings] Containers not found');
+        return;
+      }
+      
+      // Check if auth is enabled
+      const isAuthEnabled = window.auth && window.auth.isAuthEnabled;
+      console.log('[Settings] isAuthEnabled:', isAuthEnabled);
+      console.log('[Settings] window.auth:', window.auth);
+      
+      if (isAuthEnabled && window.auth && window.auth.isLoggedIn()) {
         // Show logged-in UI
         const user = window.auth.getCurrentUser();
         authStatusContainer.innerHTML = `
@@ -239,12 +250,17 @@
           </button>
         `;
       } else {
-        // Show guest UI
+        // Show guest UI (whether auth is disabled or user is not logged in)
+        const guestMessage = isAuthEnabled 
+          ? '<span data-i18n="guestMode">遊客模式</span>' 
+          : '<span data-i18n="authDisabled">認證功能已停用</span>';
+        
         authStatusContainer.innerHTML = `
           <div class="bg-gray-800 border border-gray-600 p-4 rounded-lg mb-4">
             <p class="text-gray-300 text-body-sm font-medium mb-3">
-              <span data-i18n="guestMode">遊客模式</span>
+              ${guestMessage}
             </p>
+            ${isAuthEnabled ? `
             <div class="flex gap-2">
               <button 
                 onclick="openAuthModal('login')"
@@ -261,6 +277,7 @@
                 註冊
               </button>
             </div>
+            ` : ''}
           </div>
         `;
 
@@ -274,7 +291,7 @@
           <div>
             <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="email">電子郵件</label>
             <div class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 text-body">
-              <span data-i18n="guestMode">遊客模式</span>
+              ${isAuthEnabled ? '<span data-i18n="guestMode">遊客模式</span>' : '<span data-i18n="authDisabled">認證功能已停用</span>'}
             </div>
           </div>
         `;
@@ -313,7 +330,20 @@
 
     // Initialize when page loads
     window.addEventListener('load', function() {
-      updateAccountSettingsUI();
+      console.log('[Settings] Page loaded, waiting for auth to initialize...');
+      
+      // Wait for auth to be initialized
+      function checkAuthAndUpdate() {
+        if (window.auth && window.auth.isAuthEnabled !== undefined) {
+          console.log('[Settings] Auth initialized, updating UI');
+          updateAccountSettingsUI();
+        } else {
+          console.log('[Settings] Auth not ready yet, retrying...');
+          setTimeout(checkAuthAndUpdate, 100);
+        }
+      }
+      
+      checkAuthAndUpdate();
       
       // Listen for auth changes
       window.addEventListener('auth-changed', updateAccountSettingsUI);

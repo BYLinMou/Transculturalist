@@ -249,6 +249,12 @@
   };
 
   window.openAuthModal = function(mode = 'login') {
+    // Check if auth is enabled
+    if (!window.auth || !window.auth.isAuthEnabled) {
+      alert(window.i18next ? window.i18next.t('authDisabled') : '認證功能已停用');
+      return;
+    }
+    
     const modal = document.getElementById('authModal');
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
