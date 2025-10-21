@@ -159,5 +159,8 @@
   "authDisabled": "Authentication is disabled",
   "reset": "Reset",
   "settingsReset": "Settings have been reset",
-  "resetSettingsConfirm": "Are you sure you want to reset all settings?"
+  "resetSettingsConfirm": "Are you sure you want to reset all settings?",
+  "scoreInfo": "Score Information",
+  "roleplayScoreFormula": "Score = completed chat rounds, up to 5.",
+  "storyScoreFormula": "Score = completed chapters, up to 5."
 }

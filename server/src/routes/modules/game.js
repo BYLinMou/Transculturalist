@@ -171,7 +171,7 @@ exports.saveGameResult = async (req, res) => {
           // Only count completed games in average
           if (completedGamesCount > 0) {
             const previousSum = (newAvgScore * (completedGamesCount - 1)) || 0;
-            newAvgScore = (previousSum + score) / completedGamesCount;
+            newAvgScore = parseFloat(((previousSum + score) / completedGamesCount).toFixed(2));
           }
           // Update highest score
           newHighestScore = Math.max(newHighestScore, score);

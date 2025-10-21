@@ -136,7 +136,18 @@ class GameTimer {
         return;
       }
 
-      // Default use API Helper to sync to server
+      // Check if user is logged in
+      const isLoggedIn = window.auth && window.auth.isLoggedIn && window.auth.isLoggedIn();
+      
+      if (!isLoggedIn) {
+        // For guest users, use local sessionStorage instead of API
+        if (window.GuestGameStorage) {
+          window.GuestGameStorage.recordPlaytime(this.gameName, this.theme, elapsedSeconds);
+        }
+        return;
+      }
+
+      // Default use API Helper to sync to server for logged-in users
       const response = await window.apiHelper.request('/api/statistics/playtime', {
         method: 'POST',
         body: JSON.stringify({
@@ -179,6 +190,32 @@ class GameTimer {
     }
 
     try {
+      // Check if user is logged in
+      const isLoggedIn = window.auth && window.auth.isLoggedIn && window.auth.isLoggedIn();
+      
+      if (!isLoggedIn) {
+        // For guest users, use local sessionStorage
+        if (window.GuestGameStorage) {
+          window.GuestGameStorage.saveGameResult(
+            this.gameName,
+            this.theme,
+            finalSeconds,
+            additionalData
+          );
+          console.log('[GameTimer] Guest game result saved to local storage:', this.gameName);
+          return {
+            gameId: this.gameName,
+            playTimeSeconds: finalSeconds,
+            score: additionalData.score,
+            completed: additionalData.completed,
+            saved: true,
+            isGuest: true
+          };
+        }
+        return null;
+      }
+
+      // For logged-in users, save to server
       const gameResultData = {
         gameId: this.gameName,
         theme: this.theme,

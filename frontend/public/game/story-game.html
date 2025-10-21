@@ -30,6 +30,8 @@
   <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
+  <script src="/assets/guest-game-storage.js"></script>
+  <script src="/assets/load-header.js"></script>
   <script src="/assets/timer.js"></script>
 </head>
 <body class="gradient-bg text-white">
@@ -46,7 +48,16 @@
           </svg>
         </button>
         <div class="text-center">
-          <h2 class="text-title-lg font-bold text-gold-300" data-i18n="storyExploration">互動式故事探索</h2>
+          <h2 class="text-title-lg font-bold text-gold-300 flex items-center justify-center gap-2">
+            <span data-i18n="storyExploration">互動式故事探索</span>
+            <div class="group relative inline-block">
+              <span class="text-gold-400 text-lg cursor-help font-bold">ⓘ</span>
+              <div class="absolute left-1/2 top-full transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800 text-white text-xs rounded whitespace-nowrap hidden group-hover:block border border-gold-600 z-50 pointer-events-none">
+                <div data-i18n="storyScoreFormula">分數即章節數，滿分為5。</div>
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full border-4 border-transparent border-b-gray-800"></div>
+              </div>
+            </div>
+          </h2>
           <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
         </div>
         <div class="text-right">
@@ -252,8 +263,11 @@
       if (gameTimer) {
         // Restarting counts as completing the current story session
         const isCompleted = chapterNumber > 1;  // Completed if progressed past chapter 1
+        // Calculate score: completed chapters / 5 (max 5 points)
+        const completedChapters = chapterNumber - 1;
+        const score = Math.min((completedChapters / 5) * 5, 5); // Cap at 5
         gameTimer.finishGame({
-          score: chapterNumber - 1,
+          score: score,
           accuracy: (chapterNumber - 1) / 10,
           completed: isCompleted  // Completed if reached beyond first chapter
         }).then(() => {
@@ -330,8 +344,11 @@
       if (gameTimer) {
         // Returning counts as completing the story session if there's progress
         const isCompleted = chapterNumber > 1;  // Completed if progressed past chapter 1
+        // Calculate score: completed chapters / 5 (max 5 points)
+        const completedChapters = chapterNumber - 1;
+        const score = Math.min((completedChapters / 5) * 5, 5); // Cap at 5
         gameTimer.finishGame({
-          score: chapterNumber - 1,
+          score: score,
           accuracy: (chapterNumber - 1) / 10,
           completed: isCompleted  // Completed if reached beyond first chapter
         }).then(() => {

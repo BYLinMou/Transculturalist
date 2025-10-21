@@ -159,5 +159,8 @@
   "authDisabled": "认证功能已停用",
   "reset": "重置",
   "settingsReset": "设置已重置",
-  "resetSettingsConfirm": "确定要重置所有设置吗？"
+  "resetSettingsConfirm": "确定要重置所有设置吗？",
+  "scoreInfo": "分数说明",
+  "roleplayScoreFormula": "分数=完成的聊天回合，最多5分。",
+  "storyScoreFormula": "分数=完成的章节数，最多5分。"
 }

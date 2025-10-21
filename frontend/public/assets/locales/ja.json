@@ -159,5 +159,8 @@
   "authDisabled": "認証機能は無効です",
   "reset": "リセット",
   "settingsReset": "設定がリセットされました",
-  "resetSettingsConfirm": "すべての設定をリセットしてもよろしいですか？"
+  "resetSettingsConfirm": "すべての設定をリセットしてもよろしいですか？",
+  "scoreInfo": "スコア説明",
+  "roleplayScoreFormula": "スコア=完了したチャット回数、最大5点。",
+  "storyScoreFormula": "スコア=完了した章数、最大5点。"
 }

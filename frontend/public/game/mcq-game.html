@@ -30,6 +30,7 @@
   <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
+  <script src="/assets/guest-game-storage.js"></script>
   <script src="/assets/load-header.js"></script>
   <script src="/assets/timer.js"></script>
 </head>
@@ -186,39 +187,38 @@
     function showResult() {
       if (gameTimer) {
         gameTimer.pause();
-        // Store result (don't save to database yet)
-        window.currentGameResult = {
-          score: score,
-          accuracy: score / questions.length,
-          allQuestionsAnswered: true
-        };
       }
       document.getElementById('questionContainer').classList.add('hidden');
       document.getElementById('resultContainer').classList.remove('hidden');
       document.getElementById('finalScore').textContent = score;
+      
+      // Auto-save game result when all questions answered (completed=true)
+      autoSaveGameResult();
     }
 
-    // Handle finishing game (save to database)
-    async function finishGame() {
-      if (window.currentGameResult && gameTimer) {
-        // Save to database with completed=true 
+    // Auto-save game result when user completes all questions
+    async function autoSaveGameResult() {
+      if (gameTimer) {
         const result = await gameTimer.finishGame({
-          score: window.currentGameResult.score,
-          accuracy: window.currentGameResult.accuracy,
-          completed: true  // User explicitly clicked finish, count as completed
+          score: score,
+          accuracy: score / (questions.length > 0 ? questions.length : 1),
+          completed: true  // All questions answered, game is completed
         });
         
-        console.log('[MCQ] Game saved with result:', result);
-        
-        // Show success message
-        alert(window.i18next ? window.i18next.t('gameSaved') : '遊戲已保存！');
-        
-        // Navigate back to game selection
-        setTimeout(() => {
-          gameTimer.destroy();
-          window.location.href = '/game/game-selection.html';
-        }, 1000);
+        console.log('[MCQ] Game auto-saved with result:', result);
       }
+    }
+
+    // Handle finishing game (user clicks finish button to go back)
+    async function finishGame() {
+      // Game result already auto-saved when all questions answered
+      // Just show success message and navigate back
+      alert(window.i18next ? window.i18next.t('gameSaved') : '遊戲已保存！');
+      
+      if (gameTimer) {
+        gameTimer.destroy();
+      }
+      window.location.href = '/game/game-selection.html';
     }
 
     function restartGame() {

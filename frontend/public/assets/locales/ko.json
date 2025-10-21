@@ -159,5 +159,8 @@
   "authDisabled": "인증 기능이 비활성화되었습니다",
   "reset": "초기화",
   "settingsReset": "설정이 초기화되었습니다",
-  "resetSettingsConfirm": "모든 설정을 초기화하시겠습니까?"
+  "resetSettingsConfirm": "모든 설정을 초기화하시겠습니까?",
+  "scoreInfo": "점수 설명",
+  "roleplayScoreFormula": "점수=완료한 채팅 라운드, 최대 5점.",
+  "storyScoreFormula": "점수=완료한 챕터 수, 최대 5점."
 }

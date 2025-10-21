@@ -34,6 +34,8 @@
   <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/load-header.js"></script>
+  <script src="/assets/guest-game-storage.js"></script>
+  <script src="/assets/guest-game-display.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header -->
@@ -550,9 +552,9 @@
       try {
         const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
         
-        // If not logged in, show default statistics
+        // If not logged in, show guest statistics (from sessionStorage)
         if (!window.auth || !window.auth.isLoggedIn() || !authUser.id) {
-          displayDefaultStatistics();
+          displayGuestStatistics();
           return;
         }
 
@@ -583,6 +585,62 @@
       }
     }
 
+    // Display statistics for guest users from sessionStorage
+    function displayGuestStatistics() {
+      const container = document.getElementById('statisticsContainer');
+      if (!container) return;
+
+      const stats = window.GuestGameStorage?.getStatistics() || {};
+      
+      if (!stats.total_games_played || stats.total_games_played === 0) {
+        displayDefaultStatistics();
+        return;
+      }
+
+      // Format total play time
+      const totalSeconds = stats.total_play_time || 0;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      // Format average score
+      const averageScore = stats.average_score || 0;
+      const averageScoreDisplay = averageScore > 0 ? averageScore.toFixed(2) : '--';
+      const completedGames = stats.completed_games || 0;
+
+      container.innerHTML = `
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${completedGames}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
+          <span class="text-gold-400 font-bold text-body-lg">${formattedTime}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${averageScoreDisplay}/5</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalGames">總遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${stats.total_games_played || 0}</span>
+        </div>
+        <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded-lg border border-blue-600">
+          <p class="text-blue-300 text-body-sm mb-2">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span data-i18n="guestModeInfo">您目前在遊客模式下遊玩。此數據僅在當前會話中保存，關閉窗口後將清除。</span>
+          </p>
+        </div>
+      `;
+
+      // Update i18n for dynamically added elements
+      if (window.updatePageText) {
+        window.updatePageText();
+      }
+    }
+
     // Display statistics with formatting
     function displayStatistics(stats) {
       const container = document.getElementById('statisticsContainer');
@@ -595,7 +653,7 @@
       // Format average score
       const completedGames = stats.completedGames || 0;
       const averageScore = stats.averageScore || 0;
-      const averageScoreDisplay = averageScore > 0 ? averageScore.toFixed(1) : '-';
+      const averageScoreDisplay = averageScore > 0 ? averageScore.toFixed(2) : '-';
 
       container.innerHTML = `
         <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
@@ -622,7 +680,7 @@
       }
     }
 
-    // Display default statistics (for guests)
+    // Display default statistics (for guests with no game data)
     function displayDefaultStatistics() {
       const container = document.getElementById('statisticsContainer');
       if (!container) return;
@@ -634,7 +692,7 @@
         </div>
         <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
           <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
-          <span class="text-gold-400 font-bold text-body-lg">0.00 <span data-i18n="minutes">分鐘</span></span>
+          <span class="text-gold-400 font-bold text-body-lg">0:00</span>
         </div>
         <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
           <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>

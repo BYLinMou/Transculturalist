@@ -30,6 +30,8 @@
   <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
+  <script src="/assets/guest-game-storage.js"></script>
+  <script src="/assets/load-header.js"></script>
   <script src="/assets/timer.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
@@ -44,7 +46,16 @@
         </svg>
       </button>
       <div class="text-center">
-        <h2 class="text-title-lg font-bold text-gold-300" data-i18n="roleplayInteraction">角色扮演互動</h2>
+        <h2 class="text-title-lg font-bold text-gold-300 flex items-center justify-center gap-2">
+          <span data-i18n="roleplayInteraction">角色扮演互動</span>
+          <div class="group relative inline-block">
+            <span class="text-gold-400 text-lg cursor-help font-bold">ⓘ</span>
+            <div class="absolute left-1/2 top-full transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-800 text-white text-xs rounded whitespace-nowrap hidden group-hover:block border border-gold-600 z-50 pointer-events-none">
+              <div data-i18n="roleplayScoreFormula">分數即聊天回合數，滿分為5。</div>
+              <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full border-4 border-transparent border-b-gray-800"></div>
+            </div>
+          </div>
+        </h2>
         <p class="text-gray-400 text-body-sm" id="currentTheme"></p>
       </div>
       <div class="flex gap-4">
@@ -283,10 +294,13 @@
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
       if (gameTimer) {
-        // For roleplay, any exit counts as completion if there's conversation
-        const isCompleted = conversationHistory.length > 0;
+  // For roleplay, any exit counts as completion if user has replied
+  const userTurns = conversationHistory.filter(msg => msg.role === 'user').length;
+  const isCompleted = userTurns > 0;
+  // Score is user turns, max 5
+  const score = Math.min(userTurns, 5);
         gameTimer.finishGame({
-          score: conversationHistory.length / 2, // Score based on conversation turns
+          score: score,
           accuracy: 0.5, // Roleplay doesn't have accuracy
           completed: isCompleted  // Completed if there was any conversation
         }).then(() => {
@@ -304,10 +318,13 @@
 
     document.getElementById('newCharacter').addEventListener('click', () => {
       if (gameTimer) {
-        // Switching character counts as completing the current character session
-        const isCompleted = conversationHistory.length > 0;
+  // Switching character counts as completing the current character session
+  const userTurns = conversationHistory.filter(msg => msg.role === 'user').length;
+  const isCompleted = userTurns > 0;
+  // Score is user turns, max 5
+  const score = Math.min(userTurns, 5);
         gameTimer.finishGame({
-          score: conversationHistory.length / 2,
+          score: score,
           accuracy: 0.5,
           completed: isCompleted  // Completed if there was any conversation
         }).then(() => {
