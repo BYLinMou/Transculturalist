@@ -154,5 +154,8 @@
   "guestMode": "ゲストモード",
   "accountSettings": "アカウント設定",
   "emailNotChangeable": "メールアドレスは変更できません",
-  "authDisabled": "認証機能は無効です"
+  "authDisabled": "認証機能は無効です",
+  "reset": "リセット",
+  "settingsReset": "設定がリセットされました",
+  "resetSettingsConfirm": "すべての設定をリセットしてもよろしいですか？"
 }

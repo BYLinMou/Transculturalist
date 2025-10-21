@@ -55,7 +55,7 @@
         },
         
         // Register a new user
-        register: function(email, password, username) {
+        register: async function(email, password, username) {
           if (!this.isAuthEnabled) {
             return {
               success: false,
@@ -68,38 +68,44 @@
             return validation;
           }
           
-          // Check if email already exists
-          const allUsers = getAllUsers();
-          if (allUsers.some(u => u.email === email)) {
+          try {
+            const response = await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                email: email,
+                password: password,
+                username: username || (window.i18next ? window.i18next.t('cultureLover') : '文化愛好者')
+              })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              console.error('[Auth] Registration failed:', data.error);
+              return {
+                success: false,
+                error: data.error || (window.i18next ? window.i18next.t('registerFailed') : '註冊失敗')
+              };
+            }
+
+            console.log('[Auth] Registration successful for:', email);
+            
+            // Auto login after registration
+            return this.login(email, password);
+          } catch (error) {
+            console.error('[Auth] Registration error:', error);
             return {
               success: false,
-              error: window.i18next ? window.i18next.t('emailExists') : '此電子郵件已被註冊'
+              error: window.i18next ? window.i18next.t('networkError') : '網絡錯誤，請稍後重試'
             };
           }
-          
-          // Create new user
-          const newUser = {
-            email: email,
-            password: password, // In production, this should be hashed
-            username: username || (window.i18next ? window.i18next.t('cultureLover') : '文化愛好者'),
-            createdAt: new Date().toISOString()
-          };
-          
-          // Save to users storage
-          allUsers.push(newUser);
-          localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
-          
-          // Auto login after registration
-          this.login(email, password);
-          
-          return {
-            success: true,
-            message: window.i18next ? window.i18next.t('registerSuccess') : '註冊成功！'
-          };
         },
         
         // Login user
-        login: function(email, password) {
+        login: async function(email, password) {
           if (!this.isAuthEnabled) {
             return {
               success: false,
@@ -112,34 +118,55 @@
             return validation;
           }
           
-          // Find user
-          const allUsers = getAllUsers();
-          const user = allUsers.find(u => u.email === email && u.password === password);
-          
-          if (!user) {
+          try {
+            const response = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                email: email,
+                password: password
+              })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              console.error('[Auth] Login failed:', data.error);
+              return {
+                success: false,
+                error: data.error || (window.i18next ? window.i18next.t('loginFailed') : '登入失敗，請檢查您的電子郵件和密碼')
+              };
+            }
+
+            console.log('[Auth] Login successful for:', email);
+            
+            // Save current user
+            const loggedInUser = {
+              id: data.user.id,
+              email: data.user.email,
+              username: data.user.username,
+              loginTime: new Date().toISOString()
+            };
+            localStorage.setItem(AUTH_KEY, JSON.stringify(loggedInUser));
+            this.currentUser = loggedInUser;
+            
+            // Dispatch event
+            window.dispatchEvent(new Event('auth-changed'));
+            
+            return {
+              success: true,
+              message: window.i18next ? window.i18next.t('loginSuccess') : '登入成功！',
+              user: loggedInUser
+            };
+          } catch (error) {
+            console.error('[Auth] Login error:', error);
             return {
               success: false,
-              error: window.i18next ? window.i18next.t('loginFailed') : '登入失敗，請檢查您的電子郵件和密碼'
+              error: window.i18next ? window.i18next.t('networkError') : '網絡錯誤，請稍後重試'
             };
           }
-          
-          // Save current user
-          const loggedInUser = {
-            email: user.email,
-            username: user.username,
-            loginTime: new Date().toISOString()
-          };
-          localStorage.setItem(AUTH_KEY, JSON.stringify(loggedInUser));
-          this.currentUser = loggedInUser;
-          
-          // Dispatch event
-          window.dispatchEvent(new Event('auth-changed'));
-          
-          return {
-            success: true,
-            message: window.i18next ? window.i18next.t('loginSuccess') : '登入成功！',
-            user: loggedInUser
-          };
         },
         
         // Logout user

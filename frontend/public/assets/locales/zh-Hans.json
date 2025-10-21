@@ -154,6 +154,8 @@
   "guestMode": "游客模式",
   "accountSettings": "帐号设置",
   "emailNotChangeable": "电子邮件无法更改",
-  "authDisabled": "认证功能已停用"
+  "authDisabled": "认证功能已停用",
+  "reset": "重置",
+  "settingsReset": "设置已重置",
+  "resetSettingsConfirm": "确定要重置所有设置吗？"
 }
-

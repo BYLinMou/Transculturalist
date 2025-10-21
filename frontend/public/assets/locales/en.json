@@ -154,5 +154,8 @@
   "guestMode": "Guest Mode",
   "accountSettings": "Account Settings",
   "emailNotChangeable": "Email cannot be changed",
-  "authDisabled": "Authentication is disabled"
+  "authDisabled": "Authentication is disabled",
+  "reset": "Reset",
+  "settingsReset": "Settings have been reset",
+  "resetSettingsConfirm": "Are you sure you want to reset all settings?"
 }

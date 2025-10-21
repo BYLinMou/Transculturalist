@@ -329,22 +329,36 @@
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     const errorMsg = document.getElementById('authErrorMessage');
+    const loginBtn = event.target;
 
-    const result = window.auth.login(email, password);
-    
-    if (result.success) {
-      errorMsg.classList.add('hidden');
-      window.closeAuthModal();
-      
-      // Show success message
-      alert(result.message);
-      
-      // Reload current page to update auth state
-      window.location.reload();
-    } else {
+    // Disable button while processing
+    loginBtn.disabled = true;
+    loginBtn.textContent = window.i18next ? window.i18next.t('logging') : '登入中...';
+
+    // Call async login function
+    Promise.resolve(window.auth.login(email, password)).then(result => {
+      if (result.success) {
+        errorMsg.classList.add('hidden');
+        window.closeAuthModal();
+        
+        // Show success message
+        alert(result.message);
+        
+        // Reload current page to update auth state
+        window.location.reload();
+      } else {
+        errorMsg.classList.remove('hidden');
+        errorMsg.textContent = result.error;
+        loginBtn.disabled = false;
+        loginBtn.textContent = window.i18next ? window.i18next.t('login') : '登入';
+      }
+    }).catch(err => {
+      console.error('Login error:', err);
       errorMsg.classList.remove('hidden');
-      errorMsg.textContent = result.error;
-    }
+      errorMsg.textContent = window.i18next ? window.i18next.t('networkError') : '網絡錯誤，請稍後重試';
+      loginBtn.disabled = false;
+      loginBtn.textContent = window.i18next ? window.i18next.t('login') : '登入';
+    });
   };
 
   window.handleRegister = function() {
@@ -353,6 +367,7 @@
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword').value;
     const errorMsg = document.getElementById('authErrorMessage');
+    const registerBtn = event.target;
 
     // Validate password match
     if (password !== confirmPassword) {
@@ -361,21 +376,34 @@
       return;
     }
 
-    const result = window.auth.register(email, password, username);
-    
-    if (result.success) {
-      errorMsg.classList.add('hidden');
-      window.closeAuthModal();
-      
-      // Show success message
-      alert(result.message);
-      
-      // Reload current page to update auth state
-      window.location.reload();
-    } else {
+    // Disable button while processing
+    registerBtn.disabled = true;
+    registerBtn.textContent = window.i18next ? window.i18next.t('registering') : '註冊中...';
+
+    // Call async register function
+    Promise.resolve(window.auth.register(email, password, username)).then(result => {
+      if (result.success) {
+        errorMsg.classList.add('hidden');
+        window.closeAuthModal();
+        
+        // Show success message
+        alert(result.message);
+        
+        // Reload current page to update auth state
+        window.location.reload();
+      } else {
+        errorMsg.classList.remove('hidden');
+        errorMsg.textContent = result.error;
+        registerBtn.disabled = false;
+        registerBtn.textContent = window.i18next ? window.i18next.t('register') : '註冊';
+      }
+    }).catch(err => {
+      console.error('Register error:', err);
       errorMsg.classList.remove('hidden');
-      errorMsg.textContent = result.error;
-    }
+      errorMsg.textContent = window.i18next ? window.i18next.t('networkError') : '網絡錯誤，請稍後重試';
+      registerBtn.disabled = false;
+      registerBtn.textContent = window.i18next ? window.i18next.t('register') : '註冊';
+    });
   };
 
   // Initialize when page loads

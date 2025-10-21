@@ -173,6 +173,24 @@
       </div>
     </div>
 
+    <!-- Global Save Section -->
+    <div class="mt-6 flex gap-4 justify-end">
+      <button 
+        onclick="handleResetSettings()"
+        class="px-6 py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors text-body"
+        data-i18n="reset"
+      >
+        重設
+      </button>
+      <button 
+        onclick="handleSaveAllSettings()"
+        class="px-6 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body"
+        data-i18n="saveChanges"
+      >
+        儲存全部變更
+      </button>
+    </div>
+
     <!-- Danger Zone -->
     <div class="mt-6 bg-red-900 bg-opacity-20 p-6 rounded-xl border border-red-600">
       <h3 class="text-title font-bold text-red-400 mb-4" data-i18n="dangerZone">危險區域</h3>
@@ -236,18 +254,12 @@
           </div>
           <div>
             <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="email">電子郵件</label>
-            <div class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 text-body" title="電子郵件無法更改">
+            <div class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 text-body cursor-not-allowed" 
+                 title="電子郵件無法更改"
+                 data-tooltip="emailNotChangeable">
               ${user.email}
-              <p class="text-body-xs text-gray-500 mt-1" data-i18n="emailNotChangeable">電子郵件無法更改</p>
             </div>
           </div>
-          <button 
-            onclick="handleUpdateProfile()"
-            class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body"
-            data-i18n="saveChanges"
-          >
-            儲存變更
-          </button>
         `;
       } else {
         // Show guest UI (whether auth is disabled or user is not logged in)
@@ -328,6 +340,89 @@
       }
     }
 
+    // Collect all settings
+    function collectAllSettings() {
+      const settings = {
+        // Account settings
+        account: {
+          username: document.getElementById('username')?.value || ''
+        },
+        // Preference settings
+        preferences: {
+          gameSound: document.querySelector('input[type="checkbox"]:nth-of-type(1)')?.checked || false,
+          backgroundMusic: document.querySelector('input[type="checkbox"]:nth-of-type(2)')?.checked || false,
+          notifications: document.querySelector('input[type="checkbox"]:nth-of-type(3)')?.checked || false,
+          difficulty: document.querySelector('select')?.value || 'medium'
+        }
+      };
+      return settings;
+    }
+
+    // Handle saving all settings
+    function handleSaveAllSettings() {
+      const settings = collectAllSettings();
+      
+      // Validate username if logged in
+      if (window.auth && window.auth.isLoggedIn()) {
+        if (!settings.account.username.trim()) {
+          alert(window.i18next ? window.i18next.t('usernameRequired') : '請輸入用戶名稱');
+          return;
+        }
+      }
+
+      // TODO: Send all settings to backend
+      // For now, save to localStorage for preferences
+      localStorage.setItem('userSettings', JSON.stringify(settings));
+      
+      console.log('All settings saved:', settings);
+      alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已保存');
+    }
+
+    // Handle reset settings
+    function handleResetSettings() {
+      if (confirm(window.i18next ? window.i18next.t('resetSettingsConfirm') : '確定要重設所有設定嗎？')) {
+        // Reset form values
+        if (window.auth && window.auth.isLoggedIn()) {
+          const user = window.auth.getCurrentUser();
+          document.getElementById('username').value = user.username;
+        }
+        
+        // Reset checkboxes to defaults
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes[0].checked = true;  // gameSound
+        checkboxes[1].checked = false; // backgroundMusic
+        checkboxes[2].checked = true;  // notifications
+        
+        // Reset difficulty
+        document.querySelector('select').value = 'medium';
+        
+        alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+      }
+    }
+
+    // Load saved settings on page load
+    function loadSavedSettings() {
+      const saved = localStorage.getItem('userSettings');
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          
+          // Apply preferences
+          if (settings.preferences) {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            if (checkboxes[0]) checkboxes[0].checked = settings.preferences.gameSound;
+            if (checkboxes[1]) checkboxes[1].checked = settings.preferences.backgroundMusic;
+            if (checkboxes[2]) checkboxes[2].checked = settings.preferences.notifications;
+            
+            const select = document.querySelector('select');
+            if (select) select.value = settings.preferences.difficulty || 'medium';
+          }
+        } catch (e) {
+          console.error('Failed to load saved settings:', e);
+        }
+      }
+    }
+
     // Initialize when page loads
     window.addEventListener('load', function() {
       console.log('[Settings] Page loaded, waiting for auth to initialize...');
@@ -337,6 +432,9 @@
         if (window.auth && window.auth.isAuthEnabled !== undefined) {
           console.log('[Settings] Auth initialized, updating UI');
           updateAccountSettingsUI();
+          
+          // Load saved settings after UI is updated
+          setTimeout(loadSavedSettings, 100);
         } else {
           console.log('[Settings] Auth not ready yet, retrying...');
           setTimeout(checkAuthAndUpdate, 100);

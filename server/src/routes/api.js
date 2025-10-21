@@ -390,4 +390,178 @@ router.post('/upload', upload.array('files', 10), (req, res) => {
   res.json({ success: true, files: mapped });
 });
 
+// ========== Authentication Routes ==========
+
+// Helper function to validate email format
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// Helper function to validate password (minimum 6 characters)
+function isValidPassword(password) {
+  return password && password.length >= 6;
+}
+
+// POST /api/auth/register - User registration
+router.post('/auth/register', async (req, res) => {
+  try {
+    const { email, password, username } = req.body || {};
+    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    const timestamp = new Date().toISOString();
+
+    // Validation
+    if (!email || !password) {
+      console.log(`[Auth] Register attempt with missing fields - Email: ${email ? 'provided' : 'missing'}, IP: ${clientIp}, Time: ${timestamp}`);
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email and password are required' 
+      });
+    }
+
+    if (!isValidEmail(email)) {
+      console.log(`[Auth] Register attempt with invalid email format - Email: ${email}, IP: ${clientIp}, Time: ${timestamp}`);
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid email format' 
+      });
+    }
+
+    if (!isValidPassword(password)) {
+      console.log(`[Auth] Register attempt with weak password - Email: ${email}, IP: ${clientIp}, Time: ${timestamp}`);
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Password must be at least 6 characters' 
+      });
+    }
+
+    // Check if email already exists
+    try {
+      const { queryOne, execute } = require('../db/connection');
+      const existingUser = await queryOne('SELECT id FROM users WHERE email = ?', [email]);
+      
+      if (existingUser) {
+        console.log(`[Auth] ⚠ Register attempt with duplicate email - Email: ${email}, IP: ${clientIp}, Time: ${timestamp}`);
+        return res.status(409).json({ 
+          success: false, 
+          error: 'Email already registered' 
+        });
+      }
+
+      // Hash password (in production, use bcrypt)
+      const crypto = require('crypto');
+      const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+      
+      // Insert new user
+      const result = await execute(
+        `INSERT INTO users (email, password_hash, username, created_at, updated_at, is_active, is_verified) 
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 0)`,
+        [email, passwordHash, username || 'User']
+      );
+
+      console.log(`[Auth] ✓ User registered successfully - Email: ${email}, Username: ${username || 'User'}, UserID: ${result.lastID}, IP: ${clientIp}, Time: ${timestamp}`);
+
+      return res.status(201).json({ 
+        success: true, 
+        message: 'User registered successfully',
+        user: {
+          id: result.lastID,
+          email: email,
+          username: username || 'User'
+        }
+      });
+    } catch (dbError) {
+      console.error(`[Auth] ✗ Database error during registration - Email: ${email}, Error: ${dbError.message}, IP: ${clientIp}, Time: ${timestamp}`);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database error during registration' 
+      });
+    }
+  } catch (err) {
+    console.error('[Auth] ✗ Unexpected error during registration:', err.message);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Internal server error' 
+    });
+  }
+});
+
+// POST /api/auth/login - User login
+router.post('/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    const timestamp = new Date().toISOString();
+
+    // Validation
+    if (!email || !password) {
+      console.log(`[Auth] Login attempt with missing fields - Email: ${email ? 'provided' : 'missing'}, IP: ${clientIp}, Time: ${timestamp}`);
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email and password are required' 
+      });
+    }
+
+    try {
+      const { queryOne, execute } = require('../db/connection');
+      
+      // Hash password
+      const crypto = require('crypto');
+      const passwordHash = crypto.createHash('sha256').update(password).digest('hex');
+
+      // Find user
+      const user = await queryOne(
+        'SELECT id, email, username, is_active FROM users WHERE email = ? AND password_hash = ?',
+        [email, passwordHash]
+      );
+
+      if (!user) {
+        console.log(`[Auth] ⚠ Failed login attempt - Email: ${email}, IP: ${clientIp}, Time: ${timestamp}`);
+        return res.status(401).json({ 
+          success: false, 
+          error: 'Invalid email or password' 
+        });
+      }
+
+      if (!user.is_active) {
+        console.log(`[Auth] ⚠ Login attempt with inactive account - Email: ${email}, UserID: ${user.id}, IP: ${clientIp}, Time: ${timestamp}`);
+        return res.status(403).json({ 
+          success: false, 
+          error: 'Account is inactive' 
+        });
+      }
+
+      // Update last login
+      await execute(
+        'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
+        [user.id]
+      );
+
+      console.log(`[Auth] ✓ User logged in - Email: ${email}, Username: ${user.username}, UserID: ${user.id}, IP: ${clientIp}, Time: ${timestamp}`);
+
+      return res.json({ 
+        success: true, 
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username
+        }
+      });
+    } catch (dbError) {
+      console.error(`[Auth] ✗ Database error during login - Email: ${email}, Error: ${dbError.message}, IP: ${clientIp}, Time: ${timestamp}`);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database error during login' 
+      });
+    }
+  } catch (err) {
+    console.error('[Auth] ✗ Unexpected error during login:', err.message);
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Internal server error' 
+    });
+  }
+});
+
 module.exports = router;

@@ -154,5 +154,8 @@
   "guestMode": "遊客模式",
   "accountSettings": "帳號設定",
   "emailNotChangeable": "電子郵件無法更改",
-  "authDisabled": "認證功能已停用"
+  "authDisabled": "認證功能已停用",
+  "reset": "重設",
+  "settingsReset": "設定已重設",
+  "resetSettingsConfirm": "確定要重設所有設定嗎？"
 }

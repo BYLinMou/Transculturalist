@@ -1,4 +1,24 @@
 services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: transculturalist_db
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-transculturalist}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Application Service
   app:
     container_name: transculturalist_app
     build:
@@ -6,6 +26,9 @@ services:
       dockerfile: server/Dockerfile
     ports:
       - "3030:3030"
+    depends_on:
+      postgres:
+        condition: service_healthy
     # Do NOT mount the server directory into the container in production build
     # as it would overwrite the installed node_modules. Mounting is useful
     # for development only. If you want dev mounts, switch to a separate
@@ -17,4 +40,13 @@ services:
       - ./server/config.js:/app/server/config.js:ro
     environment:
       - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-transculturalist}
     restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
