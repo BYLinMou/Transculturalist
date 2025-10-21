@@ -23,6 +23,7 @@
   </script>
   <link rel="stylesheet" href="/assets/gold-theme.css">
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/config.js"></script>
   <script src="/assets/i18n.js"></script>
   <script src="/assets/auth.js"></script>
   <script src="/assets/auth-modal.js"></script>
@@ -68,8 +69,13 @@
       
       <div id="resultContainer" class="hidden text-center">
         <h3 class="text-title-lg font-bold mb-4 text-gold-300" data-i18n="gameOver">遊戲結束！</h3>
-        <p class="text-title-sm mb-4"><span data-i18n="yourFinalScore">你的最終分數</span>: <span id="finalScore" class="text-gold-400 font-bold">0</span>/5</p>
-        <button id="restartMCQ" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity text-body" data-i18n="restart">重新開始</button>
+        <p class="text-title-sm mb-6"><span data-i18n="yourFinalScore">你的最終分數</span>: <span id="finalScore" class="text-gold-400 font-bold">0</span>/5</p>
+        <div class="flex gap-4 justify-center">
+          <button id="finishGameBtn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors text-body" data-i18n="finishGame">
+            完成遊戲
+          </button>
+          <button id="restartMCQ" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity text-body" data-i18n="restart">重新開始</button>
+        </div>
       </div>
     </div>
   </div>
@@ -180,10 +186,39 @@
     function showResult() {
       if (gameTimer) {
         gameTimer.pause();
+        // Store result (don't save to database yet)
+        window.currentGameResult = {
+          score: score,
+          accuracy: score / questions.length,
+          allQuestionsAnswered: true
+        };
       }
       document.getElementById('questionContainer').classList.add('hidden');
       document.getElementById('resultContainer').classList.remove('hidden');
       document.getElementById('finalScore').textContent = score;
+    }
+
+    // Handle finishing game (save to database)
+    async function finishGame() {
+      if (window.currentGameResult && gameTimer) {
+        // Save to database with completed=true 
+        const result = await gameTimer.finishGame({
+          score: window.currentGameResult.score,
+          accuracy: window.currentGameResult.accuracy,
+          completed: true  // User explicitly clicked finish, count as completed
+        });
+        
+        console.log('[MCQ] Game saved with result:', result);
+        
+        // Show success message
+        alert(window.i18next ? window.i18next.t('gameSaved') : '遊戲已保存！');
+        
+        // Navigate back to game selection
+        setTimeout(() => {
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        }, 1000);
+      }
     }
 
     function restartGame() {
@@ -200,11 +235,25 @@
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
       if (gameTimer) {
-        gameTimer.destroy();
+        // Save game progress when returning
+        gameTimer.finishGame({
+          score: score,
+          accuracy: score / (questions.length > 0 ? questions.length : 1),
+          completed: false
+        }).then(() => {
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        }).catch(() => {
+          // Even if save fails, still navigate
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        });
+      } else {
+        window.location.href = '/game/game-selection.html';
       }
-      window.location.href = '/game/game-selection.html';
     });
 
+    document.getElementById('finishGameBtn').addEventListener('click', finishGame);
     document.getElementById('restartMCQ').addEventListener('click', restartGame);
 
     // Add timer display support and startup
@@ -214,7 +263,7 @@
           displayElement: document.getElementById('timer') || null,
           gameName: 'mcq',
           theme: currentTheme,
-          syncIntervalSeconds: 30
+          syncIntervalSeconds: window.GameConfig.get('TIMER.AUTO_SYNC_INTERVAL', 10)
         });
       }
       gameTimer.start();

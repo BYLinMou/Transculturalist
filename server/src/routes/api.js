@@ -35,6 +35,8 @@ router.post('/user/profile', user.updateProfile);
 // ========== Game Routes ==========
 router.get('/game/leaderboard', game.getLeaderboard);
 router.post('/game/score', game.saveScore);
+router.post('/statistics/playtime', game.savePlatimeSync);
+router.post('/statistics/game-result', game.saveGameResult);
 
 // ========== Upload Routes ==========
 router.post('/upload', upload, uploadHandler);

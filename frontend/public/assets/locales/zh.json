@@ -44,6 +44,8 @@
   "yourFinalScore": "你的最終分數",
   "restart": "重新開始",
   "checkAnswer": "檢查答案",
+  "finishGame": "完成遊戲",
+  "gameSaved": "遊戲已保存！",
   "culturalQuiz": "文化問答",
   "culturalMatching": "文化配對遊戲",
   "dragToMatch": "拖動下方的選項到對應的文化題目位置",

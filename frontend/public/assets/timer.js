@@ -18,7 +18,11 @@ class GameTimer {
     this.displayElement = options.displayElement || null;
     this.gameName = options.gameName || null;
     this.theme = options.theme || null;
-    this.syncIntervalSeconds = options.syncIntervalSeconds || 30; // Default sync every 30 seconds
+    // Use GameConfig if available, otherwise fallback to provided value or 10
+    const defaultSyncInterval = (typeof window !== 'undefined' && window.GameConfig) 
+      ? window.GameConfig.get('TIMER.AUTO_SYNC_INTERVAL', 10)
+      : 10;
+    this.syncIntervalSeconds = options.syncIntervalSeconds || defaultSyncInterval;
     this.onSyncCallback = options.onSyncCallback || null; // Callback during sync (for custom logic)
     this.isRunning = false;
   }
@@ -153,7 +157,7 @@ class GameTimer {
       if (result.success) {
         console.log(`[GameTimer] Synced ${elapsedSeconds}s to database for ${this.gameName}`);
       } else {
-        console.warn('[GameTimer] Sync response indicated failure', result);
+        console.warn('[GameTimer] Sync response indicated failure:', result.error || result);
       }
     } catch (error) {
       // Silent failure, does not affect game progress

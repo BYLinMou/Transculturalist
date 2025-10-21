@@ -23,6 +23,7 @@
   </script>
   <link rel="stylesheet" href="/assets/gold-theme.css">
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/config.js"></script>
   <script src="/assets/i18n.js"></script>
   <script src="/assets/auth.js"></script>
   <script src="/assets/auth-modal.js"></script>
@@ -248,14 +249,45 @@
     }
 
     function restartStory() {
-      chapterNumber = 1;
-      storyHistory = [];
-      conversationHistory = []; // Clear conversation history on restart
-      
-      // Clear chat history display
-      document.getElementById('chatHistoryContainer').innerHTML = '';
-      
-      generateChapter();
+      if (gameTimer) {
+        // Restarting counts as completing the current story session
+        const isCompleted = chapterNumber > 1;  // Completed if progressed past chapter 1
+        gameTimer.finishGame({
+          score: chapterNumber - 1,
+          accuracy: (chapterNumber - 1) / 10,
+          completed: isCompleted  // Completed if reached beyond first chapter
+        }).then(() => {
+          // Reset for new story
+          gameTimer.reset();
+          chapterNumber = 1;
+          storyHistory = [];
+          conversationHistory = [];
+          
+          // Clear chat history display
+          document.getElementById('chatHistoryContainer').innerHTML = '';
+          
+          generateChapter();
+        }).catch(() => {
+          // Even if save fails, still proceed with restart
+          gameTimer.reset();
+          chapterNumber = 1;
+          storyHistory = [];
+          conversationHistory = [];
+          
+          document.getElementById('chatHistoryContainer').innerHTML = '';
+          
+          generateChapter();
+        });
+      } else {
+        chapterNumber = 1;
+        storyHistory = [];
+        conversationHistory = [];
+        
+        // Clear chat history display
+        document.getElementById('chatHistoryContainer').innerHTML = '';
+        
+        generateChapter();
+      }
     }
 
     // Add chat item to history
@@ -296,9 +328,23 @@
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
       if (gameTimer) {
-        gameTimer.destroy();
+        // Returning counts as completing the story session if there's progress
+        const isCompleted = chapterNumber > 1;  // Completed if progressed past chapter 1
+        gameTimer.finishGame({
+          score: chapterNumber - 1,
+          accuracy: (chapterNumber - 1) / 10,
+          completed: isCompleted  // Completed if reached beyond first chapter
+        }).then(() => {
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        }).catch(() => {
+          // Even if save fails, still navigate
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        });
+      } else {
+        window.location.href = '/game/game-selection.html';
       }
-      window.location.href = '/game/game-selection.html';
     });
 
     document.getElementById('restartStory').addEventListener('click', restartStory);
@@ -310,7 +356,7 @@
           displayElement: document.getElementById('timer'),
           gameName: 'story',
           theme: currentTheme,
-          syncIntervalSeconds: 30
+          syncIntervalSeconds: window.GameConfig.get('TIMER.AUTO_SYNC_INTERVAL', 10)
         });
       }
       gameTimer.start();

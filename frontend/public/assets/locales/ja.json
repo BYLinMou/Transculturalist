@@ -44,6 +44,8 @@
   "yourFinalScore": "最終スコア",
   "restart": "再開",
   "checkAnswer": "答えを確認",
+  "finishGame": "ゲームを完了",
+  "gameSaved": "ゲームが保存されました！",
   "culturalQuiz": "文化クイズ",
   "culturalMatching": "文化マッチングゲーム",
   "dragToMatch": "以下のオプションをドラッグして文化質問とマッチングしてください",

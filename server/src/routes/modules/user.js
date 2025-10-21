@@ -184,7 +184,7 @@ exports.getStats = async (req, res) => {
       // Get user stats from database
       const userStats = await queryOne(
         `SELECT completed_games, total_play_time, average_score, forum_contributions 
-         FROM user_stats WHERE user_id = ?`,
+         FROM user_statistics WHERE user_id = ?`,
         [userId]
       );
 

@@ -120,23 +120,8 @@
           </svg>
           <h3 class="text-title font-bold text-gold-300" data-i18n="statistics">遊戲統計</h3>
         </div>
-        <div class="space-y-4">
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
-            <span class="text-gold-400 font-bold text-body-lg">0</span>
-          </div>
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
-            <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="minutes">分鐘</span></span>
-          </div>
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
-            <span class="text-gold-400 font-bold text-body-lg">0</span>
-          </div>
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="forumContributions">論壇貢獻</span>
-            <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="posts">則</span></span>
-          </div>
+        <div class="space-y-4" id="statisticsContainer">
+          <!-- Statistics loaded dynamically by JavaScript -->
         </div>
       </div>
 
@@ -560,6 +545,113 @@
       }
     }
 
+    // Load and display user statistics
+    async function loadUserStatistics() {
+      try {
+        const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+        
+        // If not logged in, show default statistics
+        if (!window.auth || !window.auth.isLoggedIn() || !authUser.id) {
+          displayDefaultStatistics();
+          return;
+        }
+
+        // Fetch statistics from server
+        const response = await fetch('/api/user/stats', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authUser.token || ''}`
+          }
+        });
+
+        if (!response.ok) {
+          console.warn('[Settings] Failed to load statistics from server');
+          displayDefaultStatistics();
+          return;
+        }
+
+        const data = await response.json();
+        if (data.stats) {
+          displayStatistics(data.stats);
+          console.log('[Settings] User statistics loaded:', data.stats);
+        } else {
+          displayDefaultStatistics();
+        }
+      } catch (error) {
+        console.error('[Settings] Error loading statistics:', error);
+        displayDefaultStatistics();
+      }
+    }
+
+    // Display statistics with formatting
+    function displayStatistics(stats) {
+      const container = document.getElementById('statisticsContainer');
+      if (!container) return;
+
+      // Format total play time to minutes with decimal places
+      const totalMinutes = (stats.totalPlayTime || 0) / 60;
+      const formattedMinutes = totalMinutes.toFixed(2);
+      
+      // Format average score
+      const completedGames = stats.completedGames || 0;
+      const averageScore = stats.averageScore || 0;
+      const averageScoreDisplay = averageScore > 0 ? averageScore.toFixed(1) : '-';
+
+      container.innerHTML = `
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${completedGames}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
+          <span class="text-gold-400 font-bold text-body-lg">${formattedMinutes} <span data-i18n="minutes">分鐘</span></span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${averageScoreDisplay}/5</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="forumContributions">論壇貢獻</span>
+          <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="posts">則</span></span>
+        </div>
+      `;
+
+      // Update i18n for dynamically added elements
+      if (window.updatePageText) {
+        window.updatePageText();
+      }
+    }
+
+    // Display default statistics (for guests)
+    function displayDefaultStatistics() {
+      const container = document.getElementById('statisticsContainer');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">0</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
+          <span class="text-gold-400 font-bold text-body-lg">0.00 <span data-i18n="minutes">分鐘</span></span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
+          <span class="text-gold-400 font-bold text-body-lg">--/5</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="forumContributions">論壇貢獻</span>
+          <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="posts">則</span></span>
+        </div>
+      `;
+
+      // Update i18n for dynamically added elements
+      if (window.updatePageText) {
+        window.updatePageText();
+      }
+    }
+
     // Load saved settings on page load
     async function loadSavedSettings() {
       const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
@@ -650,8 +742,11 @@
           refreshUserInfoFromDatabase().then(() => {
             updateAccountSettingsUI();
             
-            // Load saved settings after UI is updated
-            setTimeout(loadSavedSettings, 100);
+            // Load saved settings and statistics after UI is updated
+            setTimeout(() => {
+              loadSavedSettings();
+              loadUserStatistics();
+            }, 100);
           });
         } else {
           console.log('[Settings] Auth not ready yet, retrying...');
@@ -662,7 +757,11 @@
       checkAuthAndUpdate();
       
       // Listen for auth changes
-      window.addEventListener('auth-changed', updateAccountSettingsUI);
+      window.addEventListener('auth-changed', () => {
+        updateAccountSettingsUI();
+        // Reload statistics when auth changes (user logged in/out)
+        setTimeout(loadUserStatistics, 100);
+      });
     });
 
     // Original settings save logic for other fields

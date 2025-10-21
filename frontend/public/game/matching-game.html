@@ -23,6 +23,7 @@
   </script>
   <link rel="stylesheet" href="/assets/gold-theme.css">
   <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/config.js"></script>
   <script src="/assets/i18n.js"></script>
   <script src="/assets/auth.js"></script>
   <script src="/assets/auth-modal.js"></script>
@@ -128,10 +129,15 @@
       <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700">
         <h3 class="text-title-lg font-bold mb-4 text-gold-300" data-i18n="gameOver">遊戲結束！</h3>
         <p class="text-title-sm mb-2"><span data-i18n="correctMatches">正確配對</span>: <span id="correctCount" class="text-green-400 font-bold">0</span></p>
-        <p class="text-title-sm mb-4"><span data-i18n="completionTime">完成時間</span>: <span id="finalTime" class="text-gold-400 font-bold">00:00</span></p>
-        <button id="restartMatching" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity text-body" data-i18n="restart">
-          重新開始
-        </button>
+        <p class="text-title-sm mb-6"><span data-i18n="completionTime">完成時間</span>: <span id="finalTime" class="text-gold-400 font-bold">00:00</span></p>
+        <div class="flex gap-4 justify-center">
+          <button id="finishGameBtn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors text-body" data-i18n="finishGame">
+            完成遊戲
+          </button>
+          <button id="restartMatching" class="px-6 py-3 gold-gradient text-black font-bold rounded-lg hover:opacity-90 transition-opacity text-body" data-i18n="restart">
+            重新開始
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -320,7 +326,7 @@
           displayElement: document.getElementById('timer'),
           gameName: 'matching',
           theme: currentTheme,
-          syncIntervalSeconds: 30
+          syncIntervalSeconds: window.GameConfig.get('TIMER.AUTO_SYNC_INTERVAL', 10)
         });
       }
       gameTimer.start();
@@ -346,6 +352,15 @@
         }
       });
       
+      // Store the result temporarily (don't save to database yet)
+      window.currentGameResult = {
+        score: correctCount,
+        accuracy: correctCount / questionSlots.length,
+        completed: correctCount === questionSlots.length,
+        correctCount: correctCount,
+        totalQuestions: questionSlots.length
+      };
+      
       // Show result
       setTimeout(() => {
         document.getElementById('gameContainer').classList.add('hidden');
@@ -353,6 +368,29 @@
         document.getElementById('correctCount').textContent = `${correctCount}/${questionSlots.length}`;
         document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
       }, 1500);
+    }
+
+    // Handle finishing game (save to database)
+    async function finishGame() {
+      if (window.currentGameResult) {
+        // Save to database with completed=true only if all answers are correct
+        const result = await gameTimer.finishGame({
+          score: window.currentGameResult.score,
+          accuracy: window.currentGameResult.accuracy,
+          completed: true  // User explicitly clicked finish, count as completed
+        });
+        
+        console.log('[Matching] Game saved with result:', result);
+        
+        // Show success message
+        alert(window.i18next ? window.i18next.t('gameSaved') : '遊戲已保存！');
+        
+        // Navigate back to game selection
+        setTimeout(() => {
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        }, 1000);
+      }
     }
 
     function restartGame() {
@@ -379,12 +417,26 @@
     // Event listeners
     document.getElementById('backToGames').addEventListener('click', () => {
       if (gameTimer) {
-        gameTimer.destroy();
+        // Save game progress when returning (mark as not completed)
+        gameTimer.finishGame({
+          score: 0,
+          accuracy: 0,
+          completed: false
+        }).then(() => {
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        }).catch(() => {
+          // Even if save fails, still navigate
+          gameTimer.destroy();
+          window.location.href = '/game/game-selection.html';
+        });
+      } else {
+        window.location.href = '/game/game-selection.html';
       }
-      window.location.href = '/game/game-selection.html';
     });
 
     document.getElementById('checkAnswers').addEventListener('click', checkAnswers);
+    document.getElementById('finishGameBtn').addEventListener('click', finishGame);
     document.getElementById('restartMatching').addEventListener('click', restartGame);
 
     // Start game
