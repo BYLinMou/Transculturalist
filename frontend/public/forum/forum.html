@@ -26,6 +26,7 @@
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
   <script src="/assets/load-header.js"></script>
+  <script type="module" src="/components/supabase-client.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -125,6 +126,7 @@
               <input 
                 type="text" 
                 id="resourceTitle" 
+                name="theme"
                 required
                 class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
                 placeholder="例如：中國傳統書法技巧"
@@ -135,6 +137,7 @@
               <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="resourceDescription">資源描述</label>
               <textarea 
                 id="resourceDescription" 
+                name="description"
                 required
                 rows="4"
                 class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
@@ -142,32 +145,57 @@
               ></textarea>
             </div>
 
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="cultureCategory">文化類別</label>
+                <select 
+                  id="cultureCategory" 
+                  name="category"
+                  required
+                  class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+                >
+                  <option value="" data-i18n="pleaseSelect">請選擇...</option>
+                  <option value="chinese">中華文化</option>
+                  <option value="japanese">日本文化</option>
+                  <option value="korean">韓國文化</option>
+                  <option value="indian">印度文化</option>
+                  <option value="other">其他文化</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-body-sm font-semibold text-gray-300 mb-2">標籤（逗號分隔）</label>
+                <input 
+                  type="text" 
+                  id="resourceTags" 
+                  name="tags"
+                  class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+                  placeholder="例如：茶藝, 傳統文化"
+                />
+              </div>
+            </div>
+
             <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="cultureCategory">文化類別</label>
-              <select 
-                id="cultureCategory" 
-                required
+              <label class="block text-body-sm font-semibold text-gray-300 mb-2">摘要（可選）</label>
+              <textarea
+                id="resourceSummary"
+                name="summary"
+                rows="3"
                 class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
-              >
-                <option value="" data-i18n="pleaseSelect">請選擇...</option>
-                <option value="chinese">中華文化</option>
-                <option value="japanese">日本文化</option>
-                <option value="korean">韓國文化</option>
-                <option value="indian">印度文化</option>
-                <option value="other">其他文化</option>
-              </select>
+                placeholder="若留空，系統會以標題與描述生成簡短摘要。"
+              ></textarea>
             </div>
 
             <div>
               <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="uploadFiles">上傳檔案</label>
               <input 
                 type="file" 
-                id="cultureFiles" 
-                multiple
-                accept="image/*,video/*,.pdf,.doc,.docx"
+                id="cultureFile" 
+                name="file"
+                required
+                accept="image/*,video/*,.pdf,.doc,.docx,.txt"
                 class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body-sm"
               />
-              <p class="text-caption text-gray-400 mt-2" data-i18n="supportedFormats">支援圖片、影片、PDF等格式，最多上傳10個檔案</p>
+              <p class="text-caption text-gray-400 mt-2">支援圖片、影片、PDF 等格式（單檔最大 15MB）。</p>
             </div>
 
             <div id="uploadProgress" class="hidden">
@@ -198,57 +226,108 @@
         </div>
 
         <!-- Shared Resources -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🎨</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">中國水墨畫教學</h4>
-            <p class="text-body-sm text-gray-400 mb-3">傳統水墨畫技巧分享</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 藝術老師</span>
-              <span>⬇️ 156</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🎭</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">日本能劇介紹</h4>
-            <p class="text-body-sm text-gray-400 mb-3">能劇的歷史與表演形式</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 戲劇愛好者</span>
-              <span>⬇️ 89</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🍜</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">韓國傳統料理</h4>
-            <p class="text-body-sm text-gray-400 mb-3">泡菜製作與韓式料理文化</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 美食達人</span>
-              <span>⬇️ 234</span>
-            </div>
-          </div>
-        </div>
+        <div id="sharedResources" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <p id="emptyResources" class="text-body-sm text-gray-400">目前尚無文化分享，歡迎成為第一位貢獻者！</p>
       </div>
     </div>
   </main>
 
-  <script>
+  <script type="module">
+    import { authFetch } from '/components/supabase-client.js';
+
+    const supabaseClient = window.supabase;
+    const KNOWLEDGE_BUCKET = 'transcultural-knowledge';
+    const DEFAULT_LOCALE = 'zh-TW';
+
+    const uploadFormEl = document.getElementById('cultureUploadForm');
+    const uploadProgressEl = document.getElementById('uploadProgress');
+    const progressBarEl = document.getElementById('progressBar');
+    const progressTextEl = document.getElementById('progressText');
+    const sharedResourcesEl = document.getElementById('sharedResources');
+    const emptyResourcesEl = document.getElementById('emptyResources');
+
+    function resetProgress() {
+      uploadProgressEl.classList.add('hidden');
+      progressBarEl.style.width = '0%';
+      progressTextEl.textContent = '0%';
+    }
+
+    function setProgress(percent) {
+      progressBarEl.style.width = `${percent}%`;
+      progressTextEl.textContent = `${percent}%`;
+    }
+
+    async function ensureAuthenticated() {
+      if (!supabaseClient) {
+        throw new Error('Supabase client not found');
+      }
+      const { data } = await supabaseClient.auth.getSession();
+      if (!data.session) {
+        throw new Error('請先登入後再分享文化資源');
+      }
+    }
+
+    function renderResources(entries) {
+      sharedResourcesEl.innerHTML = '';
+      if (!entries.length) {
+        emptyResourcesEl.classList.remove('hidden');
+        return;
+      }
+      emptyResourcesEl.classList.add('hidden');
+
+      entries.forEach(entry => {
+        const card = document.createElement('div');
+        card.className = 'bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors flex flex-col gap-3';
+
+        const tagList = entry.tags.length
+          ? `<div class="flex flex-wrap gap-2">${entry.tags.map(tag => `<span class="px-2 py-1 text-caption rounded-full bg-gray-700 text-gold-300">${tag}</span>`).join('')}</div>`
+          : '';
+
+        let fileLink = '';
+        if (entry.file) {
+          const { data } = supabaseClient.storage
+            .from(KNOWLEDGE_BUCKET)
+            .getPublicUrl(entry.file.file_path, { download: entry.file.filename || true });
+          if (data?.publicUrl) {
+            const sizeLabel = entry.file.file_size ? `(${Math.round(entry.file.file_size / 1024)} KB)` : '';
+            fileLink = `<a class="inline-flex items-center gap-2 text-body-sm text-gold-200 hover:text-gold-100 transition" href="${data.publicUrl}" download="${entry.file.filename || ''}">⬇️ 下載資源 <span class="text-gray-400 text-caption">${sizeLabel}</span></a>`;
+          }
+        }
+
+        card.innerHTML = `
+          <div>
+            <h4 class="font-semibold text-white text-body mb-1">${entry.theme}</h4>
+            ${tagList}
+          </div>
+          <p class="text-body-sm text-gray-300 flex-1">${entry.summary || entry.metadata?.fallbackSummary || '—'}</p>
+          <div class="text-caption text-gray-400">更新時間：${new Date(entry.generated_at).toLocaleString()}</div>
+          ${fileLink || '<span class="text-caption text-gray-500">尚未附加檔案</span>'}
+        `;
+
+        sharedResourcesEl.appendChild(card);
+      });
+    }
+
+    async function fetchResources() {
+      try {
+        await ensureAuthenticated();
+        const response = await authFetch(`/api/knowledge/entries?locale=${DEFAULT_LOCALE}`);
+        const payload = await response.json();
+        renderResources(payload.entries || []);
+      } catch (error) {
+        console.error('[forum] fetch resources failed:', error);
+        emptyResourcesEl.classList.remove('hidden');
+        emptyResourcesEl.textContent = error.message || '無法載入文化分享，請稍後再試。';
+      }
+    }
+
     // Tab switching
     function switchTab(tabName) {
-      // Update tab buttons
       document.querySelectorAll('.tab-button').forEach(btn => {
         btn.classList.remove('active', 'border-gold-600', 'text-gold-400');
         btn.classList.add('text-gray-400', 'border-transparent');
       });
-      
-      // Update content
+
       if (tabName === 'discussion') {
         document.getElementById('discussionTab').classList.add('active', 'border-gold-600', 'text-gold-400');
         document.getElementById('discussionTab').classList.remove('text-gray-400', 'border-transparent');
@@ -262,91 +341,86 @@
       }
     }
 
-    // Toggle upload form
     function toggleUploadForm() {
       const form = document.getElementById('uploadForm');
       form.classList.toggle('hidden');
-      if (!form.classList.contains('hidden')) {
-        document.getElementById('resourceTitle').focus();
-      }
     }
 
-    // Handle file upload
     async function handleFileUpload(event) {
       event.preventDefault();
-      
-      const title = document.getElementById('resourceTitle').value;
-      const description = document.getElementById('resourceDescription').value;
-      const category = document.getElementById('cultureCategory').value;
-      const files = document.getElementById('cultureFiles').files;
 
-      if (!title || !description || !category) {
-        alert('請填寫所有必填欄位');
+      const theme = document.getElementById('resourceTitle').value.trim();
+      const description = document.getElementById('resourceDescription').value.trim();
+      const category = document.getElementById('cultureCategory').value.trim();
+      const tags = document.getElementById('resourceTags').value.trim();
+      const summaryInput = document.getElementById('resourceSummary').value.trim();
+      const file = document.getElementById('cultureFile').files[0];
+
+      if (!theme || !description || !category || !file) {
+        alert('請填寫所有必填欄位與檔案');
         return;
       }
 
-      // Show progress
-      document.getElementById('uploadProgress').classList.remove('hidden');
-      
+      try {
+        await ensureAuthenticated();
+      } catch (error) {
+        window.errorDisplay.showAlertError(error.message);
+        return;
+      }
+
+      uploadProgressEl.classList.remove('hidden');
+      setProgress(10);
+
       try {
         const formData = new FormData();
-        formData.append('title', title);
+        formData.append('file', file);
+        formData.append('theme', theme);
         formData.append('description', description);
-        formData.append('category', category);
-        
-        for (let i = 0; i < files.length; i++) {
-          formData.append('files', files[i]);
-        }
+        formData.append('summary', summaryInput || `${theme} — ${description.slice(0, 60)}...`);
+        formData.append('tags', tags || category);
+        formData.append('locale', DEFAULT_LOCALE);
 
-        // Simulate progress
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-          progress += 10;
-          if (progress <= 90) {
-            document.getElementById('progressBar').style.width = progress + '%';
-            document.getElementById('progressText').textContent = progress + '%';
-          }
-        }, 200);
-
-        const response = await fetch('/api/upload', {
+        const response = await authFetch('/api/knowledge/files', {
           method: 'POST',
           body: formData
         });
-
-        clearInterval(progressInterval);
-        document.getElementById('progressBar').style.width = '100%';
-        document.getElementById('progressText').textContent = '100%';
-
         const result = await response.json();
-
-        if (result.success) {
-          alert('上傳成功！');
-          document.getElementById('cultureUploadForm').reset();
-          document.getElementById('uploadForm').classList.add('hidden');
-          document.getElementById('uploadProgress').classList.add('hidden');
-          document.getElementById('progressBar').style.width = '0%';
-        } else {
-          throw new Error('Upload failed');
+        if (!response.ok) {
+          throw new Error(result.error || '上傳失敗，請稍後再試。');
         }
+
+        setProgress(100);
+        setTimeout(resetProgress, 600);
+        alert(window.errorDisplay.getTranslatedText('uploadSuccess', '上傳成功！'));
+
+        uploadFormEl.reset();
+        document.getElementById('uploadForm').classList.add('hidden');
+        await fetchResources();
       } catch (error) {
-        console.error('Upload error:', error);
-        const uploadFailedText = window.errorDisplay.getTranslatedText('uploadFailed', '上傳失敗，請稍後再試');
-        window.errorDisplay.showAlertError(uploadFailedText);
-        document.getElementById('uploadProgress').classList.add('hidden');
-        document.getElementById('progressBar').style.width = '0%';
+        console.error('[forum] upload error:', error);
+        window.errorDisplay.showAlertError(error.message || '上傳失敗，請稍後再試。');
+        resetProgress();
       }
     }
 
-    // Event listeners
     document.getElementById('backToHome').addEventListener('click', () => {
       window.location.href = '/culture-selection.html';
     });
 
     document.getElementById('discussionTab').addEventListener('click', () => switchTab('discussion'));
     document.getElementById('contributionTab').addEventListener('click', () => switchTab('contribution'));
-    document.getElementById('uploadCultureBtn').addEventListener('click', toggleUploadForm);
-    document.getElementById('cancelUpload').addEventListener('click', toggleUploadForm);
-    document.getElementById('cultureUploadForm').addEventListener('submit', handleFileUpload);
+    document.getElementById('uploadCultureBtn').addEventListener('click', () => {
+      toggleUploadForm();
+      document.getElementById('resourceTitle').focus();
+    });
+    document.getElementById('cancelUpload').addEventListener('click', () => {
+      document.getElementById('uploadForm').classList.add('hidden');
+      uploadFormEl.reset();
+      resetProgress();
+    });
+    uploadFormEl.addEventListener('submit', handleFileUpload);
+
+    fetchResources();
   </script>
 </body>
 </html>

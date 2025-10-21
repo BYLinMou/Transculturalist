@@ -9,6 +9,7 @@ const { requireAuth } = require('./auth/require-auth-middleware');
 const currentUserRoute = require('./routes/current-user-route');
 let profileInitRoute;
 try { profileInitRoute = require('./routes/profile-init-route'); } catch (_) { /* Optional */ }
+const knowledgeRoute = require('./routes/knowledge-route');
 
 const PORT = config.PORT;
 
@@ -25,6 +26,7 @@ app.use('/api', apiRouter);
 // Protected API: Requires Authorization: Bearer <token>
 app.use('/api/auth', requireAuth, currentUserRoute);
 if (profileInitRoute) app.use('/api/auth', requireAuth, profileInitRoute);
+app.use('/api/knowledge', requireAuth, knowledgeRoute);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server listening on http://0.0.0.0:${PORT}`);

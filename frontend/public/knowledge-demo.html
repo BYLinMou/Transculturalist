@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>知識庫 Demo 上傳</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script type="module" src="/components/supabase-client.js"></script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; }
+    .card { background-color: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 16px; padding: 24px; }
+    input, textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(148, 163, 184, 0.35); background: rgba(15, 23, 42, 0.6); color: #fff; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: #e2e8f0; }
+    .btn { padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: opacity .2s ease; }
+    .btn-primary { background: linear-gradient(135deg, #FDEAA7, #F7C41C); color: #1f2933; border: none; }
+    .btn-primary:hover { opacity: 0.9; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; color: #f1f5f9; }
+    th, td { padding: 12px; border-bottom: 1px solid rgba(148, 163, 184, 0.2); text-align: left; }
+    .tag { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; background: rgba(250, 204, 21, 0.15); color: #fde68a; margin-right: 6px; margin-bottom: 4px; font-size: 13px; }
+    .muted { color: rgba(226, 232, 240, 0.7); font-size: 14px; }
+  </style>
+</head>
+<body class="gradient-bg text-white">
+  <header class="border-b border-gray-700/70 backdrop-blur">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <h1 class="text-title-lg font-bold text-gold-300">知識庫 Demo</h1>
+      <a href="/culture-selection.html" class="text-body-sm text-gray-300 hover:text-gold-200 transition">返回主頁</a>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-10 space-y-8">
+    <section class="card">
+      <h2 class="text-title font-semibold text-gold-200 mb-4">上傳資料</h2>
+      <form id="upload-form" class="space-y-4">
+        <div>
+          <label for="theme">主題（將保存為多語 JSON，默認 zh-TW）</label>
+          <input id="theme" name="theme" placeholder="例如：茶文化" />
+        </div>
+        <div>
+          <label for="tags">標籤（使用逗號分隔）</label>
+          <input id="tags" name="tags" placeholder="例如：飲食, 節慶" />
+        </div>
+        <div>
+          <label for="description">描述</label>
+          <textarea id="description" name="description" rows="3" placeholder="簡要描述此資料"></textarea>
+        </div>
+        <div>
+          <label for="summary">AI 摘要（留空則自動生成模板）</label>
+          <textarea id="summary" name="summary" rows="3" placeholder="摘要內容"></textarea>
+        </div>
+        <div>
+          <label for="locale">語言代碼</label>
+          <input id="locale" name="locale" value="zh-TW" />
+        </div>
+        <div>
+          <label for="file">上傳文件</label>
+          <input id="file" name="file" type="file" required />
+        </div>
+        <button class="btn btn-primary" type="submit">開始上傳</button>
+        <p id="upload-status" class="muted"></p>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-title font-semibold text-gold-200">已生成條目</h2>
+        <button id="refresh-btn" class="btn btn-primary" type="button">重新整理</button>
+      </div>
+      <div id="entries-empty" class="muted">暫無資料，請先上傳文件。</div>
+      <div id="entries-table-wrapper" style="display:none;">
+        <table>
+          <thead>
+            <tr>
+              <th>主題</th>
+              <th>摘要</th>
+              <th>標籤</th>
+              <th>原始文件</th>
+            </tr>
+          </thead>
+          <tbody id="entries-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { authFetch } from '/components/supabase-client.js';
+
+    const supabaseClient = window.supabase;
+    if (!supabaseClient) {
+      console.error('Supabase client not found. Ensure /components/supabase-client.js is loaded.');
+    }
+    const KNOWLEDGE_BUCKET = 'transcultural-knowledge';
+
+    const uploadForm = document.getElementById('upload-form');
+    const statusEl = document.getElementById('upload-status');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const entriesEmpty = document.getElementById('entries-empty');
+    const entriesWrapper = document.getElementById('entries-table-wrapper');
+    const entriesBody = document.getElementById('entries-body');
+
+    async function ensureAuthenticated() {
+      if (!supabaseClient) {
+        statusEl.textContent = 'Supabase 尚未初始化，請重新整理頁面。';
+        throw new Error('Supabase client missing');
+      }
+      const { data } = await supabaseClient.auth.getSession();
+      if (!data.session) {
+        statusEl.textContent = '請先登入後再使用知識庫功能。';
+        throw new Error('Unauthenticated');
+      }
+    }
+
+    async function fetchEntries() {
+      try {
+        await ensureAuthenticated();
+        const response = await authFetch('/api/knowledge/entries?locale=zh-TW');
+        if (!response.ok) {
+          throw new Error('無法獲取條目');
+        }
+        const payload = await response.json();
+        const entries = payload.entries || [];
+
+        if (!entries.length) {
+          entriesEmpty.style.display = 'block';
+          entriesWrapper.style.display = 'none';
+          return;
+        }
+
+        entriesEmpty.style.display = 'none';
+        entriesWrapper.style.display = 'block';
+        entriesBody.innerHTML = '';
+
+        entries.forEach(entry => {
+          const tr = document.createElement('tr');
+          let fileLink = '—';
+
+          if (entry.file) {
+            const { data: urlData } = supabaseClient.storage
+              .from(KNOWLEDGE_BUCKET)
+              .getPublicUrl(entry.file.file_path, { download: entry.file.filename || true });
+            if (urlData?.publicUrl) {
+              fileLink = `<a class="text-gold-200 underline" href="${urlData.publicUrl}" download="${entry.file.filename || ''}">${entry.file.filename}</a>`;
+            } else {
+              fileLink = entry.file.filename || '—';
+            }
+          }
+
+          tr.innerHTML = `
+            <td>${entry.theme}</td>
+            <td class="muted">${entry.summary || '—'}</td>
+            <td>${entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</td>
+            <td>${fileLink}</td>
+          `;
+          entriesBody.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('[fetchEntries] failed', error);
+        entriesEmpty.style.display = 'block';
+        entriesEmpty.textContent = '無法載入條目，請稍後重試。';
+        entriesWrapper.style.display = 'none';
+      }
+    }
+
+    uploadForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      statusEl.textContent = '';
+
+      try {
+        await ensureAuthenticated();
+      } catch {
+        return;
+      }
+
+      const formData = new FormData(uploadForm);
+
+      try {
+        statusEl.textContent = '正在上傳，請稍候…';
+        const response = await authFetch('/api/knowledge/files', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload.error || '上傳失敗');
+        }
+
+        statusEl.textContent = '上傳成功，已生成知識庫條目。';
+        uploadForm.reset();
+        document.getElementById('locale').value = 'zh-TW';
+        await fetchEntries();
+      } catch (error) {
+        console.error('[upload] failed', error);
+        statusEl.textContent = error.message || '上傳失敗，請稍後再試。';
+      }
+    });
+
+    refreshBtn.addEventListener('click', fetchEntries);
+
+    fetchEntries();
+  </script>
+</body>
+</html>
