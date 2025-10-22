@@ -4,7 +4,7 @@ const { isValidEmail, isValidPassword } = require('../../shared/validators');
 // POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { email, password, username } = req.body || {};
+    const { email, password, username, agreedToPrivacyPolicy } = req.body || {};
     const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
     const timestamp = new Date().toISOString();
 
@@ -14,6 +14,15 @@ exports.register = async (req, res) => {
       return res.status(400).json({ 
         success: false, 
         error: 'Email and password are required' 
+      });
+    }
+
+    // Validate privacy policy agreement
+    if (!agreedToPrivacyPolicy) {
+      console.log(`[Auth] Register attempt without privacy policy agreement - Email: ${email}, IP: ${clientIp}, Time: ${timestamp}`);
+      return res.status(400).json({ 
+        success: false, 
+        error: 'You must agree to the Privacy Policy to register' 
       });
     }
 

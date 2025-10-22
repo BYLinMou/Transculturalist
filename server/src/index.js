@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const app = express();
 const apiRouter = require('./routes/api');
@@ -63,6 +64,31 @@ async function initializeApp() {
 
   // JSON body parsing
   app.use(express.json());
+
+  // Privacy Policy Route - must come before API middleware
+  app.get('/privacy-policy.txt', (req, res) => {
+    try {
+      const privacyPolicyPath = path.join(__dirname, '..', 'public', 'privacy-policy.txt');
+      
+      // Log that the privacy policy was requested
+      const userAgent = req.get('user-agent') || 'unknown';
+      const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+      console.log(`[Privacy Policy] User accessed privacy policy - IP: ${clientIp}, User-Agent: ${userAgent}, Timestamp: ${new Date().toISOString()}`);
+      
+      // Check if file exists
+      if (!fs.existsSync(privacyPolicyPath)) {
+        console.error('[Privacy Policy] File not found at:', privacyPolicyPath);
+        return res.status(404).send('Privacy policy not found');
+      }
+      
+      // Send the file with proper content type
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.sendFile(privacyPolicyPath);
+    } catch (error) {
+      console.error('[Privacy Policy] Error serving privacy policy:', error.message);
+      res.status(500).send('Error loading privacy policy');
+    }
+  });
 
   // Authentication middleware
   const { authMiddleware } = require('./middleware/auth');

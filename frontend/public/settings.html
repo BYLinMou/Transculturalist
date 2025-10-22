@@ -152,7 +152,7 @@
             <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left text-body-sm" data-i18n="contactUs">
               📧 聯絡我們
             </button>
-            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left text-body-sm" data-i18n="privacyPolicy">
+            <button onclick="openPrivacyPolicy()" class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left text-body-sm" data-i18n="privacyPolicy">
               📄 隱私政策
             </button>
           </div>
@@ -840,6 +840,20 @@
         document.getElementById('app-version').textContent = '無法載入';
         document.getElementById('publish-date').textContent = '無法載入';
       });
+
+    // Open privacy policy in modal
+    function openPrivacyPolicy() {
+      console.log('[Settings] openPrivacyPolicy() called');
+      // Use the auth-modal's privacy policy modal
+      if (window.openPrivacyPolicyModal) {
+        console.log('[Settings] Calling window.openPrivacyPolicyModal()');
+        window.openPrivacyPolicyModal();
+      } else {
+        console.log('[Settings] window.openPrivacyPolicyModal not available, using fallback');
+        // Fallback to opening in new window if auth-modal not loaded
+        window.open('/privacy-policy.html', 'privacy_policy', 'width=800,height=600,scrollbars=yes');
+      }
+    }
   </script>
 </body>
 </html>

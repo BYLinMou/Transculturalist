@@ -134,6 +134,17 @@
                 </button>
               </div>
             </div>
+            <div class="flex items-start gap-3 bg-gray-800 p-3 rounded-lg">
+              <input 
+                type="checkbox" 
+                id="agreePrivacyPolicy"
+                class="mt-1 w-4 h-4 rounded border-gray-600 bg-gray-700 cursor-pointer accent-gold-600"
+              >
+              <label for="agreePrivacyPolicy" class="flex-1 text-gray-300 text-body-sm cursor-pointer">
+                <span data-i18n="agreePrivacyPolicy">我同意</span>
+                <a href="javascript:void(0)" onclick="openPrivacyPolicyModal()" class="text-gold-400 hover:text-gold-300 underline" data-i18n="privacyPolicyLink">隱私政策</a>
+              </label>
+            </div>
             <button 
               onclick="handleRegister()"
               class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body"
@@ -156,6 +167,37 @@
               建立帳號
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyPolicyModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50" style="display: none; align-items: center; justify-content: center; padding: 1rem; overflow: auto;">
+      <div class="bg-gray-900 border border-gold-600 rounded-xl w-full shadow-2xl" style="max-width: 700px; max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; margin: auto;">
+        <!-- Modal Header (sticky) -->
+        <div class="bg-gradient-to-r from-gold-600 to-gold-700 px-6 py-4 border-b border-gold-600 flex justify-between items-center" style="position: sticky; top: 0; z-index: 10;">
+          <h2 class="text-title font-bold text-black" data-i18n="privacyPolicy">隱私政策</h2>
+          <button onclick="closePrivacyPolicyModal()" class="text-black hover:text-gray-700 transition-colors" style="background: none; border: none; cursor: pointer; padding: 0;">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body (scrollable content) -->
+        <div id="privacyPolicyContent" class="p-6 space-y-4 text-gray-300 text-body-sm" style="min-height: 100px; color: #d1d5db;">
+          <p style="color: #9ca3af;">Loading privacy policy...</p>
+        </div>
+
+        <!-- Modal Footer (sticky) -->
+        <div class="bg-gray-800 px-6 py-4 border-t border-gold-600 flex justify-end gap-3" style="position: sticky; bottom: 0; z-index: 10;">
+          <button 
+            onclick="closePrivacyPolicyModal()" 
+            class="px-6 py-2 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body"
+            data-i18n="read"
+          >
+            我已閱讀
+          </button>
         </div>
       </div>
     </div>
@@ -190,7 +232,10 @@
       
       const container = document.createElement('div');
       container.innerHTML = createAuthModal();
-      document.body.appendChild(container.firstElementChild);
+      // Append all children to body, not just the first one
+      while (container.firstElementChild) {
+        document.body.appendChild(container.firstElementChild);
+      }
     }
 
     // Add event listeners
@@ -199,28 +244,39 @@
 
   // Setup event listeners
   function setupAuthModal() {
-    // Close modal when clicking outside (on the background)
-    const modal = document.getElementById('authModal');
-    if (modal) {
-      modal.addEventListener('click', function(e) {
-        // Only close if clicking on the background (the modal overlay itself)
-        // Check if the clicked element is the modal background div and not a child
-        if (e.target.id === 'authModal') {
-          closeAuthModal();
-        }
-      });
-    }
+    // Defer setup to ensure DOM is ready
+    setTimeout(() => {
+      const modal = document.getElementById('authModal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          // Only close if clicking on the background (the modal overlay itself)
+          // Check if the clicked element is the modal background div and not a child
+          if (e.target.id === 'authModal') {
+            closeAuthModal();
+          }
+        });
+      }
 
-    // Allow Enter key to submit
-    document.getElementById('loginEmail')?.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') handleLogin();
-    });
-    document.getElementById('loginPassword')?.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') handleLogin();
-    });
-    document.getElementById('registerEmail')?.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') handleRegister();
-    });
+      const privacyModal = document.getElementById('privacyPolicyModal');
+      if (privacyModal) {
+        privacyModal.addEventListener('click', function(e) {
+          if (e.target.id === 'privacyPolicyModal') {
+            closePrivacyPolicyModal();
+          }
+        });
+      }
+
+      // Allow Enter key to submit
+      document.getElementById('loginEmail')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleLogin();
+      });
+      document.getElementById('loginPassword')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleLogin();
+      });
+      document.getElementById('registerEmail')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleRegister();
+      });
+    }, 0);
   }
 
   // Global functions
@@ -319,6 +375,176 @@
     modal.style.display = 'none';
   };
 
+  window.openPrivacyPolicyModal = function() {
+    // Ensure modals are initialized
+    let modal = document.getElementById('privacyPolicyModal');
+    
+    if (!modal) {
+      // If modal doesn't exist, create it first
+      if (!document.getElementById('authModal')) {
+        initAuthModal();
+      }
+      modal = document.getElementById('privacyPolicyModal');
+    }
+    
+    if (!modal) {
+      console.error('[Auth Modal] Privacy policy modal could not be created');
+      return;
+    }
+    
+    console.log('[Auth Modal] Opening privacy policy modal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    
+    // Always load privacy policy content (check by data attribute instead)
+    const content = document.getElementById('privacyPolicyContent');
+    if (content && !content.getAttribute('data-loaded')) {
+      console.log('[Auth Modal] Privacy policy content not loaded yet, loading now...');
+      loadPrivacyPolicyContent();
+      content.setAttribute('data-loaded', 'true');
+    } else if (content) {
+      console.log('[Auth Modal] Privacy policy content already loaded');
+    }
+  };
+
+  window.closePrivacyPolicyModal = function() {
+    const modal = document.getElementById('privacyPolicyModal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
+  };
+
+  // Load privacy policy content from HTML file
+  function loadPrivacyPolicyContent() {
+    const contentDiv = document.getElementById('privacyPolicyContent');
+    if (!contentDiv) {
+      console.error('[Auth Modal] Privacy policy content container not found');
+      return;
+    }
+
+    fetch('/privacy-policy.txt')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(text => {
+        try {
+          console.log('[Auth Modal] Privacy policy text received, length:', text.length);
+          // Parse the text file and create formatted HTML
+          const lines = text.split('\n');
+          console.log('[Auth Modal] Total lines:', lines.length);
+          let html = '';
+          let inList = false;
+          let lineCount = 0;
+          
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            
+            if (!line) {
+              // Empty line
+              if (inList) {
+                html += '</ul>';
+                inList = false;
+              }
+              html += '<br>';
+              continue;
+            }
+            
+            lineCount++;
+            
+            if (inList && !line.startsWith('-')) {
+              html += '</ul>';
+              inList = false;
+            }
+            
+            // Check if it's a main heading (e.g., "1. INTRODUCTION")
+            if (/^\d+\./.test(line) && line === line.toUpperCase()) {
+              console.log('[Auth Modal] Found main heading:', line);
+              html += `<h2 class="text-title font-bold text-gold-300 mt-6 mb-3" style="color: #ffd700;">${escapeHtml(line)}</h2>`;
+            } 
+            // Check if it's a sub heading (e.g., "2.1 Information You Provide")
+            else if (/^\d+\.\d+/.test(line)) {
+              html += `<h3 class="text-title-sm font-bold text-gold-400 mt-4 mb-2" style="color: #ffed4e;">${escapeHtml(line)}</h3>`;
+            } 
+            // List item
+            else if (line.startsWith('- ')) {
+              if (!inList) {
+                html += '<ul class="ml-4 mb-3" style="color: #d1d5db;">';
+                inList = true;
+              }
+              const listItem = line.substring(2);
+              html += `<li class="text-gray-300 mb-2" style="color: #d1d5db;">${escapeHtml(listItem)}</li>`;
+            } 
+            // Highlight important text
+            else if (line.includes('IMPORTANT:')) {
+              if (inList) {
+                html += '</ul>';
+                inList = false;
+              }
+              html += `<div class="bg-yellow-900 bg-opacity-20 border-l-4 border-gold-600 pl-4 py-2 my-3" style="background-color: rgba(120,53,15,0.2); border-left: 4px solid #daa520; padding-left: 1rem; padding-top: 0.5rem; padding-bottom: 0.5rem;"><p class="text-gold-300 font-semibold" style="color: #ffd700;">${escapeHtml(line)}</p>`;
+              // Continue reading highlighted section
+              while (i + 1 < lines.length) {
+                const nextLine = lines[i + 1].trim();
+                if (!nextLine || /^\d+\./.test(nextLine)) break;
+                i++;
+                html += `<p class="text-gray-300 mb-2" style="color: #d1d5db; margin-bottom: 0.5rem;">${escapeHtml(nextLine)}</p>`;
+              }
+              html += '</div>';
+            } 
+            // Regular paragraph
+            else {
+              if (inList) {
+                html += '</ul>';
+                inList = false;
+              }
+              html += `<p class="text-gray-300 mb-2" style="color: #d1d5db; margin-bottom: 0.5rem;">${escapeHtml(line)}</p>`;
+            }
+          }
+          
+          if (inList) {
+            html += '</ul>';
+          }
+          
+          console.log('[Auth Modal] HTML generated, length:', html.length, 'non-empty lines processed:', lineCount);
+          console.log('[Auth Modal] Setting innerHTML to contentDiv');
+          contentDiv.innerHTML = html;
+          console.log('[Auth Modal] Privacy policy content loaded successfully from server');
+        } catch (parseError) {
+          console.error('[Auth Modal] Error parsing privacy policy:', parseError);
+          contentDiv.innerHTML = '<p class="text-gray-400">Error formatting privacy policy. Please try again later.</p>';
+        }
+      })
+      .catch(error => {
+        console.error('[Auth Modal] Failed to load privacy policy from server:', error);
+        contentDiv.innerHTML = '<p class="text-gray-400">Unable to load privacy policy from server. Please try again later.</p>';
+      });
+  }
+
+  // Helper function to escape HTML special characters
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Close modal when clicking outside (on the background)
+  document.addEventListener('click', function(e) {
+    const authModal = document.getElementById('authModal');
+    if (authModal && e.target.id === 'authModal') {
+      closeAuthModal();
+    }
+    
+    const privacyModal = document.getElementById('privacyPolicyModal');
+    if (privacyModal && e.target.id === 'privacyPolicyModal') {
+      closePrivacyPolicyModal();
+    }
+  });
+
   window.toggleAuthForm = function() {
     const loginForm = document.getElementById('loginForm');
     const isLoginMode = !loginForm.classList.contains('hidden');
@@ -366,6 +592,7 @@
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
     const confirmPassword = document.getElementById('registerConfirmPassword').value;
+    const agreePrivacy = document.getElementById('agreePrivacyPolicy').checked;
     const errorMsg = document.getElementById('authErrorMessage');
     const registerBtn = event.target;
 
@@ -376,12 +603,19 @@
       return;
     }
 
+    // Validate privacy policy agreement
+    if (!agreePrivacy) {
+      errorMsg.classList.remove('hidden');
+      errorMsg.textContent = window.i18next ? window.i18next.t('mustAgreePrivacyPolicy') : '您必須同意隱私政策才能註冊';
+      return;
+    }
+
     // Disable button while processing
     registerBtn.disabled = true;
     registerBtn.textContent = window.i18next ? window.i18next.t('registering') : '註冊中...';
 
     // Call async register function
-    Promise.resolve(window.auth.register(email, password, username)).then(result => {
+    Promise.resolve(window.auth.register(email, password, username, agreePrivacy)).then(result => {
       if (result.success) {
         errorMsg.classList.add('hidden');
         window.closeAuthModal();

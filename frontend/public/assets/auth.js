@@ -55,11 +55,19 @@
         },
         
         // Register a new user
-        register: async function(email, password, username) {
+        register: async function(email, password, username, agreedToPrivacyPolicy = false) {
           if (!this.isAuthEnabled) {
             return {
               success: false,
               error: window.i18next ? window.i18next.t('authDisabled') : '認證功能已停用'
+            };
+          }
+          
+          // Validate privacy policy agreement
+          if (!agreedToPrivacyPolicy) {
+            return {
+              success: false,
+              error: window.i18next ? window.i18next.t('mustAgreePrivacyPolicy') : '您必須同意隱私政策才能註冊'
             };
           }
           
@@ -77,7 +85,8 @@
               body: JSON.stringify({
                 email: email,
                 password: password,
-                username: username || (window.i18next ? window.i18next.t('cultureLover') : '文化愛好者')
+                username: username || (window.i18next ? window.i18next.t('cultureLover') : '文化愛好者'),
+                agreedToPrivacyPolicy: agreedToPrivacyPolicy
               })
             });
 
