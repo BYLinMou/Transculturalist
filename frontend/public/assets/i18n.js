@@ -50,10 +50,18 @@
         return translations[lang] && translations[lang][key] || key;
       },
       changeLanguage: function(lang, callback) {
+        const oldLanguage = this.currentLanguage;
         this.currentLanguage = lang;
         localStorage.setItem('language', lang);
         // Update page text immediately, even if translations aren't loaded yet
         updatePageText();
+        
+        // Dispatch custom event for language change
+        const event = new CustomEvent('i18n:languageChanged', {
+          detail: { oldLanguage, newLanguage: lang }
+        });
+        window.dispatchEvent(event);
+        
         if (callback) callback(null, this.t.bind(this));
       }
     };

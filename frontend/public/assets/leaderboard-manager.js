@@ -33,21 +33,11 @@ class LeaderboardManager {
    * Get translated unit from i18n
    */
   getTranslatedUnit(unit) {
-    const unitMap = {
-      'hours': 'hours',  // e.g., 小時, hours, 時間
-      'minutes': 'minutes'  // e.g., 分鐘, minutes, 分
-    };
-    
     if (window.i18next) {
-      return window.i18next.t(unitMap[unit]) || unitMap[unit];
+      return window.i18next.t(unit) || unit;
     }
     
-    // Fallback for traditional Chinese
-    const fallback = {
-      'hours': '小時',
-      'minutes': '分鐘'
-    };
-    return fallback[unit];
+    return unit;
   }
 
   /**
@@ -320,6 +310,13 @@ class LeaderboardManager {
       this.setupAutoRefresh('game-duration', this.refreshInterval);
       this.setupAutoRefresh('average-score', this.refreshInterval);
       this.setupAutoRefresh('forum-contribution', this.refreshInterval);
+
+      // Listen for language changes and re-render tables
+      window.addEventListener('i18n:languageChanged', () => {
+        console.log('[Leaderboard] Language changed, re-rendering tables...');
+        this.render('game-duration');
+        this.render('average-score');
+      });
 
       console.log('[Leaderboard] Initialization complete');
     } catch (error) {
