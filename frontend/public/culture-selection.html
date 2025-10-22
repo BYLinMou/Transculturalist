@@ -188,8 +188,14 @@
       const allButton = document.createElement('button');
       allButton.className = 'tag-button px-4 py-2 rounded-full text-body-sm font-medium border';
       allButton.dataset.tag = 'all';
-      allButton.dataset.i18n = 'selectAll';
-      allButton.textContent = '全部';
+      allButton.setAttribute('data-i18n', 'selectAll');
+      // Don't set textContent here - let i18n system handle it
+      // Get the translation from i18n if available, otherwise use default
+      if (window.i18next) {
+        allButton.textContent = window.i18next.t('selectAll');
+      } else {
+        allButton.textContent = '全部'; // fallback
+      }
       allButton.addEventListener('click', () => handleTagSelection('all'));
       fragment.appendChild(allButton);
 
@@ -267,8 +273,11 @@
         `;
 
         card.addEventListener('click', () => {
+          // 存储选中的分享信息
           localStorage.setItem('selectedShareId', share.shareId);
-          window.location.href = `/game-start.html?shareId=${share.shareId}`;
+          localStorage.setItem('selectedTheme', share.title);  // 存主题名字用于显示
+          localStorage.setItem('selectedDescription', share.description);  // 存描述给后端用
+          window.location.href = `/game/game-selection.html?shareId=${share.shareId}`;
         });
 
         fragment.appendChild(card);

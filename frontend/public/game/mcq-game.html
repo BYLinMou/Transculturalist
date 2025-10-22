@@ -82,9 +82,11 @@
   </div>
 
   <script>
-    // Get theme from URL
+    // Get theme from URL or localStorage
     const urlParams = new URLSearchParams(window.location.search);
-    const currentTheme = urlParams.get('theme') || '中華文化';
+    const shareId = urlParams.get('shareId') || localStorage.getItem('selectedShareId');
+    const currentTheme = localStorage.getItem('selectedTheme') || '中華文化';
+    const currentDescription = localStorage.getItem('selectedDescription') || '';
     
     let questions = [];
     let currentQuestionIndex = 0;
@@ -105,6 +107,8 @@
           body: JSON.stringify({
             gameId: 'mcq',
             theme: currentTheme,
+            description: currentDescription,
+            shareId: shareId,
             params: { numQuestions: 5 }
           })
         });

@@ -146,9 +146,11 @@
 
   <script src="/assets/load-header.js"></script>
   <script>
-    // Get theme from URL
+    // Get theme from URL or localStorage
     const urlParams = new URLSearchParams(window.location.search);
-    const currentTheme = urlParams.get('theme') || '中華文化';
+    const shareId = urlParams.get('shareId') || localStorage.getItem('selectedShareId');
+    const currentTheme = localStorage.getItem('selectedTheme') || '中華文化';
+    const currentDescription = localStorage.getItem('selectedDescription') || '';
     
     let pairs = [];
     let matchedPairs = [];
@@ -170,6 +172,8 @@
           body: JSON.stringify({
             gameId: 'matching',
             theme: currentTheme,
+            description: currentDescription,
+            shareId: shareId,
             params: { count: 5 }
           })
         });

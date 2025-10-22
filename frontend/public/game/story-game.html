@@ -105,9 +105,11 @@
 
   <script src="/assets/load-header.js"></script>
   <script>
-    // Get theme from URL
+    // Get theme from URL or localStorage
     const urlParams = new URLSearchParams(window.location.search);
-    const currentTheme = urlParams.get('theme') || '中華文化';
+    const shareId = urlParams.get('shareId') || localStorage.getItem('selectedShareId');
+    const currentTheme = localStorage.getItem('selectedTheme') || '中華文化';
+    const currentDescription = localStorage.getItem('selectedDescription') || '';
     
     let chapterNumber = 1;
     let storyHistory = []; // Story choice history
@@ -135,6 +137,8 @@
           method: 'POST',
           body: JSON.stringify({
             theme: currentTheme,
+            description: currentDescription,
+            shareId: shareId,
             chapterNumber: chapterNumber,
             previousChoice: previousChoice,
             history: conversationHistory.slice(-maxHistoryPairs * 2) // Keep last X pairs (2X messages)

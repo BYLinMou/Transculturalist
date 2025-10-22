@@ -114,9 +114,11 @@
 
   <script src="/assets/load-header.js"></script>
   <script>
-    // Get theme from URL
+    // Get theme from URL or localStorage
     const urlParams = new URLSearchParams(window.location.search);
-    const currentTheme = urlParams.get('theme') || '中華文化';
+    const shareId = urlParams.get('shareId') || localStorage.getItem('selectedShareId');
+    const currentTheme = localStorage.getItem('selectedTheme') || '中華文化';
+    const currentDescription = localStorage.getItem('selectedDescription') || '';
     
     let currentCharacter = null;
     let conversationHistory = []; // Array of { role: 'user' | 'assistant', content: 'message' }
@@ -133,7 +135,11 @@
       try {
         const response = await window.apiHelper.request('/api/roleplay/character', {
           method: 'POST',
-          body: JSON.stringify({ theme: currentTheme })
+          body: JSON.stringify({ 
+            theme: currentTheme,
+            description: currentDescription,
+            shareId: shareId
+          })
         });
 
         const result = await response.json();
@@ -256,6 +262,8 @@
           method: 'POST',
           body: JSON.stringify({
             theme: currentTheme,
+            description: currentDescription,
+            shareId: shareId,
             character: currentCharacter,
             userMessage: message,
             history: conversationHistory.slice(-maxHistoryPairs * 2) // Keep last X pairs (2X messages)
