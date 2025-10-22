@@ -231,21 +231,47 @@ exports.saveGameResult = async (req, res) => {
 
 exports.getLeaderboard = async (req, res) => {
   try {
-    const { gameId, limit = 10 } = req.query;
+    const { type = 'game-duration', limit = 50 } = req.query;
+    const userId = req.user?.id;
 
-    if (!gameId) {
-      return res.status(400).json({
-        success: false,
-        error: 'gameId is required'
-      });
+    const leaderboardService = require('../../services/leaderboard');
+
+    let leaderboard;
+    let userRankContext = null;
+
+    // Get the appropriate leaderboard based on type
+    switch (type) {
+      case 'average-score':
+        leaderboard = await leaderboardService.getAverageScoreLeaderboard(limit);
+        break;
+      case 'forum-contribution':
+        leaderboard = await leaderboardService.getForumContributionLeaderboard(limit);
+        break;
+      case 'game-duration':
+      default:
+        leaderboard = await leaderboardService.getGameDurationLeaderboard(limit);
     }
 
-    // TODO: Implement leaderboard retrieval from database
+    // If user is logged in, get their rank context
+    if (userId) {
+      userRankContext = await leaderboardService.getUserRankContext(userId, type);
+    }
+
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [Game] Leaderboard retrieved - Type: ${type}, Limit: ${limit}, UserID: ${userId || 'guest'}`);
+
     return res.json({
       success: true,
       data: {
-        gameId,
-        leaderboard: []
+        type,
+        leaderboard,
+        userRankContext,
+        timestamp,
+        scoringFormula: {
+          type: 'game-duration',
+          description: '(总时长分钟数 × 1.5) + 已完成游戏数',
+          priority: 'Play time is the primary factor'
+        }
       }
     });
   } catch (err) {

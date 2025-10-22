@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文化探索 — 論壇 - 討論區</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/gold-theme.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/auth.js"></script>
+  <script src="/assets/auth-modal.js"></script>
+  <script src="/assets/login-prompt.js"></script>
+  <script src="/assets/api-helper.js"></script>
+  <script src="/assets/error-display.js"></script>
+  <script src="/assets/load-header.js"></script>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <!-- Header placeholder -->
+  <header></header>
+
+  <main class="container mx-auto p-6">
+    <div class="flex items-center mb-8">
+      <button id="backToForum" class="mr-4 p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <h2 class="text-title-lg font-bold text-gold-300" data-i18n="discussionTab">討論區</h2>
+    </div>
+
+    <div class="space-y-6">
+      <!-- New Discussion Button -->
+      <div class="flex justify-end">
+        <button id="newDiscussionBtn" class="px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm" data-i18n="startNewDiscussion">
+          發起新討論
+        </button>
+      </div>
+
+      <!-- New Discussion Form (initially hidden) -->
+      <div id="discussionForm" class="hidden bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
+        <h3 class="text-title font-bold text-gold-300 mb-4" data-i18n="startNewDiscussion">發起新討論</h3>
+        <form id="newDiscussionForm" class="space-y-4">
+          <div>
+            <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="discussionTitle">討論標題</label>
+            <input 
+              type="text" 
+              id="discussionTitle" 
+              required
+              class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+              data-i18n-placeholder="discussionTitlePlaceholder"
+              placeholder="例如：如何學習中文書法？"
+            />
+          </div>
+
+          <div>
+            <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="discussionContent">討論內容</label>
+            <textarea 
+              id="discussionContent" 
+              required
+              rows="6"
+              class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+              data-i18n-placeholder="discussionContentPlaceholder"
+              placeholder="分享您的想法和問題..."
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="cultureCategory">文化類別</label>
+            <select 
+              id="discussionCategory" 
+              required
+              class="w-full p-3 bg-gray-800 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+            >
+              <option value="" data-i18n="pleaseSelect">請選擇...</option>
+              <option value="chinese" data-i18n="chineseCulture">中華文化</option>
+              <option value="japanese" data-i18n="japaneseCulture">日本文化</option>
+              <option value="korean">韓國文化</option>
+              <option value="indian" data-i18n="indianCulture">印度文化</option>
+              <option value="other">其他文化</option>
+            </select>
+          </div>
+
+          <div class="flex gap-3">
+            <button 
+              type="submit" 
+              class="flex-1 px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm"
+              data-i18n="postDiscussion"
+            >
+              發表討論
+            </button>
+            <button 
+              type="button" 
+              id="cancelDiscussion"
+              class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors text-body-sm"
+              data-i18n="cancel"
+            >
+              取消
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Discussions List -->
+      <div class="space-y-4">
+        <h3 class="text-title font-bold text-gold-300 mb-4" data-i18n="latestDiscussions">最新討論</h3>
+        
+        <!-- Discussion Item 1 -->
+        <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700 hover:border-gold-600 transition-colors cursor-pointer"
+             onclick="openDiscussion(1)">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="text-title-sm font-semibold text-white flex-1">中華文化裡的道教哲學</h4>
+            <span class="text-body-xs text-gray-400">2 天前</span>
+          </div>
+          <p class="text-body-sm text-gray-300 mb-3">我最近在研究道教哲學，想了解如何將其融入現代生活。有人可以分享一些入門知識嗎？</p>
+          <div class="flex justify-between items-center text-body-xs text-gray-400">
+            <div class="flex gap-4">
+              <span>👤 文化愛好者</span>
+              <span>💬 12 個回復</span>
+            </div>
+            <span class="text-gold-300">點擊查看 →</span>
+          </div>
+        </div>
+
+        <!-- Discussion Item 2 -->
+        <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700 hover:border-gold-600 transition-colors cursor-pointer"
+             onclick="openDiscussion(2)">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="text-title-sm font-semibold text-white flex-1">日本茶道文化入門指南</h4>
+            <span class="text-body-xs text-gray-400">5 天前</span>
+          </div>
+          <p class="text-body-sm text-gray-300 mb-3">想要學習日本茶道，請問從哪裡開始比較好？需要什麼工具和材料？</p>
+          <div class="flex justify-between items-center text-body-xs text-gray-400">
+            <div class="flex gap-4">
+              <span>👤 日本文化迷</span>
+              <span>💬 8 個回復</span>
+            </div>
+            <span class="text-gold-300">點擊查看 →</span>
+          </div>
+        </div>
+
+        <!-- Discussion Item 3 -->
+        <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700 hover:border-gold-600 transition-colors cursor-pointer"
+             onclick="openDiscussion(3)">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="text-title-sm font-semibold text-white flex-1">韓國傳統服飾漢服對比分析</h4>
+            <span class="text-body-xs text-gray-400">1 週前</span>
+          </div>
+          <p class="text-body-sm text-gray-300 mb-3">最近看到有人討論韓服和漢服的區別，大家怎麼看？這兩種服飾各自有什麼特點？</p>
+          <div class="flex justify-between items-center text-body-xs text-gray-400">
+            <div class="flex gap-4">
+              <span>👤 服裝設計師</span>
+              <span>💬 24 個回復</span>
+            </div>
+            <span class="text-gold-300">點擊查看 →</span>
+          </div>
+        </div>
+
+        <!-- Discussion Item 4 -->
+        <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700 hover:border-gold-600 transition-colors cursor-pointer"
+             onclick="openDiscussion(4)">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="text-title-sm font-semibold text-white flex-1">印度文化節慶和宗教習俗</h4>
+            <span class="text-body-xs text-gray-400">1 週前</span>
+          </div>
+          <p class="text-body-sm text-gray-300 mb-3">想深入了解印度文化，請問印度主要的節慶和宗教習俗有哪些？如何才能更好地理解？</p>
+          <div class="flex justify-between items-center text-body-xs text-gray-400">
+            <div class="flex gap-4">
+              <span>👤 文化研究者</span>
+              <span>💬 15 個回復</span>
+            </div>
+            <span class="text-gold-300">點擊查看 →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Toggle discussion form
+    document.getElementById('newDiscussionBtn').addEventListener('click', () => {
+      const form = document.getElementById('discussionForm');
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        document.getElementById('discussionTitle').focus();
+      }
+    });
+
+    document.getElementById('cancelDiscussion').addEventListener('click', () => {
+      document.getElementById('discussionForm').classList.add('hidden');
+      document.getElementById('newDiscussionForm').reset();
+    });
+
+    // Handle new discussion submission
+    document.getElementById('newDiscussionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const title = document.getElementById('discussionTitle').value;
+      const content = document.getElementById('discussionContent').value;
+      const category = document.getElementById('discussionCategory').value;
+
+      try {
+        // Here you would typically send the data to the backend
+        // For now, just show a success message
+        alert('討論已發表！');
+        document.getElementById('discussionForm').classList.add('hidden');
+        document.getElementById('newDiscussionForm').reset();
+      } catch (error) {
+        console.error('Error posting discussion:', error);
+        window.errorDisplay.showAlertError('發表失敗，請稍後再試');
+      }
+    });
+
+    // Open discussion detail
+    function openDiscussion(id) {
+      // In a real implementation, this would navigate to a discussion detail page
+      console.log('Opening discussion:', id);
+      alert('討論詳情功能開發中');
+    }
+
+    // Back to forum
+    document.getElementById('backToForum').addEventListener('click', () => {
+      window.location.href = '/forum/forum.html';
+    });
+  </script>
+</body>
+</html>

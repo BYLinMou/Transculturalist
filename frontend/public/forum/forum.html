@@ -42,315 +42,47 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
         </svg>
       </button>
-      <h2 class="text-title-lg font-bold text-gold-300" data-i18n="forumTitle">文化交流論壇</h2>
+      <h2 class="text-title font-bold text-gold-300" data-i18n="forumTitle">文化交流論壇</h2>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex gap-4 mb-6 border-b border-gray-700">
-      <button id="discussionTab" class="tab-button active px-6 py-3 font-semibold transition-colors border-b-2 border-gold-600 text-gold-400 text-body" data-i18n="discussionTab">
-        討論區
-      </button>
-      <button id="contributionTab" class="tab-button px-6 py-3 font-semibold text-gray-400 hover:text-gray-200 transition-colors border-b-2 border-transparent text-body" data-i18n="contributionTab">
-        文化分享
-      </button>
-    </div>
-
-    <!-- Discussion Tab Content -->
-    <div id="discussionContent" class="space-y-4">
-      <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
-        <h3 class="text-title font-bold text-gold-300 mb-4" data-i18n="latestDiscussions">最新討論</h3>
-        
-        <!-- Sample discussion threads -->
-        <div class="space-y-4">
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors cursor-pointer">
-            <div class="flex items-start justify-between mb-2">
-              <h4 class="text-title-sm font-semibold text-white">中華文化中的茶藝傳統</h4>
-              <span class="text-body-sm text-gray-400">2小時前</span>
-            </div>
-            <p class="text-gray-300 mb-3 text-body-sm">茶文化在中國有著悠久的歷史，從唐代開始就有系統的茶藝發展...</p>
-            <div class="flex gap-4 text-body-sm text-gray-400">
-              <span>👤 文化愛好者</span>
-              <span>💬 12 回覆</span>
-              <span>👍 23 讚</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors cursor-pointer">
-            <div class="flex items-start justify-between mb-2">
-              <h4 class="text-title-sm font-semibold text-white">日本文化中的禪意美學</h4>
-              <span class="text-body-sm text-gray-400">5小時前</span>
-            </div>
-            <p class="text-gray-300 mb-3 text-body-sm">禪宗思想深刻影響了日本的藝術、建築和生活方式...</p>
-            <div class="flex gap-4 text-body-sm text-gray-400">
-              <span>👤 東方文化研究者</span>
-              <span>💬 8 回覆</span>
-              <span>👍 15 讚</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors cursor-pointer">
-            <div class="flex items-start justify-between mb-2">
-              <h4 class="text-title-sm font-semibold text-white">印度文化中的瑜伽哲學</h4>
-              <span class="text-body-sm text-gray-400">1天前</span>
-            </div>
-            <p class="text-gray-300 mb-3 text-body-sm">瑜伽不僅是一種身體鍛煉，更是一種精神修行...</p>
-            <div class="flex gap-4 text-body-sm text-gray-400">
-              <span>👤 瑜伽導師</span>
-              <span>💬 20 回覆</span>
-              <span>👍 45 讚</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-6 text-center">
-          <button class="px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm" data-i18n="startNewDiscussion">
-            發起新討論
-          </button>
-        </div>
+    <!-- Forum Navigation - Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+      
+      <!-- Discussion Card -->
+      <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700 hover:border-gold-600 transition-all cursor-pointer"
+           onclick="window.location.href='/forum/discussion.html'">
+        <div class="text-5xl mb-4">💬</div>
+        <h3 class="text-title font-bold text-gold-300 mb-2" data-i18n="discussionTab">討論區</h3>
+        <p class="text-gray-400 text-body-sm" data-i18n="discussionDesc">參與文化交流討論，與其他愛好者分享想法</p>
+        <div class="mt-6 text-gold-300 font-semibold text-body-sm" data-i18n="enter">進入 →</div>
       </div>
-    </div>
 
-    <!-- Contribution Tab Content -->
-    <div id="contributionContent" class="hidden space-y-4">
-      <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-title font-bold text-gold-300" data-i18n="culturalResources">文化資源分享</h3>
-          <button id="uploadCultureBtn" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm" data-i18n="uploadResource">
-            上傳文化資源
-          </button>
-        </div>
-
-        <!-- Upload Form (initially hidden) -->
-        <div id="uploadForm" class="hidden mb-6 p-6 bg-gray-800 rounded-lg border border-gray-600">
-          <h4 class="text-title-sm font-semibold text-gold-300 mb-4" data-i18n="uploadResource">上傳新的文化資源</h4>
-          <form id="cultureUploadForm" class="space-y-4">
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="resourceTitle">資源標題</label>
-              <input 
-                type="text" 
-                id="resourceTitle" 
-                required
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
-                placeholder="例如：中國傳統書法技巧"
-              />
-            </div>
-
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="resourceDescription">資源描述</label>
-              <textarea 
-                id="resourceDescription" 
-                required
-                rows="4"
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
-                placeholder="簡要描述這個文化資源的內容和特色..."
-              ></textarea>
-            </div>
-
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="cultureCategory">文化類別</label>
-              <select 
-                id="cultureCategory" 
-                required
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
-              >
-                <option value="" data-i18n="pleaseSelect">請選擇...</option>
-                <option value="chinese">中華文化</option>
-                <option value="japanese">日本文化</option>
-                <option value="korean">韓國文化</option>
-                <option value="indian">印度文化</option>
-                <option value="other">其他文化</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="uploadFiles">上傳檔案</label>
-              <input 
-                type="file" 
-                id="cultureFiles" 
-                multiple
-                accept="image/*,video/*,.pdf,.doc,.docx"
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body-sm"
-              />
-              <p class="text-caption text-gray-400 mt-2" data-i18n="supportedFormats">支援圖片、影片、PDF等格式，最多上傳10個檔案</p>
-            </div>
-
-            <div id="uploadProgress" class="hidden">
-              <div class="bg-gray-700 rounded-full h-2 overflow-hidden">
-                <div id="progressBar" class="bg-gold-600 h-full transition-all duration-300" style="width: 0%"></div>
-              </div>
-              <p class="text-body-sm text-gray-400 mt-2">上傳中... <span id="progressText">0%</span></p>
-            </div>
-
-            <div class="flex gap-3">
-              <button 
-                type="submit" 
-                class="flex-1 px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm"
-                data-i18n="submitResource"
-              >
-                提交資源
-              </button>
-              <button 
-                type="button" 
-                id="cancelUpload"
-                class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors text-body-sm"
-                data-i18n="cancel"
-              >
-                取消
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Shared Resources -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🎨</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">中國水墨畫教學</h4>
-            <p class="text-body-sm text-gray-400 mb-3">傳統水墨畫技巧分享</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 藝術老師</span>
-              <span>⬇️ 156</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🎭</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">日本能劇介紹</h4>
-            <p class="text-body-sm text-gray-400 mb-3">能劇的歷史與表演形式</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 戲劇愛好者</span>
-              <span>⬇️ 89</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🍜</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">韓國傳統料理</h4>
-            <p class="text-body-sm text-gray-400 mb-3">泡菜製作與韓式料理文化</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 美食達人</span>
-              <span>⬇️ 234</span>
-            </div>
-          </div>
-        </div>
+      <!-- Contribution Card -->
+      <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700 hover:border-gold-600 transition-all cursor-pointer"
+           onclick="window.location.href='/forum/contribution.html'">
+        <div class="text-5xl mb-4">🎨</div>
+        <h3 class="text-title font-bold text-gold-300 mb-2" data-i18n="contributionTab">文化分享</h3>
+        <p class="text-gray-400 text-body-sm" data-i18n="contributionDesc">上傳和分享文化資源，豐富社區內容</p>
+        <div class="mt-6 text-gold-300 font-semibold text-body-sm" data-i18n="enter">進入 →</div>
       </div>
+
+      <!-- Ranking Card -->
+      <div class="bg-gray-900 bg-opacity-80 p-8 rounded-xl border border-gray-700 hover:border-gold-600 transition-all cursor-pointer"
+           onclick="window.location.href='/forum/ranking.html'">
+        <div class="text-5xl mb-4">🏆</div>
+        <h3 class="text-title font-bold text-gold-300 mb-2" data-i18n="leaderboard">排行榜</h3>
+        <p class="text-gray-400 text-body-sm" data-i18n="leaderboardDesc">查看玩家排行榜，了解社區頂級玩家</p>
+        <div class="mt-6 text-gold-300 font-semibold text-body-sm" data-i18n="enter">進入 →</div>
+      </div>
+
     </div>
   </main>
 
   <script>
-    // Tab switching
-    function switchTab(tabName) {
-      // Update tab buttons
-      document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.remove('active', 'border-gold-600', 'text-gold-400');
-        btn.classList.add('text-gray-400', 'border-transparent');
-      });
-      
-      // Update content
-      if (tabName === 'discussion') {
-        document.getElementById('discussionTab').classList.add('active', 'border-gold-600', 'text-gold-400');
-        document.getElementById('discussionTab').classList.remove('text-gray-400', 'border-transparent');
-        document.getElementById('discussionContent').classList.remove('hidden');
-        document.getElementById('contributionContent').classList.add('hidden');
-      } else {
-        document.getElementById('contributionTab').classList.add('active', 'border-gold-600', 'text-gold-400');
-        document.getElementById('contributionTab').classList.remove('text-gray-400', 'border-transparent');
-        document.getElementById('discussionContent').classList.add('hidden');
-        document.getElementById('contributionContent').classList.remove('hidden');
-      }
-    }
-
-    // Toggle upload form
-    function toggleUploadForm() {
-      const form = document.getElementById('uploadForm');
-      form.classList.toggle('hidden');
-      if (!form.classList.contains('hidden')) {
-        document.getElementById('resourceTitle').focus();
-      }
-    }
-
-    // Handle file upload
-    async function handleFileUpload(event) {
-      event.preventDefault();
-      
-      const title = document.getElementById('resourceTitle').value;
-      const description = document.getElementById('resourceDescription').value;
-      const category = document.getElementById('cultureCategory').value;
-      const files = document.getElementById('cultureFiles').files;
-
-      if (!title || !description || !category) {
-        alert('請填寫所有必填欄位');
-        return;
-      }
-
-      // Show progress
-      document.getElementById('uploadProgress').classList.remove('hidden');
-      
-      try {
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('category', category);
-        
-        for (let i = 0; i < files.length; i++) {
-          formData.append('files', files[i]);
-        }
-
-        // Simulate progress
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-          progress += 10;
-          if (progress <= 90) {
-            document.getElementById('progressBar').style.width = progress + '%';
-            document.getElementById('progressText').textContent = progress + '%';
-          }
-        }, 200);
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        clearInterval(progressInterval);
-        document.getElementById('progressBar').style.width = '100%';
-        document.getElementById('progressText').textContent = '100%';
-
-        const result = await response.json();
-
-        if (result.success) {
-          alert('上傳成功！');
-          document.getElementById('cultureUploadForm').reset();
-          document.getElementById('uploadForm').classList.add('hidden');
-          document.getElementById('uploadProgress').classList.add('hidden');
-          document.getElementById('progressBar').style.width = '0%';
-        } else {
-          throw new Error('Upload failed');
-        }
-      } catch (error) {
-        console.error('Upload error:', error);
-        const uploadFailedText = window.errorDisplay.getTranslatedText('uploadFailed', '上傳失敗，請稍後再試');
-        window.errorDisplay.showAlertError(uploadFailedText);
-        document.getElementById('uploadProgress').classList.add('hidden');
-        document.getElementById('progressBar').style.width = '0%';
-      }
-    }
-
-    // Event listeners
+    // Back navigation
     document.getElementById('backToHome').addEventListener('click', () => {
       window.location.href = '/culture-selection.html';
     });
-
-    document.getElementById('discussionTab').addEventListener('click', () => switchTab('discussion'));
-    document.getElementById('contributionTab').addEventListener('click', () => switchTab('contribution'));
-    document.getElementById('uploadCultureBtn').addEventListener('click', toggleUploadForm);
-    document.getElementById('cancelUpload').addEventListener('click', toggleUploadForm);
-    document.getElementById('cultureUploadForm').addEventListener('submit', handleFileUpload);
   </script>
 </body>
 </html>
