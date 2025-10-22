@@ -132,11 +132,51 @@
       return true;
     }
 
-    function createTagButton({ id, name }) {
+    function getLocalizedText(i18nJson, defaultText, fallbackLang = 'zh') {
+      if (!i18nJson) return defaultText;
+      
+      try {
+        const translations = typeof i18nJson === 'string' ? JSON.parse(i18nJson) : i18nJson;
+        const currentLang = window.i18next?.currentLanguage || 'zh';
+        
+        // Try to get text in current language
+        if (translations[currentLang]) {
+          return translations[currentLang];
+        }
+        
+        // Fallback to default language
+        if (translations[fallbackLang]) {
+          return translations[fallbackLang];
+        }
+        
+        // Use first available translation
+        const firstKey = Object.keys(translations)[0];
+        if (firstKey && translations[firstKey]) {
+          return translations[firstKey];
+        }
+      } catch (error) {
+        console.error('Failed to parse i18n JSON:', error, i18nJson);
+      }
+      
+      return defaultText;
+    }
+
+    function createTagButton({ id, name, icon, name_i18n }) {
       const button = document.createElement('button');
-      button.className = 'tag-button inactive px-4 py-2 rounded-full text-body-sm font-medium border border-gray-600';
+      button.className = 'tag-button inactive px-4 py-2 rounded-full text-body-sm font-medium border border-gray-600 flex items-center gap-2';
       button.dataset.tag = id;
-      button.textContent = name;
+      
+      const emojiSpan = document.createElement('span');
+      emojiSpan.textContent = icon || '🏷️';
+
+      const nameSpan = document.createElement('span');
+      // Get localized tag name
+      const localizedName = getLocalizedText(name_i18n, name);
+      nameSpan.textContent = localizedName;
+
+      button.appendChild(emojiSpan);
+      button.appendChild(nameSpan);
+
       button.addEventListener('click', () => handleTagSelection(id));
       return button;
     }
@@ -148,6 +188,7 @@
       const allButton = document.createElement('button');
       allButton.className = 'tag-button px-4 py-2 rounded-full text-body-sm font-medium border';
       allButton.dataset.tag = 'all';
+      allButton.dataset.i18n = 'selectAll';
       allButton.textContent = '全部';
       allButton.addEventListener('click', () => handleTagSelection('all'));
       fragment.appendChild(allButton);
@@ -170,13 +211,22 @@
 
     function transformShareToCard(share) {
       const tags = Array.isArray(share.tags) ? share.tags : [];
+      
+      // Extract localized text from i18n fields
+      const title = getLocalizedText(share.title_i18n, share.title);
+      const description = getLocalizedText(share.description_i18n, share.description);
+      
       return {
         id: share.id,
         emoji: share.icon || '🌟',
-        title: share.title,
-        description: share.description,
+        title: title,
+        description: description,
         tags: tags.map(tag => tag.id),
-        tagNames: tags.map(tag => tag.name),
+        tagNames: tags.map(tag => {
+          // Get localized tag name (handle both namme_i18n and name_i18n typos)
+          const nameI18n = tag.name_i18n || tag.namme_i18n;
+          return getLocalizedText(nameI18n, tag.name);
+        }),
         shareId: share.id,
         viewCount: share.view_count || 0,
         likeCount: share.like_count || 0,
@@ -197,7 +247,9 @@
         card.dataset.tags = share.tags.join(',');
 
         const tagsHTML = share.tagNames
-          .map(name => `<span class="inline-block bg-gray-800 text-gold-300 px-3 py-1 rounded-full text-caption font-medium">${name}</span>`)
+          .map((name) => {
+            return `<span class="inline-block bg-gray-800 text-gold-300 px-3 py-1 rounded-full text-caption font-medium">${name}</span>`
+          })
           .join('');
 
         card.innerHTML = `
@@ -216,7 +268,7 @@
 
         card.addEventListener('click', () => {
           localStorage.setItem('selectedShareId', share.shareId);
-          console.debug('Share selected:', share.shareId);
+          window.location.href = `/game-start.html?shareId=${share.shareId}`;
         });
 
         fragment.appendChild(card);
@@ -235,13 +287,34 @@
       await loadShares(tagId);
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function initPage() {
+      console.log('Initializing page...');
       const tagsLoaded = await loadTags();
       if (!tagsLoaded) {
+        console.error('Failed to load tags');
         return;
       }
-
       await loadShares(state.currentTag);
+      console.log('Page initialized successfully');
+    }
+
+    // Initialize page when DOM is ready and i18n is available
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOMContentLoaded - checking if i18next is available');
+      // i18n.js is loaded synchronously, so i18next should be available
+      if (window.i18next) {
+        console.log('i18next found, initializing page');
+        initPage();
+      } else {
+        console.warn('i18next not found, waiting for load event');
+        window.addEventListener('load', initPage);
+      }
+    });
+
+    // Listen for language changes
+    window.addEventListener('i18n:languageChanged', async (event) => {
+      console.log('Language changed to:', event.detail.newLanguage, 'Reloading content.');
+      await initPage();
     });
   </script>
 </body>

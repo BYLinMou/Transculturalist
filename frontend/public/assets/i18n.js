@@ -81,6 +81,15 @@
       }
     });
     
+    // Support for data-i18n-key attribute (used for dynamic content)
+    document.querySelectorAll('[data-i18n-key]').forEach(element => {
+      const key = element.getAttribute('data-i18n-key');
+      const translation = window.i18next.t(key);
+      if (translation !== key || translations[window.i18next.currentLanguage]) {
+        element.textContent = translation;
+      }
+    });
+    
     // Update placeholders
     document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
       const key = element.getAttribute('data-i18n-placeholder');
