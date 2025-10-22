@@ -65,12 +65,12 @@ You can run the application in any folder you like. You do NOT need to clone the
 
    **Option A: Using `${PWD}` (recommended for PowerShell):**
    ```powershell
-   docker run -d --name transculturalist_app -p 3030:3030 -v ${PWD}/config.js:/app/server/config.js:ro -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
+   docker run -d --name transculturalist_app -p 3030:3030 -v ${PWD}/config.js:/app/server/config.js:ro -v ${PWD}/data:/app/server/data -v ${PWD}/uploads:/app/uploads -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
    ```
 
    **Option B: Using absolute path (replace with your actual folder path):**
    ```powershell
-   docker run -d --name transculturalist_app -p 3030:3030 -v C:/Users/YourName/YourFolder/config.js:/app/server/config.js:ro -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
+   docker run -d --name transculturalist_app -p 3030:3030 -v C:/Users/YourName/YourFolder/config.js:/app/server/config.js:ro -v C:/Users/YourName/YourFolder/data:/app/server/data -v C:/Users/YourName/YourFolder/uploads:/app/uploads -e NODE_ENV=production ghcr.io/bylinmou/transculturalist:latest
    ```
 
 The application will be available at `http://localhost:3030`
