@@ -199,5 +199,12 @@
   "hours": "小时",
   "games": "局",
   "noRankingData": "暂无排行数据",
-  "placeholderPosition": "虚位以待"
+  "placeholderPosition": "虚位以待",
+  "download": "下载",
+  "playGame": "玩游戏",
+  "description": "描述",
+  "tags": "标签",
+  "fileList": "文件列表",
+  "noFiles": "暂无文件",
+  "noResources": "暂无文化资源分享"
 }

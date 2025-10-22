@@ -199,5 +199,12 @@
   "hours": "時間",
   "games": "ゲーム",
   "noRankingData": "ランキングデータなし",
-  "placeholderPosition": "欠員中"
+  "placeholderPosition": "欠員中",
+  "download": "ダウンロード",
+  "playGame": "ゲームをプレイ",
+  "description": "説明",
+  "tags": "タグ",
+  "fileList": "ファイルリスト",
+  "noFiles": "ファイルがありません",
+  "noResources": "文化資源の共有はまだありません"
 }

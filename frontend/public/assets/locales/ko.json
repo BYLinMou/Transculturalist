@@ -199,5 +199,12 @@
   "hours": "시간",
   "games": "게임",
   "noRankingData": "순위 데이터 없음",
-  "placeholderPosition": "임시 직책"
+  "placeholderPosition": "임시 직책",
+  "download": "다운로드",
+  "playGame": "게임 플레이",
+  "description": "설명",
+  "tags": "태그",
+  "fileList": "파일 목록",
+  "noFiles": "파일이 없습니다",
+  "noResources": "문화 자료 공유가 아직 없습니다"
 }

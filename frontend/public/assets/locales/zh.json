@@ -199,5 +199,12 @@
   "hours": "小時",
   "games": "局",
   "noRankingData": "暫無排行資料",
-  "placeholderPosition": "虛位以待"
+  "placeholderPosition": "虛位以待",
+  "download": "下載",
+  "playGame": "玩遊戲",
+  "description": "描述",
+  "tags": "標籤",
+  "fileList": "檔案列表",
+  "noFiles": "暫無檔案",
+  "noResources": "暫無文化資源分享"
 }

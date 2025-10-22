@@ -57,14 +57,18 @@
   </main>
 
   <script>
+    function updateSelectedTheme() {
+      const theme = localStorage.getItem('selectedTheme') || window.i18next.t('notSelected');
+      const selectedThemeText = window.i18next.t('selectedTheme');
+      document.getElementById('selectedTheme').textContent = selectedThemeText + '：' + theme;
+    }
+
     function setupGameSelection() {
       // 从 URL 获取 shareId，如果没有则从 localStorage 获取
       const urlParams = new URLSearchParams(window.location.search);
       const shareId = urlParams.get('shareId') || localStorage.getItem('selectedShareId');
       
-      const theme = localStorage.getItem('selectedTheme') || window.i18next.t('notSelected');
-      const selectedThemeText = window.i18next.t('selectedTheme');
-      document.getElementById('selectedTheme').textContent = selectedThemeText + '：' + theme;
+      updateSelectedTheme();
 
       document.querySelectorAll('.game-option').forEach(el => {
         el.addEventListener('click', () => {
@@ -100,6 +104,11 @@
         }
       }, 100);
     }
+
+    // Listen for language changes and translation loads
+    window.addEventListener('i18n:languageChanged', updateSelectedTheme);
+    window.addEventListener('i18n:translationsLoaded', updateSelectedTheme);
+    window.addEventListener('load', updateSelectedTheme); // In case translations load after page load
   </script>
 </body>
 </html>

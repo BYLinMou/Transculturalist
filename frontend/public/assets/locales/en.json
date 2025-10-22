@@ -199,5 +199,12 @@
   "hours": "hours",
   "games": "games",
   "noRankingData": "No ranking data",
-  "placeholderPosition": "Vacant Position"
+  "placeholderPosition": "Vacant Position",
+  "download": "Download",
+  "playGame": "Play Game",
+  "description": "Description",
+  "tags": "Tags",
+  "fileList": "File List",
+  "noFiles": "No files available",
+  "noResources": "No cultural resources shared yet"
 }

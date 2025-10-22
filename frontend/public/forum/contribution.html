@@ -30,6 +30,7 @@
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/error-display.js"></script>
   <script src="/assets/load-header.js"></script>
+  <script src="/assets/localization-helper.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header placeholder -->
@@ -55,204 +56,315 @@
           </button>
         </div>
 
-        <!-- Upload Form (initially hidden) -->
-        <div id="uploadForm" class="hidden mb-6 p-6 bg-gray-800 rounded-lg border border-gray-600">
-          <h4 class="text-title-sm font-semibold text-gold-300 mb-4" data-i18n="uploadResource">上傳新的文化資源</h4>
-          <form id="cultureUploadForm" class="space-y-4">
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="resourceTitle">資源標題</label>
-              <input 
-                type="text" 
-                id="resourceTitle" 
-                required
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
-                data-i18n-placeholder="resourceTitlePlaceholder"
-                placeholder="例如：中國傳統書法技巧"
-              />
-            </div>
-
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="resourceDescription">資源描述</label>
-              <textarea 
-                id="resourceDescription" 
-                required
-                rows="4"
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
-                data-i18n-placeholder="resourceDescriptionPlaceholder"
-                placeholder="簡要描述這個文化資源的內容和特色..."
-              ></textarea>
-            </div>
-
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="cultureCategory">文化類別</label>
-              <select 
-                id="cultureCategory" 
-                required
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
-              >
-                <option value="" data-i18n="pleaseSelect">請選擇...</option>
-                <option value="chinese" data-i18n="chineseCulture">中華文化</option>
-                <option value="japanese" data-i18n="japaneseCulture">日本文化</option>
-                <option value="korean">韓國文化</option>
-                <option value="indian" data-i18n="indianCulture">印度文化</option>
-                <option value="other">其他文化</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="uploadFiles">上傳檔案</label>
-              <input 
-                type="file" 
-                id="cultureFiles" 
-                multiple
-                accept="image/*,video/*,.pdf,.doc,.docx"
-                class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body-sm"
-              />
-              <p class="text-caption text-gray-400 mt-2" data-i18n="supportedFormats">支援圖片、影片、PDF等格式，最多上傳10個檔案</p>
-            </div>
-
-            <div id="uploadProgress" class="hidden">
-              <div class="bg-gray-700 rounded-full h-2 overflow-hidden">
-                <div id="progressBar" class="bg-gold-600 h-full transition-all duration-300" style="width: 0%"></div>
-              </div>
-              <p class="text-body-sm text-gray-400 mt-2" data-i18n="uploading">上傳中... <span id="progressText">0%</span></p>
-            </div>
-
-            <div class="flex gap-3">
-              <button 
-                type="submit" 
-                class="flex-1 px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm"
-                data-i18n="submitResource"
-              >
-                提交資源
-              </button>
-              <button 
-                type="button" 
-                id="cancelUpload"
-                class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors text-body-sm"
-                data-i18n="cancel"
-              >
-                取消
-              </button>
-            </div>
-          </form>
+        <!-- Upload Form Container (initially hidden) -->
+        <div id="uploadFormContainer" class="hidden mb-6">
+          <iframe id="uploadFormFrame" src="" style="width: 100%; border: none; background: transparent;" onload="adjustIframeHeight(this)"></iframe>
         </div>
 
         <!-- Shared Resources -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🎨</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">中國水墨畫教學</h4>
-            <p class="text-body-sm text-gray-400 mb-3">傳統水墨畫技巧分享</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 藝術老師</span>
-              <span>⬇️ 156</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🎭</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">日本能劇介紹</h4>
-            <p class="text-body-sm text-gray-400 mb-3">能劇的歷史與表演形式</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 戲劇愛好者</span>
-              <span>⬇️ 89</span>
-            </div>
-          </div>
-
-          <div class="bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors">
-            <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center">
-              <span class="emoji-md">🍜</span>
-            </div>
-            <h4 class="font-semibold text-white mb-2 text-body">韓國傳統料理</h4>
-            <p class="text-body-sm text-gray-400 mb-3">泡菜製作與韓式料理文化</p>
-            <div class="flex justify-between items-center text-body-sm text-gray-400">
-              <span>👤 美食達人</span>
-              <span>⬇️ 234</span>
-            </div>
-          </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="sharedResourcesGrid">
+          <!-- Resource cards will be rendered here by JavaScript -->
+        </div>
+        
+        <!-- Detail View Container (initially hidden) -->
+        <div id="detailViewContainer" class="hidden mt-4 mb-6 col-span-full">
+          <!-- Detail content will be loaded here -->
         </div>
       </div>
     </div>
   </main>
 
   <script>
+    let currentPage = 1;
+    let totalPages = 1;
+    const ITEMS_PER_PAGE = 12;
+    let activeDetailCard = null; // Track which card's detail is open
+
     // Toggle upload form
     function toggleUploadForm() {
-      const form = document.getElementById('uploadForm');
-      form.classList.toggle('hidden');
-      if (!form.classList.contains('hidden')) {
-        document.getElementById('resourceTitle').focus();
+      const container = document.getElementById('uploadFormContainer');
+      const iframe = document.getElementById('uploadFormFrame');
+      const detailContainer = document.getElementById('detailViewContainer');
+
+      // Close detail view if open
+      if (!detailContainer.classList.contains('hidden')) {
+        detailContainer.classList.add('hidden');
+        activeDetailCard = null;
+      }
+
+      if (container.classList.contains('hidden')) {
+        iframe.src = '/forum/upload-form.html';
+        container.classList.remove('hidden');
+      } else {
+        container.classList.add('hidden');
+        iframe.src = '';
       }
     }
 
-    // Handle file upload
-    async function handleFileUpload(event) {
-      event.preventDefault();
-      
-      const title = document.getElementById('resourceTitle').value;
-      const description = document.getElementById('resourceDescription').value;
-      const category = document.getElementById('cultureCategory').value;
-      const files = document.getElementById('cultureFiles').files;
+    // Hide upload form (called from iframe)
+    function hideUploadForm() {
+      const container = document.getElementById('uploadFormContainer');
+      container.classList.add('hidden');
+      container.querySelector('iframe').src = '';
+    }
 
-      if (!title || !description || !category) {
-        alert('請填寫所有必填欄位');
+    // Adjust iframe height to fit content
+    function adjustIframeHeight(iframe) {
+      try {
+        iframe.style.height = (iframe.contentDocument.body.scrollHeight + 20) + 'px';
+      } catch (e) {
+        iframe.style.height = '600px'; // Fallback
+      }
+    }
+
+    // Fetch shares from server API
+    async function fetchShares(page = 1) {
+      try {
+        const response = await apiHelper.request(
+          `/api/forum/shares?page=${page}&limit=${ITEMS_PER_PAGE}&sort=-created_at`,
+          { method: 'GET' }
+        );
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        
+        const result = await response.json();
+        if (result.success) {
+          renderResourceCards(result.data);
+        } else {
+          showError(result.message || 'Failed to fetch shares');
+        }
+      } catch (error) {
+        console.error('[Contribution] Error fetching shares:', error);
+        showError('Failed to load cultural resources');
+      }
+    }
+
+    // Transform resource data with localized text
+    function transformResourceToCard(resource) {
+      const safeGetLocalizedText = (i18nField, fallback) => {
+        try {
+          const parsed = typeof i18nField === 'string' ? JSON.parse(i18nField) : i18nField;
+          return getLocalizedText(parsed, fallback);
+        } catch (e) {
+          return getLocalizedText(i18nField, fallback);
+        }
+      };
+
+      return {
+        id: resource.id,
+        emoji: resource.icon || '📚',
+        title: safeGetLocalizedText(resource.title_i18n, resource.title),
+        description: safeGetLocalizedText(resource.description_i18n, resource.description),
+        tags: resource.tags || [],
+        tagNames: (resource.tags || []).map(tag => safeGetLocalizedText(tag.name_i18n, tag.name)),
+        authorName: resource.author_name || 'Anonymous',
+        viewCount: resource.view_count || 0,
+        likeCount: resource.like_count || 0,
+        files: resource.files || [],
+      };
+    }
+
+    // Store all resources globally for re-rendering
+    let allResources = [];
+
+    // Render resource cards
+    function renderResourceCards(resources) {
+      const container = document.getElementById('sharedResourcesGrid');
+      
+      // Store resources globally
+      allResources = resources;
+      
+      // Clear only the cards, keep detailViewContainer
+      const cards = container.querySelectorAll('[data-resource-id]');
+      cards.forEach(card => card.remove());
+
+      if (!resources || resources.length === 0) {
+        const noDataMsg = document.createElement('p');
+        noDataMsg.className = 'text-gray-400 col-span-full text-center py-8';
+        noDataMsg.setAttribute('data-i18n', 'noResources');
+        noDataMsg.textContent = '暫無文化資源分享';
+        container.insertBefore(noDataMsg, container.firstChild);
         return;
       }
 
-      // Show progress
-      document.getElementById('uploadProgress').classList.remove('hidden');
+      // Create document fragment for better performance
+      const fragment = document.createDocumentFragment();
+
+      resources.forEach(rawResource => {
+        const resource = transformResourceToCard(rawResource);
+        const card = document.createElement('div');
+        card.className = 'bg-gray-800 p-4 rounded-lg border border-gray-600 hover:border-gold-600 transition-colors cursor-pointer flex flex-col h-full';
+        card.dataset.resourceId = resource.id;
+
+        card.innerHTML = `
+          <div class="aspect-video bg-gray-700 rounded-lg mb-3 flex items-center justify-center"><span class="text-4xl">${resource.emoji}</span></div>
+          <h4 class="font-semibold text-white mb-2 text-body line-clamp-2">${resource.title}</h4>
+          <p class="text-body-sm text-gray-400 mb-3 line-clamp-2 flex-grow">${resource.description}</p>
+          <div class="flex flex-wrap gap-2 mb-3">${resource.tagNames.map(t => `<span class="text-xs bg-gold-700 text-black px-2 py-1 rounded">${t}</span>`).join('')}</div>
+          <div class="flex justify-between items-center text-body-sm text-gray-400 pt-3 border-t border-gray-700">
+            <span>👤 ${resource.authorName}</span>
+            <div class="flex gap-3"><span>👁️ ${resource.viewCount}</span><span>❤️ ${resource.likeCount}</span></div>
+          </div>
+        `;
+
+        // Store the full resource data on the card element
+        card._resourceData = resource;
+        card.addEventListener('click', () => showDetailView(card, resource));
+        fragment.appendChild(card);
+      });
+
+      // Insert all cards at the beginning (before detailViewContainer if it exists)
+      container.insertBefore(fragment, container.firstChild);
+    }
+
+    // Show inline detail view
+    async function showDetailView(cardElement, resource) {
+      const detailContainer = document.getElementById('detailViewContainer');
+      const grid = document.getElementById('sharedResourcesGrid');
       
-      try {
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('category', category);
-        
-        for (let i = 0; i < files.length; i++) {
-          formData.append('files', files[i]);
-        }
+      console.log('[DetailView] Showing detail for:', resource.title, 'Resource:', resource);
+      
+      // If clicking the same card that's already open, close it.
+      if (activeDetailCard === cardElement && !detailContainer.classList.contains('hidden')) {
+        console.log('[DetailView] Closing same card');
+        detailContainer.classList.add('hidden');
+        detailContainer.innerHTML = '';
+        activeDetailCard = null;
+        return;
+      }
+      
+      // Always clear the hidden class to make sure it's visible
+      detailContainer.classList.remove('hidden');
 
-        // Simulate progress
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-          progress += 10;
-          if (progress <= 90) {
-            document.getElementById('progressBar').style.width = progress + '%';
-            document.getElementById('progressText').textContent = progress + '%';
+      // Close upload form if open
+      const uploadContainer = document.getElementById('uploadFormContainer');
+      if (!uploadContainer.classList.contains('hidden')) {
+        console.log('[DetailView] Closing upload form');
+        uploadContainer.classList.add('hidden');
+        uploadContainer.querySelector('iframe').src = '';
+      }
+
+      activeDetailCard = cardElement;
+      detailContainer.innerHTML = '<p class="text-center text-gray-400 p-8">Loading details...</p>';
+      
+      // Calculate where to insert the detail view
+      const itemsPerRow = window.innerWidth >= 1024 ? 3 : (window.innerWidth >= 768 ? 2 : 1);
+      const cardIndex = Array.from(grid.children).filter(child => !child.id).indexOf(cardElement);
+      const endOfRowIndex = Math.floor(cardIndex / itemsPerRow) * itemsPerRow + itemsPerRow;
+      
+      // Find the reference node (skip detailViewContainer itself)
+      let refNode = null;
+      let count = 0;
+      for (let child of grid.children) {
+        if (child.id !== 'detailViewContainer') {
+          if (count === endOfRowIndex) {
+            refNode = child;
+            break;
           }
-        }, 200);
-
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        clearInterval(progressInterval);
-        document.getElementById('progressBar').style.width = '100%';
-        document.getElementById('progressText').textContent = '100%';
-
-        const result = await response.json();
-
-        if (result.success) {
-          alert('上傳成功！');
-          document.getElementById('cultureUploadForm').reset();
-          document.getElementById('uploadForm').classList.add('hidden');
-          document.getElementById('uploadProgress').classList.add('hidden');
-          document.getElementById('progressBar').style.width = '0%';
-        } else {
-          throw new Error('Upload failed');
+          count++;
         }
+      }
+
+      // Move the container and make it visible
+      if (refNode) {
+        grid.insertBefore(detailContainer, refNode);
+      } else {
+        grid.appendChild(detailContainer);
+      }
+      detailContainer.className = 'mt-4 mb-6 col-span-full bg-gray-800 rounded-lg border border-gold-600 shadow-xl';
+
+      try {
+        const response = await fetch('/forum/detail.html');
+        if (!response.ok) throw new Error('Failed to load detail template');
+        
+        const template = await response.text();
+        detailContainer.innerHTML = template;
+
+        // Apply i18n translations IMMEDIATELY after loading template
+        if (window.i18next) {
+          detailContainer.querySelectorAll('[data-i18n]').forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            if (key) {
+              const translation = window.i18next.t(key);
+              if (translation && translation !== key) {
+                element.textContent = translation;
+              }
+            }
+          });
+        }
+
+        // Populate template with resource data
+        detailContainer.querySelector('#name').textContent = resource.title;
+        detailContainer.querySelector('#author-name').textContent = resource.authorName;
+        detailContainer.querySelector('#view-count').textContent = resource.viewCount;
+        detailContainer.querySelector('#like-count').textContent = resource.likeCount;
+        detailContainer.querySelector('#description').innerHTML = `<p>${resource.description}</p>`;
+        
+        // Populate tags
+        const tagsContainer = detailContainer.querySelector('#tags-container');
+        if (resource.tagNames && resource.tagNames.length > 0) {
+          tagsContainer.innerHTML = resource.tagNames
+            .map(tagName => `<span class="text-xs bg-gold-700 text-black px-3 py-1 rounded-full">${tagName}</span>`)
+            .join('');
+        } else {
+          detailContainer.querySelector('#tags-section').style.display = 'none';
+        }
+        
+        // Populate file list
+        const fileList = detailContainer.querySelector('#file-list');
+        fileList.innerHTML = '';
+        if (resource.files && resource.files.length > 0) {
+          resource.files.forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'flex items-center gap-3 p-3 bg-gray-700 rounded-lg hover:bg-gray-600 cursor-pointer transition-colors';
+            fileItem.innerHTML = `
+              <svg class="w-5 h-5 text-gold-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+              <span class="text-white text-body flex-1">${file.name}</span>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            `;
+            fileItem.onclick = () => {
+              // TODO: Implement file viewer
+              alert(`查看文件: ${file.name}`);
+            };
+            fileList.appendChild(fileItem);
+          });
+        } else {
+          const noFilesMsg = document.createElement('p');
+          noFilesMsg.className = 'text-gray-500 text-body-sm p-4 text-center';
+          noFilesMsg.setAttribute('data-i18n', 'noFiles');
+          noFilesMsg.textContent = window.i18next ? window.i18next.t('noFiles') : '暫無檔案';
+          fileList.appendChild(noFilesMsg);
+        }
+
+        // Setup action buttons
+        detailContainer.querySelector('#download-btn').onclick = () => {
+          // TODO: Implement ZIP download
+          const msg = window.i18next ? window.i18next.t('featureDevelopment') : '功能開發中';
+          alert(msg + '...');
+        };
+        
+        detailContainer.querySelector('#play-btn').onclick = () => {
+          // 参考 culture-selection.html 的存储步骤
+          localStorage.setItem('selectedShareId', resource.id);
+          localStorage.setItem('selectedTheme', resource.title);
+          localStorage.setItem('selectedDescription', resource.description);
+          // 跳转到游戏选择页面，传递 shareId 参数
+          window.location.href = `/game/game-selection.html?shareId=${resource.id}`;
+        };
+
+        detailContainer.querySelector('#close-detail-btn').onclick = () => {
+          detailContainer.classList.add('hidden');
+          detailContainer.innerHTML = '';
+          activeDetailCard = null;
+        };
+
+        // Final i18n update (in case any dynamic content was added)
+        if (window.i18next && typeof updateUI === 'function') {
+          updateUI(window.i18next.language);
+        }
+
       } catch (error) {
-        console.error('Upload error:', error);
-        const uploadFailedText = window.errorDisplay.getTranslatedText('uploadFailed', '上傳失敗，請稍後再試');
-        window.errorDisplay.showAlertError(uploadFailedText);
-        document.getElementById('uploadProgress').classList.add('hidden');
-        document.getElementById('progressBar').style.width = '0%';
+        console.error('[DetailView] Error loading detail view:', error);
+        detailContainer.innerHTML = `<div class="p-8 text-center"><p class="text-red-500 text-body">載入失敗: ${error.message}</p></div>`;
       }
     }
 
@@ -261,9 +373,83 @@
       window.location.href = '/forum/forum.html';
     });
 
-    document.getElementById('uploadCultureBtn').addEventListener('click', toggleUploadForm);
-    document.getElementById('cancelUpload').addEventListener('click', toggleUploadForm);
-    document.getElementById('cultureUploadForm').addEventListener('submit', handleFileUpload);
+    document.getElementById('uploadCultureBtn').addEventListener('click', () => {
+      console.log('[Upload Button] Clicked');
+      console.log('[Upload Button] apiHelper:', window.apiHelper);
+      
+      // Check if user is logged in
+      const token = window.apiHelper ? window.apiHelper.getAuthToken() : null;
+      console.log('[Upload Button] Token:', token ? 'exists' : 'null');
+      
+      if (!token) {
+        console.log('[Upload Button] No token, showing login prompt');
+        if (window.showLoginPrompt) {
+          window.showLoginPrompt();
+        } else if (window.openAuthModal) {
+          window.openAuthModal('login');
+        } else {
+          alert('請先登入以上傳資源');
+        }
+        return;
+      }
+      
+      console.log('[Upload Button] Token exists, toggling form');
+      toggleUploadForm();
+    });
+
+    // Initialize page
+    async function initPage() {
+      console.log('[Contribution] initPage called');
+      
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      
+      // Store current open detail state before re-rendering
+      const wasDetailOpen = activeDetailCard !== null && !document.getElementById('detailViewContainer').classList.contains('hidden');
+      const openResourceId = wasDetailOpen ? activeDetailCard.dataset.resourceId : null;
+      
+      console.log('[Contribution] Detail was open:', wasDetailOpen, 'Resource ID:', openResourceId);
+      
+      await fetchShares(1);
+      
+      // Restore scroll position immediately
+      window.scrollTo(0, scrollY);
+      
+      // Restore open detail if it was open before
+      if (wasDetailOpen && openResourceId) {
+        console.log('[Contribution] Attempting to restore detail view for:', openResourceId);
+        setTimeout(() => {
+          const card = document.querySelector(`[data-resource-id="${openResourceId}"]`);
+          console.log('[Contribution] Found card to restore:', card);
+          if (card && card._resourceData) {
+            console.log('[Contribution] Restoring detail with data:', card._resourceData);
+            showDetailView(card, card._resourceData);
+            // Restore scroll position again after detail view is shown
+            setTimeout(() => window.scrollTo(0, scrollY), 50);
+          } else if (card) {
+            console.log('[Contribution] Card found but no data, clicking card');
+            card.click();
+            setTimeout(() => window.scrollTo(0, scrollY), 50);
+          } else {
+            console.warn('[Contribution] Could not find card with ID:', openResourceId);
+          }
+        }, 150);
+      }
+      
+      if (window.i18next && typeof updateUI === 'function') {
+        updateUI(window.i18next.language);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(initPage, 100); // Defer to ensure all scripts are ready
+    });
+
+    window.addEventListener('i18n:languageChanged', async () => {
+      console.log('[Contribution] Language changed, re-initializing page');
+      await initPage();
+    });
   </script>
 </body>
 </html>
+

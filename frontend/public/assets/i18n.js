@@ -29,6 +29,10 @@
       console.log('Translations loaded successfully');
       // Translations loaded, update page text again if needed
       updatePageText();
+      
+      // Dispatch event for translations loaded
+      const event = new CustomEvent('i18n:translationsLoaded');
+      window.dispatchEvent(event);
     } catch (error) {
       console.error('Failed to load translations:', error);
     }

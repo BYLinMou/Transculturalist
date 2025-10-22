@@ -386,9 +386,7 @@
     // Handle finishing game (user clicks finish button to go back)
     async function finishGame() {
       // Game result already auto-saved when answers checked
-      // Just show success message and navigate back
-      alert(window.i18next ? window.i18next.t('gameSaved') : '遊戲已保存！');
-      
+      // Just navigate back without alert
       if (gameTimer) {
         gameTimer.destroy();
       }
