@@ -23,21 +23,34 @@ async function initializeDatabase() {
     }
 
     // 3. 选择对应的 SQL 初始化脚本
-    let sqlPath;
+    let sqlFiles = [];
     if (dbConfig.type === 'postgres') {
-      sqlPath = path.join(__dirname, '../../db/init.common.sql');
+      sqlFiles = [
+        path.join(__dirname, '../../db/init.common.sql'),
+        path.join(__dirname, '../../db/init.forum.postgres.sql')
+      ];
     } else {
-      sqlPath = path.join(__dirname, '../../db/init.sql');
+      sqlFiles = [
+        path.join(__dirname, '../../db/init.sql')
+      ];
     }
     
-    console.log('[DB Init] Reading SQL file from:', sqlPath);
+    // 读取并合并所有 SQL 文件
+    let sql = '';
+    for (const sqlPath of sqlFiles) {
+      if (fs.existsSync(sqlPath)) {
+        console.log('[DB Init] Reading SQL file from:', sqlPath);
+        const fileContent = fs.readFileSync(sqlPath, 'utf8');
+        sql += '\n' + fileContent + '\n';
+      } else {
+        console.warn('[DB Init] SQL file not found:', sqlPath);
+      }
+    }
     
-    if (!fs.existsSync(sqlPath)) {
-      console.warn('[DB Init] init.sql not found, skipping table creation');
+    if (!sql.trim()) {
+      console.warn('[DB Init] No SQL files found for initialization');
       return false;
     }
-
-    let sql = fs.readFileSync(sqlPath, 'utf8');
 
     // 4. 如果是 SQLite，需要将 SQL 转换为 SQLite 格式
     if (dbConfig.type !== 'postgres') {
@@ -45,9 +58,20 @@ async function initializeDatabase() {
     }
 
     // 5. 执行 SQL 脚本
-    console.log('[DB Init] Executing SQL script for', dbConfig.type, '...');
+    console.log('[DB Init] Executing SQL scripts for', dbConfig.type, '...');
     await executeSql(sql);
-    console.log('[DB Init] ✓ Database tables created/verified successfully');
+    console.log('[DB Init] ✓ Database tables created/verified and test data inserted successfully');
+
+    // 5.1. 强制重新计算所有标签的 usage_count
+    // 这可以确保即使数据库文件已存在，启动时也能获得最新的计数值
+    console.log('[DB Init] Recalculating tag usage counts...');
+    await execute(`
+      UPDATE culture_tags
+      SET usage_count = (
+        SELECT COUNT(*) FROM share_tags WHERE share_tags.tag_id = culture_tags.id
+      )
+    `);
+    console.log('[DB Init] ✓ Tag usage counts recalculated.');
 
     // 6. 验证表是否存在
     const listTablesQuery = getListTablesQuery();
