@@ -29,6 +29,10 @@
       console.log('Translations loaded successfully');
       // Translations loaded, update page text again if needed
       updatePageText();
+      
+      // Dispatch event for translations loaded
+      const event = new CustomEvent('i18n:translationsLoaded');
+      window.dispatchEvent(event);
     } catch (error) {
       console.error('Failed to load translations:', error);
     }
@@ -50,10 +54,18 @@
         return translations[lang] && translations[lang][key] || key;
       },
       changeLanguage: function(lang, callback) {
+        const oldLanguage = this.currentLanguage;
         this.currentLanguage = lang;
         localStorage.setItem('language', lang);
         // Update page text immediately, even if translations aren't loaded yet
         updatePageText();
+        
+        // Dispatch custom event for language change
+        const event = new CustomEvent('i18n:languageChanged', {
+          detail: { oldLanguage, newLanguage: lang }
+        });
+        window.dispatchEvent(event);
+        
         if (callback) callback(null, this.t.bind(this));
       }
     };
@@ -67,6 +79,15 @@
     
     document.querySelectorAll('[data-i18n]').forEach(element => {
       const key = element.getAttribute('data-i18n');
+      const translation = window.i18next.t(key);
+      if (translation !== key || translations[window.i18next.currentLanguage]) {
+        element.textContent = translation;
+      }
+    });
+    
+    // Support for data-i18n-key attribute (used for dynamic content)
+    document.querySelectorAll('[data-i18n-key]').forEach(element => {
+      const key = element.getAttribute('data-i18n-key');
       const translation = window.i18next.t(key);
       if (translation !== key || translations[window.i18next.currentLanguage]) {
         element.textContent = translation;

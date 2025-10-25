@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>上傳文化資源</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/gold-theme.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/error-display.js"></script>
+</head>
+<body>
+  <!-- Upload Form -->
+  <div id="uploadForm" class="p-6 bg-gray-800 rounded-lg border border-gray-600">
+    <h4 class="text-title-sm font-semibold text-gold-300 mb-4" data-i18n="uploadResource">上傳新的文化資源</h4>
+    <form id="cultureUploadForm" class="space-y-4">
+      <div>
+        <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="resourceTitle">資源標題</label>
+        <input
+          type="text"
+          id="resourceTitle"
+          required
+          class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+          data-i18n-placeholder="resourceTitlePlaceholder"
+          placeholder="例如：中國傳統書法技巧"
+        />
+      </div>
+
+      <div>
+        <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="resourceDescription">資源描述</label>
+        <textarea
+          id="resourceDescription"
+          required
+          rows="4"
+          class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+          data-i18n-placeholder="resourceDescriptionPlaceholder"
+          placeholder="簡要描述這個文化資源的內容和特色..."
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="cultureCategory">文化類別</label>
+        <select
+          id="cultureCategory"
+          required
+          class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body"
+        >
+          <option value="" data-i18n="pleaseSelect">請選擇...</option>
+          <option value="chinese" data-i18n="chineseCulture">中華文化</option>
+          <option value="japanese" data-i18n="japaneseCulture">日本文化</option>
+          <option value="korean">韓國文化</option>
+          <option value="indian" data-i18n="indianCulture">印度文化</option>
+          <option value="other">其他文化</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-body-sm font-semibold text-gray-300 mb-2" data-i18n="uploadFiles">上傳檔案</label>
+        <input
+          type="file"
+          id="cultureFiles"
+          multiple
+          accept="image/*,video/*,.pdf,.doc,.docx"
+          class="w-full p-3 bg-gray-900 text-white rounded-lg border border-gray-600 focus:border-gold-500 focus:outline-none text-body-sm"
+        />
+        <p class="text-caption text-gray-400 mt-2" data-i18n="supportedFormats">支援圖片、影片、PDF等格式，最多上傳10個檔案</p>
+      </div>
+
+      <div id="uploadProgress" class="hidden">
+        <div class="bg-gray-700 rounded-full h-2 overflow-hidden">
+          <div id="progressBar" class="bg-gold-600 h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <p class="text-body-sm text-gray-400 mt-2" data-i18n="uploading">上傳中... <span id="progressText">0%</span></p>
+      </div>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          class="flex-1 px-6 py-3 bg-gold-600 hover:bg-gold-700 text-black font-semibold rounded-lg transition-colors text-body-sm"
+          data-i18n="submitResource"
+        >
+          提交資源
+        </button>
+        <button
+          type="button"
+          id="cancelUpload"
+          class="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors text-body-sm"
+          data-i18n="cancel"
+        >
+          取消
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Handle file upload
+    async function handleFileUpload(event) {
+      event.preventDefault();
+
+      const title = document.getElementById('resourceTitle').value;
+      const description = document.getElementById('resourceDescription').value;
+      const category = document.getElementById('cultureCategory').value;
+      const files = document.getElementById('cultureFiles').files;
+
+      if (!title || !description || !category) {
+        alert('請填寫所有必填欄位');
+        return;
+      }
+
+      // Show progress
+      document.getElementById('uploadProgress').classList.remove('hidden');
+
+      try {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('category', category);
+
+        for (let i = 0; i < files.length; i++) {
+          formData.append('files', files[i]);
+        }
+
+        // Simulate progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+          progress += 10;
+          if (progress <= 90) {
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress + '%';
+          }
+        }, 200);
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        clearInterval(progressInterval);
+        document.getElementById('progressBar').style.width = '100%';
+        document.getElementById('progressText').textContent = '100%';
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert('上傳成功！');
+          document.getElementById('cultureUploadForm').reset();
+          // Notify parent window to hide the form
+          if (window.parent && window.parent.hideUploadForm) {
+            window.parent.hideUploadForm();
+          }
+          document.getElementById('uploadProgress').classList.add('hidden');
+          document.getElementById('progressBar').style.width = '0%';
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        const uploadFailedText = window.errorDisplay.getTranslatedText('uploadFailed', '上傳失敗，請稍後再試');
+        window.errorDisplay.showAlertError(uploadFailedText);
+        document.getElementById('uploadProgress').classList.add('hidden');
+        document.getElementById('progressBar').style.width = '0%';
+      }
+    }
+
+    // Event listeners
+    document.getElementById('cancelUpload').addEventListener('click', () => {
+      // Notify parent window to hide the form
+      if (window.parent && window.parent.hideUploadForm) {
+        window.parent.hideUploadForm();
+      }
+    });
+
+    document.getElementById('cultureUploadForm').addEventListener('submit', handleFileUpload);
+  </script>
+</body>
+</html>

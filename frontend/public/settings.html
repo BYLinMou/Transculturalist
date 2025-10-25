@@ -4,36 +4,38 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>文化探索 — 設定</title>
-  <link rel="stylesheet" href="/assets/styles.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'gold': {
-              100: '#FEF7E0',
-              200: '#FDEAA7',
-              300: '#FBDC6E',
-              400: '#F9CE35',
-              500: '#F7C41C',
-              600: '#E6B800',
-              700: '#B8920A',
-              800: '#8A6D08',
-              900: '#5C4805'
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
             }
           }
         }
       }
     }
   </script>
+  <link rel="stylesheet" href="/assets/gold-theme.css">
+  <link rel="stylesheet" href="/assets/styles.css">
   <style>
     .gradient-bg {
       background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
     }
   </style>
   <script src="/assets/i18n.js"></script>
+  <script src="/assets/auth.js"></script>
+  <script src="/assets/auth-modal.js"></script>
+  <script src="/assets/login-prompt.js"></script>
+  <script src="/assets/api-helper.js"></script>
   <script src="/assets/load-header.js"></script>
+  <script src="/assets/guest-game-storage.js"></script>
+  <script src="/assets/guest-game-display.js"></script>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <!-- Header -->
@@ -56,20 +58,18 @@
           <svg class="w-6 h-6 text-gold-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
           </svg>
-          <h3 class="text-title font-bold text-gold-300" data-i18n="personalInfo">個人資料</h3>
+          <h3 class="text-title font-bold text-gold-300" data-i18n="accountSettings">帳號設定</h3>
         </div>
         <div class="space-y-4">
-          <div>
-            <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="username">用戶名稱</label>
-            <input type="text" id="username" value="文化愛好者" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500" data-i18n-placeholder="username">
+          <!-- Login Status -->
+          <div id="authStatusContainer">
+            <!-- Content updated by JavaScript -->
           </div>
-          <div>
-            <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="email">電子郵件</label>
-            <input type="email" id="email" placeholder="your@email.com" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500" data-i18n-placeholder="email">
+
+          <!-- Personal Info (Only visible when logged in or guest) -->
+          <div id="personalInfoContainer">
+            <!-- Content updated by JavaScript -->
           </div>
-          <button class="w-full px-4 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body" data-i18n="saveChanges">
-            儲存變更
-          </button>
         </div>
       </div>
 
@@ -85,30 +85,30 @@
           <div class="flex items-center justify-between">
             <span class="text-gray-300 text-body" data-i18n="gameSound">遊戲音效</span>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked class="sr-only peer">
+              <input type="checkbox" id="gameSound-toggle" checked class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-gray-300 text-body" data-i18n="backgroundMusic">背景音樂</span>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer">
+              <input type="checkbox" id="backgroundMusic-toggle" class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-gray-300 text-body" data-i18n="notifications">通知提醒</span>
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked class="sr-only peer">
+              <input type="checkbox" id="notifications-toggle" checked class="sr-only peer">
               <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gold-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gold-600"></div>
             </label>
           </div>
           <div>
             <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="difficulty">遊戲難度</label>
-            <select class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500">
-              <option data-i18n="easy">簡單</option>
-              <option selected data-i18n="medium">中等</option>
-              <option data-i18n="hard">困難</option>
+            <select id="difficulty-select" class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500">
+              <option value="easy" data-i18n="easy">簡單</option>
+              <option value="medium" selected data-i18n="medium">中等</option>
+              <option value="hard" data-i18n="hard">困難</option>
             </select>
           </div>
         </div>
@@ -122,23 +122,8 @@
           </svg>
           <h3 class="text-title font-bold text-gold-300" data-i18n="statistics">遊戲統計</h3>
         </div>
-        <div class="space-y-4">
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
-            <span class="text-gold-400 font-bold text-body-lg">0</span>
-          </div>
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
-            <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="minutes">分鐘</span></span>
-          </div>
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
-            <span class="text-gold-400 font-bold text-body-lg">0</span>
-          </div>
-          <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-            <span class="text-gray-300 text-body-sm" data-i18n="forumContributions">論壇貢獻</span>
-            <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="posts">則</span></span>
-          </div>
+        <div class="space-y-4" id="statisticsContainer">
+          <!-- Statistics loaded dynamically by JavaScript -->
         </div>
       </div>
 
@@ -167,12 +152,30 @@
             <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left text-body-sm" data-i18n="contactUs">
               📧 聯絡我們
             </button>
-            <button class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left text-body-sm" data-i18n="privacyPolicy">
+            <button onclick="openPrivacyPolicy()" class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors text-left text-body-sm" data-i18n="privacyPolicy">
               📄 隱私政策
             </button>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Global Save Section -->
+    <div class="mt-6 flex gap-4 justify-end">
+      <button 
+        onclick="handleResetSettings()"
+        class="px-6 py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors text-body"
+        data-i18n="reset"
+      >
+        重設
+      </button>
+      <button 
+        onclick="handleSaveAllSettings()"
+        class="px-6 py-3 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body"
+        data-i18n="saveChanges"
+      >
+        儲存全部變更
+      </button>
     </div>
 
     <!-- Danger Zone -->
@@ -191,42 +194,666 @@
   </main>
 
   <script>
-    // Save settings to localStorage
-    document.querySelector('.bg-gold-600.text-black').addEventListener('click', function() {
-      const username = document.getElementById('username').value;
-      const email = document.getElementById('email').value;
-      
-      localStorage.setItem('username', username);
-      localStorage.setItem('email', email);
-      
-      alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已儲存！');
-    });
+    // Default preferences constant
+    const DEFAULT_PREFERENCES = {
+      gameSound: true,
+      backgroundMusic: true,
+      notifications: true,
+      difficulty: 'medium'
+    };
 
-    // Load settings from localStorage
-    window.addEventListener('load', function() {
-      const savedUsername = localStorage.getItem('username');
-      const savedEmail = localStorage.getItem('email');
-      
-      if (savedUsername) {
-        document.getElementById('username').value = savedUsername;
-      }
-      if (savedEmail) {
-        document.getElementById('email').value = savedEmail;
+    // Refresh user info from database (to sync changes made on other devices)
+    async function refreshUserInfoFromDatabase() {
+      if (!window.auth || !window.auth.isLoggedIn()) {
+        return; // Not logged in, skip
       }
 
-      // Load version info
-      fetch('/api/version')
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('app-version').textContent = data.version;
-          document.getElementById('publish-date').textContent = data.publishDate;
-        })
-        .catch(err => {
-          console.error('Failed to load version info:', err);
-          document.getElementById('app-version').textContent = '無法載入';
-          document.getElementById('publish-date').textContent = '無法載入';
+      try {
+        const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+        if (!authUser.id || !authUser.token) {
+          return; // No user ID or token
+        }
+
+        // Fetch latest user info from backend
+        const response = await fetch('/api/user/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authUser.token}`
+          }
         });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user) {
+            // Update localStorage with latest user info
+            const updatedUser = {
+              ...authUser,
+              username: data.user.username,
+              email: data.user.email
+            };
+            localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+            
+            // Update window.auth object
+            if (window.auth && window.auth.currentUser) {
+              window.auth.currentUser = updatedUser;
+            }
+            
+            console.log('[Settings] User info refreshed from database:', updatedUser.username);
+            return true;
+          }
+        } else {
+          console.warn('[Settings] Failed to refresh user info from database');
+        }
+      } catch (error) {
+        console.error('[Settings] Error refreshing user info:', error);
+      }
+      return false;
+    }
+
+    // Update account settings UI based on auth state
+    function updateAccountSettingsUI() {
+      console.log('[Settings] Updating account settings UI');
+      const authStatusContainer = document.getElementById('authStatusContainer');
+      const personalInfoContainer = document.getElementById('personalInfoContainer');
+      
+      if (!authStatusContainer || !personalInfoContainer) {
+        console.error('[Settings] Containers not found');
+        return;
+      }
+      
+      // Check if auth is enabled
+      const isAuthEnabled = window.auth && window.auth.isAuthEnabled;
+      console.log('[Settings] isAuthEnabled:', isAuthEnabled);
+      console.log('[Settings] window.auth:', window.auth);
+      
+      if (isAuthEnabled && window.auth && window.auth.isLoggedIn()) {
+        // Show logged-in UI
+        const user = window.auth.getCurrentUser();
+        authStatusContainer.innerHTML = `
+          <div class="bg-gold-900 bg-opacity-30 border border-gold-600 p-4 rounded-lg mb-4">
+            <p class="text-gold-300 text-body-sm font-medium mb-2">
+              <span data-i18n="loginAs">登入為</span>: <strong>${user.username}</strong>
+            </p>
+            <button 
+              onclick="handleLogout()"
+              class="w-full px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors text-body-sm"
+              data-i18n="logout"
+            >
+              登出
+            </button>
+          </div>
+        `;
+
+        personalInfoContainer.innerHTML = `
+          <div>
+            <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="username">用戶名稱</label>
+            <input 
+              type="text" 
+              id="username" 
+              value="${user.username}" 
+              class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white text-body focus:outline-none focus:border-gold-500"
+              data-i18n-placeholder="username"
+            >
+          </div>
+          <div>
+            <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="email">電子郵件</label>
+            <div class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 text-body cursor-not-allowed" 
+                 title="電子郵件無法更改"
+                 data-tooltip="emailNotChangeable">
+              ${user.email}
+            </div>
+          </div>
+        `;
+      } else {
+        // Show guest UI (whether auth is disabled or user is not logged in)
+        const guestMessage = isAuthEnabled 
+          ? '<span data-i18n="guestMode">遊客模式</span>' 
+          : '<span data-i18n="authDisabled">認證功能已停用</span>';
+        
+        authStatusContainer.innerHTML = `
+          <div class="bg-gray-800 border border-gray-600 p-4 rounded-lg mb-4">
+            <p class="text-gray-300 text-body-sm font-medium mb-3">
+              ${guestMessage}
+            </p>
+            ${isAuthEnabled ? `
+            <div class="flex gap-2">
+              <button 
+                onclick="openAuthModal('login')"
+                class="flex-1 px-4 py-2 bg-gold-600 text-black font-bold rounded-lg hover:bg-gold-700 transition-colors text-body-sm"
+                data-i18n="login"
+              >
+                登入
+              </button>
+              <button 
+                onclick="openAuthModal('register')"
+                class="flex-1 px-4 py-2 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors text-body-sm"
+                data-i18n="register"
+              >
+                註冊
+              </button>
+            </div>
+            ` : ''}
+          </div>
+        `;
+
+        personalInfoContainer.innerHTML = `
+          <div>
+            <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="username">用戶名稱</label>
+            <div class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 text-body">
+              <span data-i18n="cultureLover">文化愛好者</span> <span class="text-body-xs text-gray-500">(<span data-i18n="anonymous">匿名</span>)</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-body-sm font-medium text-gray-300 mb-2" data-i18n="email">電子郵件</label>
+            <div class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-gray-400 text-body">
+              ${isAuthEnabled ? '<span data-i18n="guestMode">遊客模式</span>' : '<span data-i18n="authDisabled">認證功能已停用</span>'}
+            </div>
+          </div>
+        `;
+      }
+
+      // Update text after rendering
+      if (window.updatePageText) {
+        window.updatePageText();
+      }
+    }
+
+    // Handle logout
+    function handleLogout() {
+      if (confirm(window.i18next ? window.i18next.t('confirm') : '確定')) {
+        window.auth.logout();
+        alert(window.i18next ? window.i18next.t('logout') : '已登出');
+        window.location.reload();
+      }
+    }
+
+    // Handle profile update
+    function handleUpdateProfile() {
+      const username = document.getElementById('username')?.value || '';
+      
+      if (!username.trim()) {
+        alert(window.i18next ? window.i18next.t('usernameRequired') : '請輸入用戶名稱');
+        return;
+      }
+
+      const result = window.auth.updateProfile(username);
+      alert(result.message);
+      if (result.success) {
+        window.location.reload();
+      }
+    }
+
+    // Collect all settings
+    function collectAllSettings() {
+      const settings = {
+        // Account settings
+        account: {
+          username: document.getElementById('username')?.value || ''
+        },
+        // Preference settings
+        preferences: {
+          gameSound: document.getElementById('gameSound-toggle')?.checked || false,
+          backgroundMusic: document.getElementById('backgroundMusic-toggle')?.checked || false,
+          notifications: document.getElementById('notifications-toggle')?.checked || false,
+          difficulty: document.getElementById('difficulty-select')?.value || 'medium'
+        }
+      };
+      return settings;
+    }
+
+    // Handle saving all settings
+    async function handleSaveAllSettings() {
+      const settings = collectAllSettings();
+      
+      // Validate username if logged in
+      if (window.auth && window.auth.isLoggedIn()) {
+        if (!settings.account.username.trim()) {
+          alert(window.i18next ? window.i18next.t('usernameRequired') : '請輸入用戶名稱');
+          return;
+        }
+      }
+
+      // Check if user is logged in
+      if (window.auth && window.auth.isLoggedIn()) {
+        try {
+          // Get auth token from storage if available
+          const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+          
+          // Save preferences to database
+          const preferencesResponse = await fetch('/api/user/settings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authUser.token || ''}`
+            },
+            body: JSON.stringify({
+              preferences: settings.preferences
+            })
+          });
+
+          if (!preferencesResponse.ok) {
+            const error = await preferencesResponse.json();
+            throw new Error(error.error || '保存偏好設定失敗');
+          }
+
+          // Update profile (username) if changed
+          if (settings.account.username) {
+            const profileResponse = await fetch('/api/user/profile', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authUser.token || ''}`
+              },
+              body: JSON.stringify({
+                username: settings.account.username
+              })
+            });
+
+            if (!profileResponse.ok) {
+              const error = await profileResponse.json();
+              throw new Error(error.error || '保存帳號設定失敗');
+            }
+
+            // Update local storage with new username
+            authUser.username = settings.account.username;
+            localStorage.setItem('auth_user', JSON.stringify(authUser));
+
+            // 自动更新所有UI显示的用户名
+            // 1. 更新“登入為”区域
+            const authStatusContainer = document.getElementById('authStatusContainer');
+            if (authStatusContainer) {
+              const loginAsSpan = authStatusContainer.querySelector('strong');
+              if (loginAsSpan) {
+                loginAsSpan.textContent = settings.account.username;
+              }
+            }
+            // 2. 更新个人信息输入框
+            const usernameInput = document.getElementById('username');
+            if (usernameInput) {
+              usernameInput.value = settings.account.username;
+            }
+            // 3. 如果 window.auth.currentUser 存在，也同步更新
+            if (window.auth && window.auth.currentUser) {
+              window.auth.currentUser.username = settings.account.username;
+            }
+          }
+
+          console.log('All settings saved to database:', settings);
+          alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已保存');
+        } catch (error) {
+          console.error('Error saving settings:', error);
+          alert(error.message || (window.i18next ? window.i18next.t('settingsSaved') : '保存設定出錯'));
+        }
+      } else {
+        // For guest users, save to localStorage only (no database access)
+        localStorage.setItem('userSettings', JSON.stringify(settings));
+        console.log('Guest settings saved to localStorage:', settings);
+        alert(window.i18next ? window.i18next.t('settingsSaved') : '設定已保存');
+      }
+    }
+
+    // Handle reset settings
+    async function handleResetSettings() {
+      if (confirm(window.i18next ? window.i18next.t('resetSettingsConfirm') : '確定要重設所有設定嗎？')) {
+        // Reset form values
+        if (window.auth && window.auth.isLoggedIn()) {
+          const user = window.auth.getCurrentUser();
+          document.getElementById('username').value = user.username;
+        }
+        
+        // Reset checkboxes to default values
+        document.getElementById('gameSound-toggle').checked = DEFAULT_PREFERENCES.gameSound;
+        document.getElementById('backgroundMusic-toggle').checked = DEFAULT_PREFERENCES.backgroundMusic;
+        document.getElementById('notifications-toggle').checked = DEFAULT_PREFERENCES.notifications;
+        
+        // Reset difficulty to default
+        document.getElementById('difficulty-select').value = DEFAULT_PREFERENCES.difficulty;
+        
+        // If user is logged in, save to database
+        if (window.auth && window.auth.isLoggedIn()) {
+          try {
+            const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+            
+            const response = await fetch('/api/user/settings', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authUser.token || ''}`
+              },
+              body: JSON.stringify({
+                preferences: DEFAULT_PREFERENCES
+              })
+            });
+
+            if (response.ok) {
+              console.log('[Settings] Default preferences saved to database');
+              alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+            } else {
+              console.warn('[Settings] Failed to save default preferences to database');
+              alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+            }
+          } catch (error) {
+            console.error('[Settings] Error saving reset to database:', error);
+            alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+          }
+        } else {
+          // For guest users, save to localStorage
+          localStorage.setItem('userSettings', JSON.stringify({
+            account: {},
+            preferences: DEFAULT_PREFERENCES
+          }));
+          alert(window.i18next ? window.i18next.t('settingsReset') : '設定已重設');
+        }
+      }
+    }
+
+    // Load and display user statistics
+    async function loadUserStatistics() {
+      try {
+        const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+        
+        // If not logged in, show guest statistics (from sessionStorage)
+        if (!window.auth || !window.auth.isLoggedIn() || !authUser.id) {
+          displayGuestStatistics();
+          return;
+        }
+
+        // Fetch statistics from server
+        const response = await fetch('/api/user/stats', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authUser.token || ''}`
+          }
+        });
+
+        if (!response.ok) {
+          console.warn('[Settings] Failed to load statistics from server');
+          displayDefaultStatistics();
+          return;
+        }
+
+        const data = await response.json();
+        if (data.stats) {
+          displayStatistics(data.stats);
+          console.log('[Settings] User statistics loaded:', data.stats);
+        } else {
+          displayDefaultStatistics();
+        }
+      } catch (error) {
+        console.error('[Settings] Error loading statistics:', error);
+        displayDefaultStatistics();
+      }
+    }
+
+    // Display statistics for guest users from sessionStorage
+    function displayGuestStatistics() {
+      const container = document.getElementById('statisticsContainer');
+      if (!container) return;
+
+      const stats = window.GuestGameStorage?.getStatistics() || {};
+      
+      if (!stats.total_games_played || stats.total_games_played === 0) {
+        displayDefaultStatistics();
+        return;
+      }
+
+      // Format total play time
+      const totalSeconds = stats.total_play_time || 0;
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      // Format average score
+      const averageScore = stats.average_score || 0;
+      const averageScoreDisplay = averageScore > 0 ? averageScore.toFixed(2) : '--';
+      const completedGames = stats.completed_games || 0;
+
+      container.innerHTML = `
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${completedGames}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
+          <span class="text-gold-400 font-bold text-body-lg">${formattedTime}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${averageScoreDisplay}/5</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalGames">總遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${stats.total_games_played || 0}</span>
+        </div>
+        <div class="mt-4 p-3 bg-blue-900 bg-opacity-30 rounded-lg border border-blue-600">
+          <p class="text-blue-300 text-body-sm mb-2">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span data-i18n="guestModeInfo">您目前在遊客模式下遊玩。此數據僅在當前會話中保存，關閉窗口後將清除。</span>
+          </p>
+        </div>
+      `;
+
+      // Update i18n for dynamically added elements
+      if (window.updatePageText) {
+        window.updatePageText();
+      }
+    }
+
+    // Display statistics with formatting
+    function displayStatistics(stats) {
+      const container = document.getElementById('statisticsContainer');
+      if (!container) return;
+
+      // Format total play time to minutes with decimal places
+      const totalMinutes = (stats.totalPlayTime || 0) / 60;
+      const formattedMinutes = totalMinutes.toFixed(2);
+      
+      // Format average score
+      const completedGames = stats.completedGames || 0;
+      const averageScore = stats.averageScore || 0;
+      const averageScoreDisplay = averageScore > 0 ? averageScore.toFixed(2) : '-';
+
+      container.innerHTML = `
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${completedGames}</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
+          <span class="text-gold-400 font-bold text-body-lg">${formattedMinutes} <span data-i18n="minutes">分鐘</span></span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
+          <span class="text-gold-400 font-bold text-body-lg">${averageScoreDisplay}/5</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="forumContributions">論壇貢獻</span>
+          <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="posts">則</span></span>
+        </div>
+      `;
+
+      // Update i18n for dynamically added elements
+      if (window.updatePageText) {
+        window.updatePageText();
+      }
+    }
+
+    // Display default statistics (for guests with no game data)
+    function displayDefaultStatistics() {
+      const container = document.getElementById('statisticsContainer');
+      if (!container) return;
+
+      container.innerHTML = `
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="completedGames">完成遊戲數</span>
+          <span class="text-gold-400 font-bold text-body-lg">0</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="totalPlayTime">總遊玩時間</span>
+          <span class="text-gold-400 font-bold text-body-lg">0:00</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="averageScore">平均分數</span>
+          <span class="text-gold-400 font-bold text-body-lg">--/5</span>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+          <span class="text-gray-300 text-body-sm" data-i18n="forumContributions">論壇貢獻</span>
+          <span class="text-gold-400 font-bold text-body-lg">0 <span data-i18n="posts">則</span></span>
+        </div>
+      `;
+
+      // Update i18n for dynamically added elements
+      if (window.updatePageText) {
+        window.updatePageText();
+      }
+    }
+
+    // Load saved settings on page load
+    async function loadSavedSettings() {
+      const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+      
+      // If user is logged in, load settings from database
+      if (window.auth && window.auth.isLoggedIn() && authUser.id) {
+        try {
+          const response = await fetch('/api/user/settings', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${authUser.token || ''}`
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.settings && data.settings.preferences) {
+              const prefs = data.settings.preferences;
+              
+              // Apply preferences from database using proper IDs
+              document.getElementById('gameSound-toggle').checked = prefs.gameSound !== false;
+              document.getElementById('backgroundMusic-toggle').checked = prefs.backgroundMusic === true;
+              document.getElementById('notifications-toggle').checked = prefs.notifications !== false;
+              
+              document.getElementById('difficulty-select').value = prefs.difficulty || DEFAULT_PREFERENCES.difficulty;
+              
+              console.log('[Settings] Loaded settings from database:', data.settings);
+            }
+          } else {
+            console.warn('[Settings] Failed to load settings from database, using defaults');
+            loadDefaultSettings();
+          }
+        } catch (error) {
+          console.error('[Settings] Error loading settings from database:', error);
+          loadDefaultSettings();
+        }
+      } else {
+        // For guest users, load from localStorage
+        loadDefaultSettings();
+      }
+    }
+
+    // Load default/saved settings from localStorage (for guests)
+    function loadDefaultSettings() {
+      const saved = localStorage.getItem('userSettings');
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          
+          // Apply preferences
+          if (settings.preferences) {
+            document.getElementById('gameSound-toggle').checked = settings.preferences.gameSound !== false;
+            document.getElementById('backgroundMusic-toggle').checked = settings.preferences.backgroundMusic === true;
+            document.getElementById('notifications-toggle').checked = settings.preferences.notifications !== false;
+            
+            document.getElementById('difficulty-select').value = settings.preferences.difficulty || DEFAULT_PREFERENCES.difficulty;
+          }
+        } catch (e) {
+          console.error('Failed to load saved settings:', e);
+          // Apply default settings if parsing fails
+          applyDefaultSettings();
+        }
+      } else {
+        // No saved settings, apply defaults
+        applyDefaultSettings();
+      }
+    }
+
+    // Apply default preference settings to UI
+    function applyDefaultSettings() {
+      document.getElementById('gameSound-toggle').checked = DEFAULT_PREFERENCES.gameSound;
+      document.getElementById('backgroundMusic-toggle').checked = DEFAULT_PREFERENCES.backgroundMusic;
+      document.getElementById('notifications-toggle').checked = DEFAULT_PREFERENCES.notifications;
+      
+      document.getElementById('difficulty-select').value = DEFAULT_PREFERENCES.difficulty;
+    }
+
+    // Initialize when page loads
+    window.addEventListener('load', function() {
+      console.log('[Settings] Page loaded, waiting for auth to initialize...');
+      
+      // Wait for auth to be initialized
+      function checkAuthAndUpdate() {
+        if (window.auth && window.auth.isAuthEnabled !== undefined) {
+          console.log('[Settings] Auth initialized, updating UI');
+          
+          // First, refresh user info from database to ensure we have latest data
+          refreshUserInfoFromDatabase().then(() => {
+            updateAccountSettingsUI();
+            
+            // Load saved settings and statistics after UI is updated
+            setTimeout(() => {
+              loadSavedSettings();
+              loadUserStatistics();
+            }, 100);
+          });
+        } else {
+          console.log('[Settings] Auth not ready yet, retrying...');
+          setTimeout(checkAuthAndUpdate, 100);
+        }
+      }
+      
+      checkAuthAndUpdate();
+      
+      // Listen for auth changes
+      window.addEventListener('auth-changed', () => {
+        updateAccountSettingsUI();
+        // Reload statistics when auth changes (user logged in/out)
+        setTimeout(loadUserStatistics, 100);
+      });
     });
+
+    // Original settings save logic for other fields
+    const saveButton = document.querySelector('.bg-gold-600.text-black');
+    if (saveButton && saveButton !== document.querySelector('button[onclick="handleUpdateProfile()"]')) {
+      // Keep original behavior for preference settings
+    }
+
+    // Load version info
+    fetch('/api/version')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('app-version').textContent = data.version;
+        document.getElementById('publish-date').textContent = data.publishDate;
+      })
+      .catch(err => {
+        console.error('Failed to load version info:', err);
+        document.getElementById('app-version').textContent = '無法載入';
+        document.getElementById('publish-date').textContent = '無法載入';
+      });
+
+    // Open privacy policy in modal
+    function openPrivacyPolicy() {
+      console.log('[Settings] openPrivacyPolicy() called');
+      // Use the auth-modal's privacy policy modal
+      if (window.openPrivacyPolicyModal) {
+        console.log('[Settings] Calling window.openPrivacyPolicyModal()');
+        window.openPrivacyPolicyModal();
+      } else {
+        console.log('[Settings] window.openPrivacyPolicyModal not available, using fallback');
+        // Fallback to opening in new window if auth-modal not loaded
+        window.open('/privacy-policy.html', 'privacy_policy', 'width=800,height=600,scrollbars=yes');
+      }
+    }
   </script>
 </body>
 </html>

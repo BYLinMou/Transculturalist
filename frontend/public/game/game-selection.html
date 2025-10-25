@@ -4,8 +4,29 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>文化探索 — 遊戲選擇</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/gold-theme.css">
   <link rel="stylesheet" href="/assets/styles.css">
   <script src="/assets/i18n.js"></script>
+  <script src="/assets/auth.js"></script>
+  <script src="/assets/auth-modal.js"></script>
+  <script src="/assets/login-prompt.js"></script>
   <script src="/assets/api-helper.js"></script>
   <script src="/assets/load-header.js"></script>
 </head>
@@ -36,28 +57,37 @@
   </main>
 
   <script>
-    function setupGameSelection() {
+    function updateSelectedTheme() {
       const theme = localStorage.getItem('selectedTheme') || window.i18next.t('notSelected');
       const selectedThemeText = window.i18next.t('selectedTheme');
       document.getElementById('selectedTheme').textContent = selectedThemeText + '：' + theme;
+    }
+
+    function setupGameSelection() {
+      // 从 URL 获取 shareId，如果没有则从 localStorage 获取
+      const urlParams = new URLSearchParams(window.location.search);
+      const shareId = urlParams.get('shareId') || localStorage.getItem('selectedShareId');
+      
+      updateSelectedTheme();
 
       document.querySelectorAll('.game-option').forEach(el => {
         el.addEventListener('click', () => {
           const game = el.dataset.game;
           localStorage.setItem('selectedGame', game);
           
-          // 根據遊戲類型導向不同頁面（新路徑），並傳遞主題參數
-          const themeParam = theme !== '未選擇' ? `?theme=${encodeURIComponent(theme)}` : '';
+          // 根據遊戲類型導向不同頁面，傳遞 shareId 參數
+          const currentShareId = shareId || localStorage.getItem('selectedShareId');
+          const shareIdParam = currentShareId ? `?shareId=${currentShareId}` : '';
           if (game === 'mcq') {
-            window.location.href = `/game/mcq-game.html${themeParam}`;
+            window.location.href = `/game/mcq-game.html${shareIdParam}`;
           } else if (game === 'matching') {
-            window.location.href = `/game/matching-game.html${themeParam}`;
+            window.location.href = `/game/matching-game.html${shareIdParam}`;
           } else if (game === 'roleplay') {
-            window.location.href = `/game/roleplay-game.html${themeParam}`;
+            window.location.href = `/game/roleplay-game.html${shareIdParam}`;
           } else if (game === 'story') {
-            window.location.href = `/game/story-game.html${themeParam}`;
+            window.location.href = `/game/story-game.html${shareIdParam}`;
           } else {
-            window.location.href = `/game/game-detail.html${themeParam}`;
+            window.location.href = `/game/game-detail.html${shareIdParam}`;
           }
         });
       });
@@ -74,6 +104,11 @@
         }
       }, 100);
     }
+
+    // Listen for language changes and translation loads
+    window.addEventListener('i18n:languageChanged', updateSelectedTheme);
+    window.addEventListener('i18n:translationsLoaded', updateSelectedTheme);
+    window.addEventListener('load', updateSelectedTheme); // In case translations load after page load
   </script>
 </body>
 </html>

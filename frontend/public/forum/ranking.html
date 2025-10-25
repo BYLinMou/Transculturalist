@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文化探索 — 論壇 - 排行榜</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              300: '#ffd700',
+              400: '#ffed4e',
+              600: '#daa520',
+              700: '#b8860b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/assets/gold-theme.css">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/auth.js"></script>
+  <script src="/assets/auth-modal.js"></script>
+  <script src="/assets/login-prompt.js"></script>
+  <script src="/assets/api-helper.js"></script>
+  <script src="/assets/error-display.js"></script>
+  <script src="/assets/load-header.js"></script>
+  <script src="/assets/leaderboard-manager.js"></script>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <!-- Header placeholder -->
+  <header></header>
+
+  <main class="container mx-auto p-6">
+    <div class="flex items-center mb-8">
+      <button id="backToForum" class="mr-4 p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <h2 class="text-title-lg font-bold text-gold-300" data-i18n="leaderboard">排行榜</h2>
+    </div>
+
+    <!-- Ranking Content -->
+    <div class="space-y-8">
+      
+      <!-- 1. Game Duration Score Table -->
+      <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
+        <h3 class="text-title font-bold text-gold-300 mb-4" data-i18n="gameDurationRanking">🎮 遊戲時長排行榜</h3>
+        <p class="text-body-sm text-gray-400 mb-4" data-i18n="gameDurationFormula">計分方式：(遊戲時長分鐘數 × 1.5) + 已完成遊戲數</p>
+        <p class="text-body-xs text-gray-500 mb-4" data-i18n="autoUpdateEveryMinute">⏱️ 每分鐘自動更新一次</p>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-body-sm">
+            <thead>
+              <tr class="border-b border-gray-700">
+                <th class="px-4 py-3 text-left text-gold-300 font-semibold" data-i18n="rank">排名</th>
+                <th class="px-4 py-3 text-left text-gold-300 font-semibold" data-i18n="player">玩家</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold" data-i18n="gamePlayTime">遊戲時長</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold" data-i18n="completedGames">完成遊戲數</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold" data-i18n="score">得分</th>
+              </tr>
+            </thead>
+            <tbody id="gameDurationTableBody">
+              <tr class="border-b border-gray-700 hover:bg-gray-800 transition-colors">
+                <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                  <div class="flex items-center justify-center">
+                    <svg class="animate-spin h-5 w-5 text-gold-300 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span data-i18n="loading">加載中...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. Average Score Table -->
+      <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
+        <h3 class="text-title font-bold text-gold-300 mb-4" data-i18n="averageScoreRanking">⭐ 平均分數排行榜</h3>
+        <p class="text-body-sm text-gray-400 mb-4" data-i18n="averageScoreDesc">根據遊戲中獲得的平均分數排列</p>
+        <p class="text-body-xs text-gray-500 mb-4" data-i18n="autoUpdateEveryMinute">⏱️ 每分鐘自動更新一次</p>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-body-sm">
+            <thead>
+              <tr class="border-b border-gray-700">
+                <th class="px-4 py-3 text-left text-gold-300 font-semibold" data-i18n="rank">排名</th>
+                <th class="px-4 py-3 text-left text-gold-300 font-semibold" data-i18n="player">玩家</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold" data-i18n="gamesPlayed">遊戲局數</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold" data-i18n="totalScore">總得分</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold" data-i18n="averageScore">平均分數</th>
+              </tr>
+            </thead>
+            <tbody id="averageScoreTableBody">
+              <tr class="border-b border-gray-700 hover:bg-gray-800 transition-colors">
+                <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                  <div class="flex items-center justify-center">
+                    <svg class="animate-spin h-5 w-5 text-gold-300 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span data-i18n="loading">加載中...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. Forum Contribution Table -->
+      <div class="bg-gray-900 bg-opacity-80 p-6 rounded-xl border border-gray-700">
+        <h3 class="text-title font-bold text-gold-300 mb-4" data-i18n="forumContributionRanking">💬 論壇貢獻排行榜</h3>
+        <p class="text-body-sm text-gray-400 mb-4" data-i18n="forumContributionDesc">基於論壇活動表現的排行榜</p>
+        
+        <div class="bg-gray-800 p-8 rounded-lg border border-gray-600 flex flex-col items-center justify-center min-h-[300px]">
+          <div class="text-center">
+            <span class="text-6xl mb-4 block">🔒</span>
+            <h4 class="text-title font-bold text-gold-300 mb-2" data-i18n="featureDevelopment">功能開發中</h4>
+            <p class="text-body text-gray-400" data-i18n="forumRankingComingSoon">論壇貢獻排行榜將於未來版本推出</p>
+            <p class="text-body-sm text-gray-500 mt-2" data-i18n="stayTuned">敬請期待更多精彩內容！</p>
+          </div>
+        </div>
+
+        <!-- Placeholder table structure for future use -->
+        <div class="overflow-x-auto mt-6 hidden">
+          <table class="w-full text-body-sm">
+            <thead>
+              <tr class="border-b border-gray-700">
+                <th class="px-4 py-3 text-left text-gold-300 font-semibold">排名</th>
+                <th class="px-4 py-3 text-left text-gold-300 font-semibold">玩家</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold">發帖數</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold">回覆數</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold">獲讚數</th>
+                <th class="px-4 py-3 text-center text-gold-300 font-semibold">貢獻度</th>
+              </tr>
+            </thead>
+            <tbody id="forumContributionTableBody">
+              <!-- Will be populated when feature is enabled -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Back navigation
+    document.getElementById('backToForum').addEventListener('click', () => {
+      window.location.href = '/forum/forum.html';
+    });
+
+    // Initialize leaderboards when page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        console.log('[Ranking Page] Initializing leaderboards...');
+        await leaderboardManager.initialize();
+      } catch (error) {
+        console.error('[Ranking Page] Error initializing leaderboards:', error);
+        showError('加載排行榜失敗，請刷新頁面重試');
+      }
+    });
+
+    // Cleanup when page unloads
+    window.addEventListener('beforeunload', () => {
+      leaderboardManager.stopAutoRefresh('game-duration');
+      leaderboardManager.stopAutoRefresh('average-score');
+      leaderboardManager.stopAutoRefresh('forum-contribution');
+    });
+  </script>
+</body>
+</html>

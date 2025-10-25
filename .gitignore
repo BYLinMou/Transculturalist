@@ -1,6 +1,7 @@
 node_modules/
 server/uploads/
 server/config.js
+server/data/
 frontend/node_modules/
 ImplementDocuments/
 .env

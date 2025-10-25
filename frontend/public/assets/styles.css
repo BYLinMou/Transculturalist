@@ -1,5 +1,23 @@
 @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
 
+/* ===== Gold Color Definitions ===== */
+.gold-300 { --tw-text-opacity: 1; color: rgb(255 215 0 / var(--tw-text-opacity)); }
+.gold-400 { --tw-text-opacity: 1; color: rgb(255 237 78 / var(--tw-text-opacity)); }
+.gold-600 { --tw-bg-opacity: 1; background-color: rgb(218 165 32 / var(--tw-bg-opacity)); }
+.gold-700 { --tw-bg-opacity: 1; background-color: rgb(184 134 11 / var(--tw-bg-opacity)); }
+.text-gold-300 { --tw-text-opacity: 1; color: rgb(255 215 0 / var(--tw-text-opacity)); }
+.text-gold-400 { --tw-text-opacity: 1; color: rgb(255 237 78 / var(--tw-text-opacity)); }
+.bg-gold-300 { --tw-bg-opacity: 1; background-color: rgb(255 215 0 / var(--tw-bg-opacity)); }
+.bg-gold-400 { --tw-bg-opacity: 1; background-color: rgb(255 237 78 / var(--tw-bg-opacity)); }
+.bg-gold-600 { --tw-bg-opacity: 1; background-color: rgb(218 165 32 / var(--tw-bg-opacity)); }
+.bg-gold-700 { --tw-bg-opacity: 1; background-color: rgb(184 134 11 / var(--tw-bg-opacity)); }
+.border-gold-300 { --tw-border-opacity: 1; border-color: rgb(255 215 0 / var(--tw-border-opacity)); }
+.border-gold-500 { --tw-border-opacity: 1; border-color: rgb(212 175 55 / var(--tw-border-opacity)); }
+.border-gold-600 { --tw-border-opacity: 1; border-color: rgb(218 165 32 / var(--tw-border-opacity)); }
+.hover\:bg-gold-700:hover { --tw-bg-opacity: 1; background-color: rgb(184 134 11 / var(--tw-bg-opacity)); }
+.hover\:border-gold-500:hover { --tw-border-opacity: 1; border-color: rgb(212 175 55 / var(--tw-border-opacity)); }
+.focus\:border-gold-500:focus { --tw-border-opacity: 1; border-color: rgb(212 175 55 / var(--tw-border-opacity)); }
+
 /* ===== Global Font Size Definitions ===== */
 /* Using px units, 15-20% smaller than original Tailwind default values */
 

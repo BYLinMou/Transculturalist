@@ -1,0 +1,114 @@
+/* ===== Gold Theme Colors - Centralized Definition ===== */
+/* This file provides a unified gold color system for all pages */
+
+:root {
+  --gold-300: #ffd700;
+  --gold-400: #ffed4e;
+  --gold-500: #d4af37;
+  --gold-600: #daa520;
+  --gold-700: #b8860b;
+}
+
+/* Text Colors */
+.text-gold-300,
+.text-gold-400,
+.text-gold-500,
+.text-gold-600,
+.text-gold-700 {
+  color: var(--gold-300, #ffd700) !important;
+}
+
+.text-gold-400 {
+  color: var(--gold-400, #ffed4e) !important;
+}
+
+.text-gold-500 {
+  color: var(--gold-500, #d4af37) !important;
+}
+
+.text-gold-600 {
+  color: var(--gold-600, #daa520) !important;
+}
+
+.text-gold-700 {
+  color: var(--gold-700, #b8860b) !important;
+}
+
+/* Background Colors */
+.bg-gold-300 {
+  background-color: var(--gold-300, #ffd700) !important;
+}
+
+.bg-gold-400 {
+  background-color: var(--gold-400, #ffed4e) !important;
+}
+
+.bg-gold-500 {
+  background-color: var(--gold-500, #d4af37) !important;
+}
+
+.bg-gold-600 {
+  background-color: var(--gold-600, #daa520) !important;
+}
+
+.bg-gold-700 {
+  background-color: var(--gold-700, #b8860b) !important;
+}
+
+/* Border Colors */
+.border-gold-300 {
+  border-color: var(--gold-300, #ffd700) !important;
+}
+
+.border-gold-400 {
+  border-color: var(--gold-400, #ffed4e) !important;
+}
+
+.border-gold-500 {
+  border-color: var(--gold-500, #d4af37) !important;
+}
+
+.border-gold-600 {
+  border-color: var(--gold-600, #daa520) !important;
+}
+
+.border-gold-700 {
+  border-color: var(--gold-700, #b8860b) !important;
+}
+
+/* Gradient Colors */
+.from-gold-600 {
+  --tw-gradient-from: var(--gold-600, #daa520) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(218, 165, 32, 0)) !important;
+}
+
+.to-gold-700 {
+  --tw-gradient-to: var(--gold-700, #b8860b) !important;
+}
+
+/* Hover States */
+.hover\:bg-gold-700:hover {
+  background-color: var(--gold-700, #b8860b) !important;
+}
+
+.hover\:border-gold-500:hover {
+  border-color: var(--gold-500, #d4af37) !important;
+}
+
+.hover\:text-gold-300:hover {
+  color: var(--gold-300, #ffd700) !important;
+}
+
+.hover\:text-gold-400:hover {
+  color: var(--gold-400, #ffed4e) !important;
+}
+
+/* Focus States */
+.focus\:border-gold-500:focus {
+  border-color: var(--gold-500, #d4af37) !important;
+}
+
+/* Ring/Shadow with gold (for focus indicators) */
+.focus\:ring-gold-600:focus {
+  --tw-ring-color: var(--gold-600, #daa520) !important;
+}
