@@ -7,8 +7,14 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 - **Interactive Games**: Multiple game types including roleplay, story generation, multiple-choice questions, and matching games
 - **AI-Powered Content**: Dynamic content generation using OpenAI's GPT models
 - **Cultural Learning**: Explore various cultural themes and traditions
-- **Web-Based Interface**: Simple and intuitive web interface
+- **Multi-language Support**: Built-in internationalization (i18n) system
+- **User Authentication**: Optional Supabase-based authentication system
+- **Forum System**: Community discussion with AI-powered responses
+- **Leaderboard**: Global and user-specific ranking system
+- **Guest Mode**: Play without registration with local storage
+- **Web-Based Interface**: Simple and intuitive responsive interface
 - **Docker Support**: Easy deployment with Docker Compose
+- **Database Flexibility**: Support for both SQLite and PostgreSQL
 
 ## Game Types
 
@@ -20,8 +26,10 @@ A platform for cultural learning through interactive AI-powered games. Experienc
 ## Tech Stack
 
 - **Backend**: Node.js with Express.js
-- **Frontend**: Vanilla HTML/CSS/JavaScript
+- **Database**: SQLite (with PostgreSQL support)
+- **Frontend**: Vanilla HTML/CSS/JavaScript with i18n support
 - **AI Integration**: OpenAI API
+- **Authentication**: Optional multi-user authentication
 - **Containerization**: Docker & Docker Compose
 
 
@@ -138,48 +146,130 @@ The application will be available at `http://localhost:3030`
 
 6. Open your browser and navigate to `http://localhost:3030`
 
-## API Endpoints
-
-- `GET /api/health` - Health check
-- `GET /api/games` - List available games
-- `POST /api/ai/generate` - Generate game content
-- `POST /api/roleplay/character` - Generate roleplay character
-- `POST /api/roleplay/chat` - Continue roleplay conversation
-- `POST /api/story/chapter` - Generate story chapter
-- `POST /api/upload` - File upload
-
 ## Development
 
 ### Project Structure
 
 ```
 Transculturalist/
-├── frontend/                # Static frontend files
-│   ├── public/              # Served static files
-│   │   ├── components/
-│   │   ├── forum/
-│   │   ├── game/
-│   │   └── assets/
-│   ├── src/                 # Source files
-│   ├── build.js
-│   └── package.json
-├── server/                  # Node.js backend
+├── frontend/                      # Frontend workspace
+│   ├── public/                    # Static files served to clients
+│   │   ├── assets/                # Shared frontend assets
+│   │   │   ├── js/                # Core JavaScript modules
+│   │   │   ├── locales/           # Translation files
+│   │   │   └── styles.css         # Global styles
+│   │   ├── components/            # Reusable UI components
+│   │   ├── game/                  # Game pages
+│   │   ├── forum/                 # Forum pages
+│   │   ├── index.html             # Main entry page
+│   │   ├── culture-selection.html # Culture selection page
+│   │   ├── settings.html          # User settings page
+│   │   └── privacy-policy.html    # Privacy policy
+│   ├── dist/                      # Built files
+│   ├── build.js                   # Build script
+│   └── package.json               # Frontend dependencies
+├── server/                        # Backend workspace
 │   ├── src/
-│   │   ├── routes/          # API routes
-│   │   └── services/        # Business logic
-│   ├── config/              # Game configurations
-│   ├── Dockerfile
-│   └── package.json
-├── uploads/                 # Uploaded files
-├── docker-compose.yml       # Docker setup
-└── README.md
+│   │   ├── routes/                # API route handlers
+│   │   ├── services/              # shared utilites
+│   │   ├── middleware/            # Express middleware
+│   │   ├── db/                    # Database layer
+│   │   ├── shared/                # Shared utilities
+│   │   └── index.js               # Server entry point
+│   ├── config/                    # Configuration files
+│   │   ├── games/                 # Game type configurations
+│   │   └── stats-config.js        # Statistics configuration
+│   ├── db/                        # Database initialization scripts
+│   ├── data/                      # SQLite database files (generated)
+│   ├── uploads/                   # User uploaded files
+│   ├── config.js                  # Main configuration (user-created)
+│   ├── config.example.js          # Configuration template
+│   ├── Dockerfile                 # Docker build instructions
+│   └── package.json               # Backend dependencies
+├── docker-compose.yml             # Docker Compose configuration
+└── package.json                   # Root workspace configuration
 ```
+
+### Key Components
+
+#### Backend Architecture
+- **Modular Routes**: API endpoints organized by feature (auth, games, forum, etc.)
+- **Database Abstraction**: Support for both SQLite (primary) and PostgreSQL
+- **Service Layer**: Business logic separated from routes
+- **Middleware**: Authentication and request validation
+- **AI Integration**: OpenAI API for content generation
+
+#### Frontend Architecture
+- **Component-Based**: Reusable HTML components
+- **Internationalization**: Multi-language support (i18n)
+- **Guest Mode**: Local storage for unauthenticated users
+- **API Communication**: Centralized API helper
+- **Authentication**: Optional user registration and login
+
+#### Database Schema
+- **Users**: User accounts and profiles
+- **Game Sessions**: Game progress tracking
+- **Leaderboard**: Global and user-specific rankings
+- **Forum**: Posts, comments, votes, and rankings
+- **Statistics**: User statistics and achievements
 
 ### Adding New Games
 
-1. Create a new game configuration in `server/config/games/`
+1. Create a new game configuration in `server/config/games/` (JSON format)
 2. Update the game service in `server/src/services/gameConfigService.js`
-3. Add corresponding frontend components if needed
+3. Add corresponding frontend game page in `frontend/public/game/`
+4. Add game-specific JavaScript logic in `frontend/public/assets/js/`
+5. Update translations in `frontend/public/assets/locales/`
+
+### Adding New API Routes
+
+1. Create a new module in `server/src/routes/modules/`
+2. Import and register in `server/src/routes/api.js`
+3. Use middleware from `server/src/middleware/` for authentication if needed
+
+### Database Management
+
+The application uses an automatic database initialization system:
+- SQLite: Database is created automatically in `server/data/`
+- PostgreSQL: Use `server/db/init.common.sql` and `server/db/init.forum.postgres.sql`
+- Schema is initialized on first startup
+- Database type is automatically detected from configuration
+
+## API Endpoints
+
+### General
+- `GET /api/health` - Health check
+- `GET /api/languages` - Get supported languages
+
+### Games
+- `GET /api/games` - List available games
+- `POST /api/ai/generate` - Generate game content
+- `POST /api/roleplay/character` - Generate roleplay character
+- `POST /api/roleplay/chat` - Continue roleplay conversation
+- `POST /api/story/chapter` - Generate story chapter
+
+### Authentication (if enabled)
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/logout` - User logout
+- `GET /api/auth/user` - Get current user info
+
+### User & Leaderboard
+- `GET /api/user/stats` - Get user statistics
+- `GET /api/leaderboard` - Get global leaderboard
+- `GET /api/leaderboard/user` - Get user-specific leaderboard data
+
+### Forum
+- `GET /api/forum/posts` - List forum posts
+- `POST /api/forum/posts` - Create new forum post
+- `GET /api/forum/posts/:id` - Get specific post
+- `POST /api/forum/posts/:id/comments` - Add comment to post
+- `POST /api/forum/posts/:id/vote` - Vote on post
+- `POST /api/forum/ai/generate-response` - AI-generated forum responses
+- `GET /api/forum/ranking` - Get forum user rankings
+
+### Upload
+- `POST /api/upload` - File upload for forum attachments
 
 ## Contributing
 
@@ -191,9 +281,4 @@ Transculturalist/
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Powered by OpenAI's GPT models
-- Built with Express.js and modern web technologies
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
